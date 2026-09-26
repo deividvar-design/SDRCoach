@@ -30,3 +30,12 @@ export function initials(name: string | null | undefined) {
     .map((p) => p[0]!.toUpperCase())
     .join("");
 }
+
+export function isPast(iso: string | null | undefined) {
+  return iso ? new Date(iso).getTime() < Date.now() : false;
+}
+
+/** YYYY-MM-DD for a date input, N days from now. */
+export function dateInputValue(daysFromNow: number) {
+  return new Date(Date.now() + daysFromNow * 86_400_000).toISOString().slice(0, 10);
+}
