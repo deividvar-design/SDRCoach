@@ -12,19 +12,18 @@ export default function CookiesPage() {
       <table>
         <thead><tr><th>Name</th><th>Purpose</th><th>Duration</th></tr></thead>
         <tbody>
-          <tr><td><code>sb-*-auth-token</code></td><td>Your sign-in session (Supabase Auth)</td><td>Session, refreshed while active</td></tr>
+          <tr><td>Session cookie</td><td>Keeps you signed in</td><td>Session, refreshed while active</td></tr>
           <tr><td><code>cookie-consent</code> (local storage)</td><td>Remembers whether you accepted analytics</td><td>12 months</td></tr>
           <tr><td><code>theme</code> (local storage)</td><td>Light or dark preference if you set one</td><td>Until cleared</td></tr>
         </tbody>
       </table>
 
       <h2>Analytics (with consent)</h2>
-      <p>If you accept, we load PostHog (EU cloud) to understand which pages and features are used and where people get stuck. No advertising, no cross-site tracking, no data sold.</p>
+      <p>If you accept, we load an analytics tool hosted in the EU to understand which pages and features are used and where people get stuck. No advertising, no cross-site tracking, no data sold.</p>
       <table>
         <thead><tr><th>Name</th><th>Purpose</th><th>Duration</th></tr></thead>
         <tbody>
-          <tr><td><code>ph_*_posthog</code></td><td>Anonymous visitor id and session</td><td>12 months</td></tr>
-          <tr><td><code>_ga</code>, <code>_ga_*</code></td><td>Google Analytics, only if enabled for this site</td><td>Up to 24 months</td></tr>
+          <tr><td>Analytics cookies</td><td>Anonymous visitor id and session</td><td>12 months</td></tr>
         </tbody>
       </table>
 

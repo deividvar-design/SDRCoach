@@ -17,7 +17,7 @@ export default function PrivacyPage() {
       <h2>3. Data we collect on the website</h2>
       <ul>
         <li><strong>Server logs:</strong> IP address, user agent, requested pages, timestamps. Kept for 30 days for security and debugging. Legal basis: legitimate interest in running a secure service.</li>
-        <li><strong>Analytics cookies (only with your consent):</strong> pages viewed, referrer, approximate location derived from IP, device type, and interactions such as button clicks. Provider: PostHog, EU cloud. See our <a href="/cookies">cookie policy</a>. Legal basis: consent. You can withdraw it any time from the cookie settings link in the footer.</li>
+        <li><strong>Analytics cookies (only with your consent):</strong> pages viewed, referrer, approximate location derived from IP, device type, and interactions such as button clicks. Processed by an analytics provider hosted in the EU. See our <a href="/cookies">cookie policy</a>. Legal basis: consent. You can withdraw it any time from the cookie settings link in the footer.</li>
         <li><strong>Contact:</strong> if you email us, we keep the correspondence for as long as needed to handle it and for up to 24 months afterwards.</li>
       </ul>
 
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
       </ul>
 
       <h2>6. Subprocessors and international transfers</h2>
-      <p>We use the providers listed on our <a href="/trust">trust page</a>. Where a provider processes data outside the EEA, transfers rely on the European Commission's Standard Contractual Clauses and, where applicable, the EU-US Data Privacy Framework. A data processing agreement is available on request.</p>
+      <p>We use a small number of specialised providers for hosting, real-time voice, call scoring and analytics, each bound by a data processing agreement. The named list is part of our DPA, available on request. Where a provider processes data outside the EEA, transfers rely on the European Commission's Standard Contractual Clauses and, where applicable, the EU-US Data Privacy Framework. A data processing agreement is available on request.</p>
 
       <h2>7. Retention</h2>
       <table>
