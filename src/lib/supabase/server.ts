@@ -1,9 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Database } from "@/types/database";
 
 /** Request-scoped Supabase client that runs as the signed-in user (RLS applies). */
-export async function createClient() {
+export async function createClient(): Promise<SupabaseClient<Database>> {
+  if (process.env.SDRCOACH_DEMO === "1") {
+    const { createDemoClient } = await import("@/lib/demo/client");
+    return createDemoClient() as unknown as SupabaseClient<Database>;
+  }
   const cookieStore = await cookies();
 
   return createServerClient<Database>(

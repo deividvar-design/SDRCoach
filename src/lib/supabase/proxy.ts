@@ -10,6 +10,7 @@ function isPublic(pathname: string) {
 /** Refreshes the Supabase session cookie and redirects unauthenticated users. */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
+  if (process.env.SDRCOACH_DEMO === "1") return response;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
