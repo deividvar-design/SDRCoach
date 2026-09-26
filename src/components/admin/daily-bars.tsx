@@ -9,8 +9,8 @@ export function DailyBars({ data, metric }: { data: { key: string; label: string
         const v = d[metric];
         const h = Math.max(v > 0 ? 3 : 1, (v / max) * 100);
         return (
-          <div key={d.key} className="group relative flex-1">
-            <div className={v > 0 ? "bg-foreground rounded-t-[3px]" : "bg-muted rounded-t-[3px]"} style={{ height: `${h}%` }} />
+          <div key={d.key} className="group relative flex h-full flex-1 items-end">
+            <div className={v > 0 ? "bg-foreground w-full rounded-t-[3px]" : "bg-muted w-full rounded-t-[3px]"} style={{ height: `${h}%` }} />
             <div className="bg-popover text-popover-foreground pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 hidden -translate-x-1/2 rounded-md border px-2 py-1 text-[11px] whitespace-nowrap shadow group-hover:block">
               {d.label}: {metric === "cost" ? formatUsd(v) : `${v} calls`}
             </div>
