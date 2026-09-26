@@ -1,0 +1,52 @@
+import { describe, expect, it } from "vitest";
+import { leaderboard, levelProgress, streakDays, suggestedLevel, type SessionLite } from "./progress";
+
+const now = new Date("2026-09-26T12:00:00Z");
+const at = (daysAgo: number) => new Date(now.getTime() - daysAgo * 86_400_000).toISOString();
+const s = (daysAgo: number, overall: number | null, difficulty: SessionLite["difficulty"] = "warm", user = "u1"): SessionLite => ({
+  user_id: user,
+  created_at: at(daysAgo),
+  difficulty,
+  outcome: overall && overall > 7 ? "meeting_booked" : "rejected",
+  overall,
+});
+
+describe("streakDays", () => {
+  it("counts consecutive days including today", () => {
+    expect(streakDays([s(0, 7), s(1, 6), s(2, 5)], now)).toBe(3);
+  });
+  it("still counts when today has no call yet", () => {
+    expect(streakDays([s(1, 6), s(2, 5)], now)).toBe(2);
+  });
+  it("breaks on a gap", () => {
+    expect(streakDays([s(0, 7), s(2, 5)], now)).toBe(1);
+  });
+  it("is zero with nothing recent", () => {
+    expect(streakDays([s(5, 7)], now)).toBe(0);
+  });
+});
+
+describe("levelProgress / suggestedLevel", () => {
+  it("recommends the next level after three good calls", () => {
+    const list = [s(0, 8), s(1, 7.5), s(2, 7)];
+    expect(levelProgress(list)[0]!.ready).toBe(true);
+    expect(suggestedLevel(list)).toBe("inbound");
+  });
+  it("does not recommend on two calls or a low average", () => {
+    expect(suggestedLevel([s(0, 9), s(1, 9)])).toBe("warm");
+    expect(suggestedLevel([s(0, 9), s(1, 5), s(2, 5)])).toBe("warm");
+  });
+  it("chains through levels", () => {
+    const list = [s(0, 8, "inbound"), s(1, 8, "inbound"), s(2, 8, "inbound"), s(3, 8), s(4, 8), s(5, 8)];
+    expect(suggestedLevel(list)).toBe("cold");
+  });
+});
+
+describe("leaderboard", () => {
+  it("ranks by average within the window and ignores old calls", () => {
+    const names = new Map([["u1", "A"], ["u2", "B"]]);
+    const rows = leaderboard([s(0, 6), s(1, 9, "warm", "u2"), s(20, 10)], names, 7, now);
+    expect(rows.map((r) => r.name)).toEqual(["B", "A"]);
+    expect(rows[1]!.calls).toBe(1);
+  });
+});

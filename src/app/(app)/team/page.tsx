@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireManager } from "@/lib/auth";
 import { ROLE_LABEL } from "@/lib/domain/roles";
 import { createClient } from "@/lib/supabase/server";
@@ -134,7 +135,7 @@ export default async function TeamPage() {
                         {m.profiles?.avatar_url && <AvatarImage src={m.profiles.avatar_url} alt="" />}
                         <AvatarFallback>{initials(m.profiles?.full_name)}</AvatarFallback>
                       </Avatar>
-                      <span className="font-medium">{m.profiles?.full_name ?? "—"}</span>
+                      <Link href={`/team/${m.user_id}`} className="font-medium hover:underline">{m.profiles?.full_name ?? "—"}</Link>
                     </div>
                   </TableCell>
                   <TableCell><Badge variant={m.role === "rep" ? "secondary" : "outline"}>{ROLE_LABEL[m.role]}</Badge></TableCell>

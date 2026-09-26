@@ -6,6 +6,8 @@ import { mintConversationToken, agentId } from "@/lib/elevenlabs/client";
 import { buildPersonaPrompt, firstMessage } from "@/lib/prompts/persona";
 import { loadOrgDigests } from "@/lib/knowledge/digest";
 
+const DAILY_CALL_CAP = Number(process.env.CALLS_PER_ORG_PER_DAY ?? 200);
+
 const Body = z.object({
   targetId: z.string().uuid(),
   difficulty: z.enum(["warm", "inbound", "cold"]),
@@ -21,6 +23,24 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: target } = await supabase.from("targets").select("*").eq("id", parsed.data.targetId).eq("org_id", viewer.org.id).maybeSingle();
   if (!target) return NextResponse.json({ error: "Target not found" }, { status: 404 });
+
+  // Guardrails: one live call per rep, and a daily cap per org so a runaway client cannot burn the voice budget.
+  const staleCutoff = new Date(Date.now() - 20 * 60_000).toISOString();
+  const [{ count: liveCount }, { count: todayCount }] = await Promise.all([
+    supabase
+      .from("call_sessions")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", viewer.userId)
+      .in("status", ["created", "live"])
+      .gt("created_at", staleCutoff),
+    supabase
+      .from("call_sessions")
+      .select("id", { count: "exact", head: true })
+      .eq("org_id", viewer.org.id)
+      .gt("created_at", new Date(Date.now() - 24 * 3_600_000).toISOString()),
+  ]);
+  if ((liveCount ?? 0) > 0) return NextResponse.json({ error: "You already have a call in progress. Hang up before dialing again." }, { status: 409 });
+  if ((todayCount ?? 0) >= DAILY_CALL_CAP) return NextResponse.json({ error: "Your team has reached today's call limit. Try again tomorrow." }, { status: 429 });
 
   let token: string;
   try {

@@ -50,4 +50,9 @@ export const RUBRIC_WEIGHTS: Record<RubricKey, number> = {
 
 /** Recommend the next level after three calls averaging this or higher at the current level. */
 export const LEVEL_UP_THRESHOLD = 7;
+
+export function weightedOverall(d: Record<RubricKey, { score: number }>) {
+  const total = RUBRIC_KEYS.reduce((acc, k) => acc + d[k].score * RUBRIC_WEIGHTS[k], 0);
+  return Math.round(total * 10) / 10;
+}
 export const LEVEL_UP_MIN_CALLS = 3;

@@ -47,6 +47,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
   const nextLevel = LEVEL_LIST.find((l) => l.level === level.level + 1);
   const outcome = session.outcome ? OUTCOME_LABEL[session.outcome] : null;
   const m = session.metrics;
+  const hasRecording = Boolean(process.env.ELEVENLABS_API_KEY && session.elevenlabs_conversation_id && score);
 
   return (
     <div className="space-y-8">
@@ -110,6 +111,13 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
               <p className="font-display text-xl leading-snug text-balance md:text-2xl">{score.coach_summary}</p>
             </div>
           </section>
+
+          {hasRecording && (
+            <section className="bg-card flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-center">
+              <div className="text-muted-foreground shrink-0 font-mono text-[11px] tracking-[0.14em] uppercase">Recording</div>
+              <audio controls preload="none" className="w-full" src={`/api/calls/${session.id}/audio`} />
+            </section>
+          )}
 
           {m && (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -4,7 +4,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { LEVELS } from "@/lib/domain/levels";
 import type { CallMetrics, CallOutcome, Difficulty, ScoreDimensions, TranscriptTurn } from "@/types/database";
-import { RUBRIC, RUBRIC_KEYS, RUBRIC_WEIGHTS } from "./rubric";
+import { RUBRIC, RUBRIC_KEYS, weightedOverall } from "./rubric";
 import type { KnowledgeDigest } from "@/lib/knowledge/digest";
 
 export const SCORING_MODEL = "claude-opus-5";
@@ -58,11 +58,6 @@ function renderTranscript(turns: TranscriptTurn[], repName: string, prospectName
       return `${ts}${t.role === "rep" ? repName : prospectName}: ${t.text}`;
     })
     .join("\n");
-}
-
-export function weightedOverall(d: ScoreDimensions) {
-  const total = RUBRIC_KEYS.reduce((acc, k) => acc + d[k].score * RUBRIC_WEIGHTS[k], 0);
-  return Math.round(total * 10) / 10;
 }
 
 const client = new Anthropic();
