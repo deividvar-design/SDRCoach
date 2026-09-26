@@ -112,3 +112,6 @@ begin
   insert into public.memberships (org_id, user_id, role) values (v_org, p_user_id, 'owner');
   return v_org;
 end $$;
+
+-- advisor: pin the trigger function search path
+alter function public.guard_call_session_update() set search_path = public;
