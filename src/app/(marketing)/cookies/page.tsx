@@ -1,0 +1,35 @@
+import type { Metadata } from "next";
+import { LegalPage } from "@/components/marketing/legal";
+import { CookieSettingsLink } from "@/components/analytics/cookie-banner";
+
+export const metadata: Metadata = { title: "Cookie policy", description: "Which cookies SDRCoach sets, what they do, and how to change your choice.", alternates: { canonical: "/cookies" } };
+
+export default function CookiesPage() {
+  return (
+    <LegalPage title="Cookie policy" intro="We use a small number of cookies. Only the ones needed to run the service are set without asking. Everything else waits for your choice.">
+      <h2>Strictly necessary</h2>
+      <p>These cannot be switched off. They keep you signed in and remember your cookie choice itself.</p>
+      <table>
+        <thead><tr><th>Name</th><th>Purpose</th><th>Duration</th></tr></thead>
+        <tbody>
+          <tr><td><code>sb-*-auth-token</code></td><td>Your sign-in session (Supabase Auth)</td><td>Session, refreshed while active</td></tr>
+          <tr><td><code>cookie-consent</code> (local storage)</td><td>Remembers whether you accepted analytics</td><td>12 months</td></tr>
+          <tr><td><code>theme</code> (local storage)</td><td>Light or dark preference if you set one</td><td>Until cleared</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Analytics (with consent)</h2>
+      <p>If you accept, we load PostHog (EU cloud) to understand which pages and features are used and where people get stuck. No advertising, no cross-site tracking, no data sold.</p>
+      <table>
+        <thead><tr><th>Name</th><th>Purpose</th><th>Duration</th></tr></thead>
+        <tbody>
+          <tr><td><code>ph_*_posthog</code></td><td>Anonymous visitor id and session</td><td>12 months</td></tr>
+          <tr><td><code>_ga</code>, <code>_ga_*</code></td><td>Google Analytics, only if enabled for this site</td><td>Up to 24 months</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Change your mind</h2>
+      <p>Open <CookieSettingsLink /> at any time. Rejecting analytics removes those cookies on your next page load. You can also block cookies in your browser; the service still works, you will just be signed out more often.</p>
+    </LegalPage>
+  );
+}

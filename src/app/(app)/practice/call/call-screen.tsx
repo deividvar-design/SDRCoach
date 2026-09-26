@@ -10,6 +10,7 @@ import type { LevelSpec } from "@/lib/domain/levels";
 import type { Difficulty } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { track } from "@/components/analytics/provider";
 
 interface TargetCard {
   id: string;
@@ -107,6 +108,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
       setTurns((prev) => [...prev, { role: role === "agent" ? "prospect" : "rep", text: message }]);
     },
     onDisconnect: () => {
+      track("call_ended", { difficulty });
       setStage((s) => (s === "live" || s === "dialing" ? "ending" : s));
       endOnServer().then(() => {
         if (sessionIdRef.current) router.push(`/sessions/${sessionIdRef.current}?fresh=1`);
@@ -161,6 +163,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
       }
       if (!res.ok) throw new Error(data.error ?? "Could not start the call");
       sessionIdRef.current = data.sessionId;
+      track("call_started", { difficulty, target_kind: target.kind });
 
       // Let it ring once so it feels like a real dial.
       await new Promise((r) => setTimeout(r, 2200));

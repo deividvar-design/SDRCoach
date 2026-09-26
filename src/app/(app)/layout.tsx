@@ -9,6 +9,8 @@ import { TrialBanner } from "@/components/billing/trial-banner";
 import { loadTrialStatus } from "@/lib/billing/usage";
 import { createClient } from "@/lib/supabase/server";
 
+export const metadata = { robots: { index: false, follow: false } };
+
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const viewer = await requireViewer();
   const isManager = canManage(viewer.membership.role);

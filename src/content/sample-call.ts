@@ -1,0 +1,36 @@
+/** Scripted Level 3 call for the homepage player. Timings in ms from call start. */
+export const SAMPLE_CALL = {
+  prospect: { name: "Rebecca Lindqvist", title: "VP Operations", company: "Halvorsen Freight" },
+  rep: "Sam",
+  level: 3,
+  audioSrc: null as string | null,
+  turns: [
+    { t: 0, role: "prospect", text: "Lindqvist." },
+    { t: 1400, role: "rep", text: "Rebecca, it's Sam from Brightline. I know you weren't expecting this. The reason I'm calling: your fleet passed four hundred trucks last year, and most ops leads at that size are fighting fuel spend they can't see. Fair to take thirty seconds?" },
+    { t: 11500, role: "prospect", text: "Thirty seconds. Go." },
+    { t: 13200, role: "rep", text: "When you look at fuel cost per mile right now, how much of it is idle time?" },
+    { t: 18000, role: "prospect", text: "No idea, honestly. Fuel's up fourteen percent and I can't tell the board which depots are the problem." },
+    { t: 24500, role: "rep", text: "That's most of the conversations we have. What are you using to track it today?" },
+    { t: 28500, role: "prospect", text: "Samsara on half the trucks, spreadsheets on the rest. And I've got an insurance renewal in six weeks, so I've got bigger fires." },
+    { t: 36000, role: "rep", text: "Understood. I'm not going to fix that on a cold call. Fifteen minutes Thursday at ten, I show you the depot view on a fleet your size, and you tell me if it's worth going further." },
+    { t: 45000, role: "prospect", text: "Not this quarter. I've got the renewal." },
+    { t: 48000, role: "rep", text: "Fifteen minutes, and if it's not useful for the renewal conversation you never hear from me again. Thursday at ten, or is Friday better?" },
+    { t: 55500, role: "prospect", text: "Thursday at ten. Send me an invite." },
+    { t: 58000, role: "rep", text: "Done. Talk Thursday." },
+  ] as { t: number; role: "rep" | "prospect"; text: string }[],
+  endsAt: 60000,
+  result: {
+    overall: 8.2,
+    outcome: "Meeting booked",
+    outcomeReason: "They knew our fuel numbers and asked for fifteen minutes. Fine.",
+    coach: "You earned the meeting in the first thirty seconds with a reason for calling she couldn't brush off. One thing: when she mentioned the insurance renewal, slow down and ask. That was the real trigger.",
+    dimensions: [
+      ["Opener", 8.8],
+      ["Reason for call", 8.6],
+      ["Discovery", 7.4],
+      ["Objection handling", 7.9],
+      ["Value proposition", 8.3],
+      ["Close", 8.7],
+    ] as [string, number][],
+  },
+};

@@ -1,10 +1,14 @@
-import Link from "next/link";
-import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
+import type { Metadata } from "next";
 import { PlanGrid } from "@/components/billing/plan-grid";
 import { TRIAL } from "@/lib/billing/plans";
+import { CtaBand } from "@/components/marketing/sections";
+import { JsonLd, faqLd } from "@/components/seo/json-ld";
 
-export const metadata = { title: "Pricing", description: "Simple per-seat pricing with a call allowance. Free trial, no card." };
+export const metadata: Metadata = {
+  title: "Pricing",
+  description: "Simple per-seat pricing with a monthly call allowance. Free trial: 10 calls, 14 days, no card, work email required.",
+  alternates: { canonical: "/pricing" },
+};
 
 const FAQ = [
   { q: "What counts as a call?", a: "A practice call that connects to the AI prospect. Failed dials and calls under ten seconds are not counted." },
@@ -17,16 +21,9 @@ const FAQ = [
 
 export default function PricingPage() {
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
-        <Link href="/"><Logo /></Link>
-        <nav className="flex items-center gap-2">
-          <Button variant="ghost" asChild><Link href="/login">Sign in</Link></Button>
-          <Button asChild><Link href="/signup">Start free</Link></Button>
-        </nav>
-      </header>
-
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 pb-20">
+    <>
+      <JsonLd data={faqLd(FAQ)} />
+      <div className="mx-auto w-full max-w-6xl px-6 pb-8">
         <section className="py-16 text-center">
           <p className="text-muted-foreground font-mono text-[11px] tracking-[0.14em] uppercase">Pricing</p>
           <h1 className="font-display mt-3 text-5xl text-balance md:text-6xl">Cheaper than one burned prospect.</h1>
@@ -48,9 +45,8 @@ export default function PricingPage() {
             ))}
           </dl>
         </section>
-      </main>
-
-      <footer className="text-muted-foreground mx-auto w-full max-w-6xl px-6 py-8 text-xs">© {new Date().getFullYear()} SDRCoach</footer>
-    </div>
+      </div>
+      <CtaBand title="Start with ten free calls." body="Every plan begins as a trial. Upgrade from inside the app when the team is ready." />
+    </>
   );
 }
