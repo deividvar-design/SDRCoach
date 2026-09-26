@@ -9,7 +9,7 @@ export interface TrialStatus {
   reason: "calls" | "time" | "subscription" | null;
 }
 
-/** Pure. `usedCalls` should count calls that connected (live or later), never failed dials. */
+/** Pure. `usedCalls` counts calls that connected (started_at set), whatever happened to them afterwards. */
 export function trialStatus(org: Pick<Organization, "plan" | "trial_call_limit" | "trial_ends_at">, usedCalls: number, now = new Date()): TrialStatus {
   const onTrial = org.plan === "trial";
   if (org.plan === "canceled") return { onTrial: false, callsUsed: usedCalls, callsLeft: 0, daysLeft: 0, exhausted: true, reason: "subscription" };
@@ -19,5 +19,3 @@ export function trialStatus(org: Pick<Organization, "plan" | "trial_call_limit" 
   const reason = callsLeft === 0 ? "calls" : daysLeft === 0 ? "time" : null;
   return { onTrial: true, callsUsed: usedCalls, callsLeft, daysLeft, exhausted: reason !== null, reason };
 }
-
-export const TRIAL_USED_STATUSES = ["live", "ended", "scoring", "scored"] as const;

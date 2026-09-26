@@ -85,6 +85,11 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
   const [turns, setTurns] = useState<LiveTurn[]>([]);
   const sessionIdRef = useRef<string | null>(null);
   const endedRef = useRef(false);
+  const micRef = useRef<MediaStream | null>(null);
+  const releaseMic = () => {
+    micRef.current?.getTracks().forEach((t) => t.stop());
+    micRef.current = null;
+  };
   const transcriptRef = useRef<HTMLDivElement>(null);
 
   const endOnServer = useCallback(async () => {
@@ -109,6 +114,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
     },
     onDisconnect: () => {
       track("call_ended", { difficulty });
+      releaseMic();
       setStage((s) => (s === "live" || s === "dialing" ? "ending" : s));
       endOnServer().then(() => {
         if (sessionIdRef.current) router.push(`/sessions/${sessionIdRef.current}?fresh=1`);
@@ -117,6 +123,8 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
     onError: (message) => {
       setError(message);
       setStage("error");
+      releaseMic();
+      endOnServer();
     },
   });
 
@@ -136,7 +144,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
   // Hang up if the tab closes mid-call
   useEffect(() => {
     const onHide = () => {
-      if (stage === "live" && sessionIdRef.current) navigator.sendBeacon?.(`/api/calls/${sessionIdRef.current}/end`);
+      if ((stage === "live" || stage === "dialing") && sessionIdRef.current && !endedRef.current) navigator.sendBeacon?.(`/api/calls/${sessionIdRef.current}/end`);
     };
     window.addEventListener("pagehide", onHide);
     return () => window.removeEventListener("pagehide", onHide);
@@ -147,7 +155,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
     setStage("dialing");
     let stopRing: (() => void) | null = null;
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      micRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
       const ctx = new AudioContext();
       stopRing = playRingback(ctx, 2);
 
@@ -171,7 +179,9 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
       stopRing = null;
       ctx.close().catch(() => {});
 
-      await conversation.startSession({
+      // The SDK owns its own microphone track from here on.
+      releaseMic();
+      conversation.startSession({
         conversationToken: data.token,
         connectionType: "webrtc",
         overrides: {
@@ -181,6 +191,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
       });
     } catch (err) {
       stopRing?.();
+      releaseMic();
       const message = err instanceof Error ? err.message : "Could not start the call";
       setError(message.includes("Permission") || message.includes("NotAllowed") ? "Microphone access is required to make a call." : message);
       setStage("error");

@@ -11,11 +11,15 @@ export async function POST(request: Request, { params }: RouteContext<"/api/call
   if (!body.success) return NextResponse.json({ error: "Bad request" }, { status: 400 });
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("call_sessions")
     .update({ status: "live", elevenlabs_conversation_id: body.data.conversationId, started_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("user_id", viewer.userId);
+    .eq("user_id", viewer.userId)
+    .eq("status", "created")
+    .select("id")
+    .maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!data) return NextResponse.json({ error: "Session is not waiting to start" }, { status: 409 });
   return NextResponse.json({ ok: true });
 }

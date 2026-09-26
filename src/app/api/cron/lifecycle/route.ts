@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendLifecycle } from "@/lib/email/lifecycle";
+import { sweepStaleSessions } from "@/lib/calls/sweep";
+
+export const maxDuration = 300;
 
 /**
  * Daily (Vercel cron). Two jobs:
@@ -16,7 +19,7 @@ export async function GET(request: Request) {
 
   const db = createAdminClient();
   const now = Date.now();
-  const results = { nudged: 0, ended: 0 };
+  const results = { nudged: 0, ended: 0, swept: await sweepStaleSessions(db) };
 
   const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at").eq("plan", "trial");
   for (const org of trials ?? []) {
@@ -29,7 +32,7 @@ export async function GET(request: Request) {
       }
     }
     if (new Date(org.trial_ends_at).getTime() <= now) {
-      const r = await sendLifecycle(org.id, "trial_ended_time").catch(() => ({ sent: false }));
+      const r = await sendLifecycle(org.id, "trial_ended").catch(() => ({ sent: false }));
       if (r.sent) results.ended += 1;
     }
   }

@@ -6,6 +6,8 @@ import { mintConversationToken, agentId } from "@/lib/elevenlabs/client";
 import { buildPersonaPrompt, firstMessage } from "@/lib/prompts/persona";
 import { loadOrgDigests } from "@/lib/knowledge/digest";
 import { loadTrialStatus } from "@/lib/billing/usage";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sweepStaleSessions } from "@/lib/calls/sweep";
 
 const DAILY_CALL_CAP = Number(process.env.CALLS_PER_ORG_PER_DAY ?? 200);
 
@@ -24,6 +26,14 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: target } = await supabase.from("targets").select("*").eq("id", parsed.data.targetId).eq("org_id", viewer.org.id).maybeSingle();
   if (!target) return NextResponse.json({ error: "Target not found" }, { status: 404 });
+
+  if (parsed.data.assignmentId) {
+    const { data: assignment } = await supabase.from("assignments").select("id").eq("id", parsed.data.assignmentId).eq("assigned_to", viewer.userId).eq("org_id", viewer.org.id).maybeSingle();
+    if (!assignment) return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
+  }
+
+  // Repair this rep's own abandoned sessions before the concurrency check so a failed dial never locks them out.
+  if (process.env.SDRCOACH_DEMO !== "1") await sweepStaleSessions(createAdminClient(), { userId: viewer.userId }).catch(() => {});
 
   // Guardrails: one live call per rep, and a daily cap per org so a runaway client cannot burn the voice budget.
   const staleCutoff = new Date(Date.now() - 20 * 60_000).toISOString();

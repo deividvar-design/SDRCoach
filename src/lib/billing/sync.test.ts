@@ -33,10 +33,13 @@ describe("subscriptionToPatch", () => {
   it("flags canceled subscriptions", () => {
     expect(subscriptionToPatch(sub({ status: "canceled" }), catalog).plan).toBe("canceled");
   });
-  it("does not change the plan for an unknown price", () => {
-    const p = subscriptionToPatch(sub({ price: "price_mystery" }), catalog);
-    expect(p.plan).toBeUndefined();
+  it("falls back to the plan written at checkout for an unknown price", () => {
+    const p = subscriptionToPatch(sub({ price: "price_mystery", metadata: { org_id: "org-1", plan: "starter" } }), catalog);
+    expect(p.plan).toBe("starter");
     expect(p.billing_interval).toBeNull();
+  });
+  it("treats unpaid as terminal", () => {
+    expect(subscriptionToPatch(sub({ status: "unpaid" }), catalog).plan).toBe("canceled");
   });
 });
 
@@ -46,7 +49,7 @@ function deps(over: Partial<SyncDeps> = {}) {
   const d: SyncDeps = {
     catalog,
     recordEvent: async () => true,
-    findOrgId: async (q) => (q.orgId === "org-1" || q.customerId === "cus_1" ? "org-1" : null),
+    findOrg: async (q) => (q.orgId === "org-1" || q.customerId === "cus_1" ? { id: "org-1", stripe_subscription_id: null, plan: "trial" } : null),
     patchOrg: async (orgId, patch) => {
       patches.push({ orgId, patch });
     },
@@ -85,6 +88,12 @@ describe("handleStripeEvent", () => {
     const { d, notes } = deps();
     await handleStripeEvent(event("invoice.payment_failed", { customer: "cus_1" }), d);
     expect(notes).toEqual(["payment_failed"]);
+  });
+  it("ignores events for a superseded subscription", async () => {
+    const { d, patches } = deps({ findOrg: async () => ({ id: "org-1", stripe_subscription_id: "sub_new", plan: "team" }) });
+    const r = await handleStripeEvent(event("customer.subscription.deleted", sub({ id: "sub_old", status: "canceled" })), d);
+    expect(r.reason).toBe("stale subscription");
+    expect(patches).toHaveLength(0);
   });
   it("ignores unrelated events", async () => {
     const { d } = deps();

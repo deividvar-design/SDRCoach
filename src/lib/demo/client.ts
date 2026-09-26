@@ -14,7 +14,6 @@ const TABLES: Record<string, Row[]> = {
   memberships: MEMBERSHIPS as unknown as Row[],
   invites: INVITES as unknown as Row[],
   targets: TARGETS as unknown as Row[],
-  target_templates: [],
   assignments: ASSIGNMENTS as unknown as Row[],
   call_sessions: SESSIONS as unknown as Row[],
   call_transcripts: TRANSCRIPTS as unknown as Row[],
@@ -44,7 +43,7 @@ const RELATIONS: Record<string, Record<string, Relation>> = {
   knowledge_sources: { profiles: { table: "profiles", column: "uploaded_by" } },
 };
 
-const KEY: Record<string, string> = { call_transcripts: "session_id", call_scores: "session_id", target_templates: "key" };
+const KEY: Record<string, string> = { call_transcripts: "session_id", call_scores: "session_id" };
 
 function splitTopLevel(s: string) {
   const out: string[] = [];

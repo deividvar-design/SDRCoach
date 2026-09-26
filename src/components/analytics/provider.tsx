@@ -7,14 +7,7 @@ import { CONSENT_EVENT, readConsent, type Consent } from "./consent";
 
 const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 const HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com";
-const GA = process.env.NEXT_PUBLIC_GA_ID;
 
-declare global {
-  interface Window {
-    dataLayer?: unknown[];
-    gtag?: (...args: unknown[]) => void;
-  }
-}
 
 let started = false;
 
@@ -30,17 +23,6 @@ function startAnalytics() {
       person_profiles: "identified_only",
     });
   }
-  if (GA && !document.getElementById("ga4")) {
-    const s = document.createElement("script");
-    s.id = "ga4";
-    s.async = true;
-    s.src = `https://www.googletagmanager.com/gtag/js?id=${GA}`;
-    document.head.appendChild(s);
-    window.dataLayer = window.dataLayer ?? [];
-    window.gtag = (...args: unknown[]) => window.dataLayer!.push(args);
-    window.gtag("js", new Date());
-    window.gtag("config", GA, { anonymize_ip: true, send_page_view: false });
-  }
 }
 
 function stopAnalytics() {
@@ -53,7 +35,7 @@ function stopAnalytics() {
   // Drop analytics cookies so a rejected choice takes effect on this load.
   for (const c of document.cookie.split(";")) {
     const name = c.split("=")[0]?.trim() ?? "";
-    if (/^(ph_|_ga)/.test(name)) document.cookie = `${name}=; Max-Age=0; path=/; domain=${location.hostname}`;
+    if (name.startsWith("ph_")) document.cookie = `${name}=; Max-Age=0; path=/; domain=${location.hostname}`;
   }
 }
 
@@ -79,7 +61,6 @@ export function AnalyticsProvider() {
     if (!consented.current || !started) return;
     const url = `${location.origin}${pathname}${search.size ? `?${search}` : ""}`;
     if (KEY) posthog.capture("$pageview", { $current_url: url });
-    if (GA) window.gtag?.("event", "page_view", { page_location: url, page_path: pathname });
   }, [pathname, search]);
 
   return null;
@@ -89,7 +70,6 @@ export function AnalyticsProvider() {
 export function track(event: string, props?: Record<string, unknown>) {
   if (!started) return;
   if (KEY) posthog.capture(event, props);
-  if (GA) window.gtag?.("event", event, props);
 }
 
 export function identify(userId: string, props?: Record<string, unknown>) {

@@ -54,7 +54,7 @@ export const INVITES: Invite[] = [
 ];
 
 const t = (id: string, kind: Target["kind"], name: string, title: string, company: string, industry: string, size: string, notes: string, pains: string[], objections: string[], d: number): Target => ({
-  id, org_id: ORG.id, created_by: "u-deividas", name, title, company, industry, company_size: size, persona_notes: notes, pain_points: pains, objections, voice_id: null, is_archived: false, kind, template_key: kind === "practice" ? id : null, created_at: daysAgo(d), updated_at: daysAgo(d),
+  id, org_id: ORG.id, created_by: "u-deividas", name, title, company, industry, company_size: size, persona_notes: notes, pain_points: pains, objections, voice_id: null, is_archived: false, kind, created_at: daysAgo(d), updated_at: daysAgo(d),
 });
 
 export const TARGETS: Target[] = [

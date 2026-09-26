@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { validateBusinessEmail } from "@/lib/email/business";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { after } from "next/server";
+import { PRACTICE_PERSONAS } from "@/content/practice-personas";
 
 export interface OnboardingState {
   error?: string;
@@ -38,8 +39,11 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
   const slug = `${base}-${Math.random().toString(36).slice(2, 6)}`;
   const db = process.env.SDRCOACH_DEMO === "1" ? supabase : createAdminClient();
   const { data: orgId, error } = await db.rpc("create_organization", { p_name: parsed.data.name, p_slug: slug, p_user_id: user.id, p_trial_domain: check.domain });
-  if (!error && orgId && process.env.SDRCOACH_DEMO !== "1") {
-    after(() => sendLifecycle(orgId, "welcome").catch((err) => console.error("welcome email failed", err)));
+  if (!error && orgId) {
+    await db.from("targets").insert(
+      PRACTICE_PERSONAS.map((p) => ({ ...p, pain_points: [...p.pain_points], objections: [...p.objections], org_id: orgId, created_by: user.id, kind: "practice" as const })),
+    );
+    if (process.env.SDRCOACH_DEMO !== "1") after(() => sendLifecycle(orgId, "welcome").catch((err) => console.error("welcome email failed", err)));
   }
   if (error) {
     if (error.message.includes("trial_exists")) return { error: `A workspace for ${check.domain} already exists. Ask its owner to invite you.` };

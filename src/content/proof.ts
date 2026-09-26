@@ -13,21 +13,5 @@ export const PROOF = {
     { value: "9 days", label: "average ramp to first booked meeting", detail: "for new SDRs, down from about five weeks" },
     { value: "83%", label: "of calls scored within 60 seconds", detail: "with a transcript, six-dimension breakdown and a coach summary" },
   ],
-  quotes: [
-    {
-      quote: "My new reps used to burn their first fifty real dials learning the opener. Now they burn fifty fake ones on Sunday night and book on Monday.",
-      name: "Head of Sales Development",
-      company: "Series B logistics software, 12 SDRs",
-    },
-    {
-      quote: "The Level 3 prospect hangs up on you. Reps hated it for a week and then their real connect rate went up. I can see every call without listening to every call.",
-      name: "Sales Enablement Lead",
-      company: "Fintech, 40-person outbound team",
-    },
-    {
-      quote: "We uploaded a quarter of Gong transcripts and the prospects started saying the exact objections our market says. That was the moment the team took it seriously.",
-      name: "SDR Manager",
-      company: "Fleet telematics, 8 SDRs",
-    },
-  ],
+  quotes: [] as { quote: string; name: string; company: string }[],
 } as const;

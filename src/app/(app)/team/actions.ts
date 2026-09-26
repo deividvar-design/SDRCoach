@@ -51,12 +51,6 @@ export async function revokeInvite(id: string) {
   revalidatePath("/team");
 }
 
-export async function updateRole(membershipId: string, role: "manager" | "rep") {
-  await requireManager();
-  const supabase = await createClient();
-  await supabase.from("memberships").update({ role }).eq("id", membershipId).neq("role", "owner");
-  revalidatePath("/team");
-}
 
 export interface AssignState {
   error?: string;
@@ -78,6 +72,12 @@ export async function createAssignment(_prev: AssignState, formData: FormData): 
 
   const viewer = await requireManager();
   const supabase = await createClient();
+  const [{ data: member }, { data: target }] = await Promise.all([
+    supabase.from("memberships").select("id").eq("org_id", viewer.org.id).eq("user_id", parsed.data.assigned_to).maybeSingle(),
+    supabase.from("targets").select("id").eq("org_id", viewer.org.id).eq("id", parsed.data.target_id).maybeSingle(),
+  ]);
+  if (!member) return { error: "That person is not in your workspace." };
+  if (!target) return { error: "That target is not in your workspace." };
   const { error } = await supabase.from("assignments").insert({
     org_id: viewer.org.id,
     assigned_by: viewer.userId,

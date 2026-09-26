@@ -41,6 +41,7 @@ const res = await client.conversationalAi.agents.create({
           endCall: {
             type: "system",
             name: "end_call",
+            params: { systemToolType: "end_call" },
             description: "Hang up the phone. Use when you, the prospect, would realistically end the call: after saying goodbye, or when you have lost patience with the caller. Always say a natural closing line first.",
           },
         },
@@ -51,6 +52,8 @@ const res = await client.conversationalAi.agents.create({
     conversation: { maxDurationSeconds: 900 },
   },
   platformSettings: {
+    // Only sessions started with a server-minted token may connect; the agent id alone is useless.
+    auth: { enableAuth: true },
     overrides: {
       conversationConfigOverride: {
         agent: { prompt: { prompt: true }, firstMessage: true, language: true },

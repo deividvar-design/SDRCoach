@@ -1,15 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-/** While the coach is still scoring, refresh the page every few seconds. */
+const MAX_POLLS = 40; // ~2 minutes
+
+/** While the coach is still scoring, refresh the page every few seconds, then stop and say so. */
 export function ScorePoller({ active }: { active: boolean }) {
   const router = useRouter();
+  const [gaveUp, setGaveUp] = useState(false);
+
   useEffect(() => {
     if (!active) return;
-    const id = setInterval(() => router.refresh(), 3000);
+    let n = 0;
+    const id = setInterval(() => {
+      n += 1;
+      if (n > MAX_POLLS) {
+        clearInterval(id);
+        setGaveUp(true);
+        return;
+      }
+      router.refresh();
+    }, 3000);
     return () => clearInterval(id);
   }, [active, router]);
-  return null;
+
+  if (!active || !gaveUp) return null;
+  return <p className="text-muted-foreground text-sm">Scoring is taking longer than usual. It will finish in the background; check back in a few minutes.</p>;
 }

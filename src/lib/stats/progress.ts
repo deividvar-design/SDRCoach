@@ -1,4 +1,4 @@
-import { LEVELS, LEVEL_LIST } from "@/lib/domain/levels";
+import { LEVEL_LIST } from "@/lib/domain/levels";
 import { LEVEL_UP_MIN_CALLS, LEVEL_UP_THRESHOLD } from "@/lib/scoring/rubric";
 import type { Difficulty } from "@/types/database";
 
@@ -93,4 +93,3 @@ export function leaderboard(sessions: SessionLite[], names: Map<string, string>,
     .sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0) || b.calls - a.calls);
 }
 
-export { LEVELS };

@@ -6,6 +6,7 @@ import type { Database } from "@/types/database";
 /** Request-scoped Supabase client that runs as the signed-in user (RLS applies). */
 export async function createClient(): Promise<SupabaseClient<Database>> {
   if (process.env.SDRCOACH_DEMO === "1") {
+    if (process.env.VERCEL) throw new Error("SDRCOACH_DEMO must never be set on a deployed environment");
     const { createDemoClient } = await import("@/lib/demo/client");
     return createDemoClient() as unknown as SupabaseClient<Database>;
   }

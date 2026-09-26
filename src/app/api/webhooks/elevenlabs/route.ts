@@ -3,6 +3,8 @@ import { NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { finalizeCall } from "@/lib/calls/finalize";
 
+export const maxDuration = 120;
+
 /**
  * ElevenLabs post-call webhook. Belt and braces: the browser's /end call already triggers scoring,
  * this catches the case where the tab was closed mid-call.

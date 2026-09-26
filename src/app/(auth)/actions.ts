@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { validateBusinessEmail } from "@/lib/email/business";
+import { safeNext } from "@/lib/safe-next";
 
 export interface AuthState {
   error?: string;
@@ -15,10 +16,6 @@ const credentials = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-function safeNext(value: FormDataEntryValue | null) {
-  const next = typeof value === "string" ? value : "";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
-}
 
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = credentials.safeParse({ email: formData.get("email"), password: formData.get("password") });
@@ -40,8 +37,10 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const supabase = await createClient();
   const invite = typeof formData.get("invite") === "string" ? String(formData.get("invite")) : "";
 
-  // Trials are for business addresses. Invited teammates are vouched for by their manager.
-  if (!invite) {
+  // Trials are for business addresses. Invited teammates are vouched for by their manager,
+  // but only when the invite token is real.
+  const invited = invite ? await inviteExists(invite) : false;
+  if (!invited) {
     const check = await validateBusinessEmail(parsed.data.email);
     if (!check.ok) return { error: check.message };
   }
@@ -61,10 +60,11 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   return { message: "Check your inbox to confirm your email, then sign in." };
 }
 
-export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect("/login");
+async function inviteExists(token: string) {
+  if (process.env.SDRCOACH_DEMO === "1") return true;
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const { data } = await createAdminClient().from("invites").select("id").eq("token", token).is("accepted_at", null).gt("expires_at", new Date().toISOString()).maybeSingle();
+  return Boolean(data);
 }
 
 export async function requestPasswordReset(_prev: AuthState, formData: FormData): Promise<AuthState> {

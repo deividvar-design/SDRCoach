@@ -127,24 +127,10 @@ export type Target = {
   voice_id: string | null;
   is_archived: boolean;
   kind: TargetKind;
-  template_key: string | null;
   created_at: string;
   updated_at: string;
 };
 
-export type TargetTemplate = {
-  key: string;
-  sort: number;
-  name: string;
-  title: string;
-  company: string;
-  industry: string | null;
-  company_size: string | null;
-  persona_notes: string | null;
-  pain_points: string[];
-  objections: string[];
-  voice_id: string | null;
-};
 
 export type Assignment = {
   id: string;
@@ -234,7 +220,6 @@ export type Database = {
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
       email_log: Table<EmailLog, Insert<EmailLog, "id" | "user_id" | "sent_at">>;
-      target_templates: Table<TargetTemplate, Insert<TargetTemplate, "sort" | "industry" | "company_size" | "persona_notes" | "pain_points" | "objections" | "voice_id">>;
       profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "created_at">>;
       memberships: Table<
         Membership,
@@ -255,7 +240,7 @@ export type Database = {
       >;
       targets: Table<
         Target,
-        Insert<Target, "id" | "created_by" | "industry" | "company_size" | "persona_notes" | "pain_points" | "objections" | "voice_id" | "is_archived" | "kind" | "template_key" | "created_at" | "updated_at">,
+        Insert<Target, "id" | "created_by" | "industry" | "company_size" | "persona_notes" | "pain_points" | "objections" | "voice_id" | "is_archived" | "kind" | "created_at" | "updated_at">,
         [
           { foreignKeyName: "targets_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "organizations"; referencedColumns: ["id"] },
           { foreignKeyName: "targets_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },

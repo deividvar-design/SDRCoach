@@ -22,20 +22,23 @@ export async function POST(request: Request) {
     catalog: priceCatalog(),
     recordEvent: async (id, type) => {
       const { error } = await db.from("billing_events").insert({ id, type });
-      return !error; // unique violation means we've seen it
+      if (!error) return true;
+      if (error.code === "23505") return false; // unique violation: already processed
+      throw new Error(error.message);
     },
-    findOrgId: async ({ orgId, customerId, subscriptionId }) => {
+    findOrg: async ({ orgId, customerId, subscriptionId }) => {
+      const cols = "id, stripe_subscription_id, plan";
       if (orgId) {
-        const { data } = await db.from("organizations").select("id").eq("id", orgId).maybeSingle();
-        if (data) return data.id;
+        const { data } = await db.from("organizations").select(cols).eq("id", orgId).maybeSingle();
+        if (data) return data;
       }
       if (customerId) {
-        const { data } = await db.from("organizations").select("id").eq("stripe_customer_id", customerId).maybeSingle();
-        if (data) return data.id;
+        const { data } = await db.from("organizations").select(cols).eq("stripe_customer_id", customerId).maybeSingle();
+        if (data) return data;
       }
       if (subscriptionId) {
-        const { data } = await db.from("organizations").select("id").eq("stripe_subscription_id", subscriptionId).maybeSingle();
-        if (data) return data.id;
+        const { data } = await db.from("organizations").select(cols).eq("stripe_subscription_id", subscriptionId).maybeSingle();
+        if (data) return data;
       }
       return null;
     },

@@ -83,10 +83,10 @@ export async function uploadKnowledgeFiles(_prev: KnowledgeState, formData: Form
 }
 
 export async function retryDigest(id: string) {
-  await requireManager();
+  const viewer = await requireManager();
   const supabase = await createClient();
-  await supabase.from("knowledge_sources").update({ status: "pending", error: null }).eq("id", id);
-  scheduleDigest(id);
+  const { data } = await supabase.from("knowledge_sources").update({ status: "pending", error: null }).eq("id", id).eq("org_id", viewer.org.id).select("id").maybeSingle();
+  if (data) scheduleDigest(data.id);
   revalidatePath("/knowledge");
 }
 

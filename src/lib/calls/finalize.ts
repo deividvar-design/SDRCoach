@@ -5,7 +5,7 @@ import { computeMetrics } from "@/lib/scoring/metrics";
 import { scoreCall } from "@/lib/scoring/score";
 import { loadOrgDigests } from "@/lib/knowledge/digest";
 import type { CallOutcome, TranscriptTurn } from "@/types/database";
-import { trialStatus, TRIAL_USED_STATUSES } from "@/lib/billing/trial";
+import { trialStatus } from "@/lib/billing/trial";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 
 const OUTCOMES: CallOutcome[] = ["meeting_booked", "callback", "info_sent", "rejected", "hung_up", "incomplete"];
@@ -32,8 +32,13 @@ export async function finalizeCall(sessionId: string) {
 
   try {
     const convo = await fetchConversation(claimed.elevenlabs_conversation_id);
+    if (convo.status === "failed") {
+      await db.from("call_sessions").update({ status: "failed", error: "The voice provider reported the conversation as failed" }).eq("id", sessionId);
+      return;
+    }
     const turns: TranscriptTurn[] = convo.turns.map((t) => ({ role: t.role, text: t.text, t_start_ms: t.t_start_ms }));
-    const durationSecs = convo.durationSecs || Math.round((Date.now() - new Date(claimed.started_at ?? claimed.created_at).getTime()) / 1000);
+    const endedAt = claimed.ended_at ? new Date(claimed.ended_at).getTime() : Date.now();
+    const durationSecs = convo.durationSecs || Math.max(0, Math.round((endedAt - new Date(claimed.started_at ?? claimed.created_at).getTime()) / 1000));
 
     await db.from("call_transcripts").upsert({
       session_id: sessionId,
@@ -95,10 +100,10 @@ export async function finalizeCall(sessionId: string) {
     // Trial emails: after this call, how many are left?
     const { data: orgRow } = await db.from("organizations").select("plan, trial_call_limit, trial_ends_at").eq("id", claimed.org_id).single();
     if (orgRow?.plan === "trial") {
-      const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", claimed.org_id).in("status", [...TRIAL_USED_STATUSES]);
+      const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", claimed.org_id).not("started_at", "is", null);
       const t = trialStatus(orgRow, count ?? 0);
-      if (t.callsLeft === 2) await sendLifecycle(claimed.org_id, "two_calls_left").catch(() => {});
-      if (t.callsLeft === 0) await sendLifecycle(claimed.org_id, "trial_ended_calls").catch(() => {});
+      if (t.callsLeft <= 2 && t.callsLeft > 0) await sendLifecycle(claimed.org_id, "two_calls_left").catch(() => {});
+      if (t.callsLeft === 0) await sendLifecycle(claimed.org_id, "trial_ended", { reason: "calls" }).catch(() => {});
     }
 
     if (claimed.assignment_id && outcome !== "incomplete") {

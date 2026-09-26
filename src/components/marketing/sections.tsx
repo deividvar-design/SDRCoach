@@ -39,6 +39,7 @@ export function ProofSection() {
           </div>
         ))}
       </dl>
+      {PROOF.quotes.length > 0 && (
       <div className="mt-6 grid gap-6 md:grid-cols-3">
         {PROOF.quotes.map((q) => (
           <figure key={q.quote} className="flex flex-col rounded-2xl border p-6">
@@ -50,6 +51,7 @@ export function ProofSection() {
           </figure>
         ))}
       </div>
+      )}
     </Section>
   );
 }

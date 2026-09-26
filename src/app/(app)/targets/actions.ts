@@ -49,11 +49,6 @@ export async function createTarget(_prev: TargetState, formData: FormData): Prom
   return { ok: true };
 }
 
-export async function archiveTarget(id: string) {
-  const supabase = await createClient();
-  await supabase.from("targets").update({ is_archived: true }).eq("id", id);
-  revalidatePath("/targets");
-}
 
 export async function updateTarget(id: string, _prev: TargetState, formData: FormData): Promise<TargetState> {
   const parsed = targetSchema.safeParse(Object.fromEntries(formData));

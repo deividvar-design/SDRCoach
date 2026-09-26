@@ -28,7 +28,7 @@ Authentication → Email: enable "Confirm email". The signup gate relies on it.
 Verify the sending domain, create an API key, set `RESEND_API_KEY` and `EMAIL_FROM`. Until then emails are logged and skipped, and invite links can be copied from the Team page.
 
 ## 6. Analytics
-Create a PostHog project on the EU cloud; set `NEXT_PUBLIC_POSTHOG_KEY`. Optionally `NEXT_PUBLIC_GA_ID`. Nothing loads before cookie consent.
+Create a PostHog project on the EU cloud; set `NEXT_PUBLIC_POSTHOG_KEY`. Nothing loads before cookie consent.
 
 ## Checks before the first customer
 - `pnpm typecheck && pnpm lint && pnpm test && pnpm build` are green (CI runs them on every push).

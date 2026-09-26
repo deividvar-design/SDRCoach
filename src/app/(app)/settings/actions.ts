@@ -55,6 +55,15 @@ export async function deleteWorkspace(_prev: SettingsState, formData: FormData):
   if (String(formData.get("confirm") ?? "").trim() !== viewer.org.slug) return { error: `Type ${viewer.org.slug} to confirm.` };
 
   const supabase = await createClient();
+  if (viewer.org.stripe_subscription_id && viewer.org.plan !== "canceled") {
+    try {
+      const { stripe, stripeConfigured } = await import("@/lib/billing/stripe");
+      if (stripeConfigured()) await stripe().subscriptions.cancel(viewer.org.stripe_subscription_id);
+    } catch (err) {
+      console.error("subscription cancel failed", err);
+      return { error: "Could not cancel the subscription. Cancel it under Manage billing first, then delete the workspace." };
+    }
+  }
   // Storage first (no cascade there), then the org row; every table cascades from organizations.
   const { data: files } = await supabase.storage.from("knowledge").list(viewer.org.id, { limit: 1000 });
   if (files?.length) await supabase.storage.from("knowledge").remove(files.map((f) => `${viewer.org.id}/${f.name}`));
