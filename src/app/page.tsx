@@ -22,7 +22,7 @@ export default function LandingPage() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-6">
         <section className="py-20 md:py-28">
           <p className="text-primary mb-4 text-sm font-medium tracking-wide uppercase">AI cold-call training for SDR teams</p>
-          <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-balance md:text-6xl">
+          <h1 className="font-display max-w-3xl text-5xl text-balance md:text-7xl">
             Practice the call before it counts.
           </h1>
           <p className="text-muted-foreground mt-6 max-w-2xl text-lg text-balance">

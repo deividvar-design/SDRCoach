@@ -9,21 +9,33 @@ A rep picks a **target** (a prospect persona their team actually calls), a **lev
 - Managers/owners: everything in the org, plus team, invites, knowledge, org settings.
 - Row-level security in Postgres is the security boundary. `requireViewer()`/`requireManager()` exist for UX and redirects.
 
-## Call pipeline (milestone 2)
-1. `POST /api/calls` creates a `call_sessions` row (`status = created`) and builds the persona prompt from target + level + org context + knowledge summary.
-2. Server mints a **signed ElevenLabs conversation token** for a per-org agent with prompt/voice **overrides** for this session. The client never sees the API key.
-3. Client uses `@elevenlabs/react` `useConversation` over WebRTC. Session goes `live`. Client streams transcript events to the server (`PATCH /api/calls/:id`) for a live view.
-4. On end: `status = ended`, the ElevenLabs post-call webhook (or the client's end event as a fallback) delivers the final transcript and audio. Audio goes to the private `call-audio` bucket under `org_id/session_id.mp3`.
-5. `status = scoring` → Claude grades with a structured output schema → `call_scores` row → `status = scored`. Written with the service-role client.
+## Call pipeline
+One ElevenLabs agent serves every org (`ELEVENLABS_AGENT_ID`, created by `pnpm elevenlabs:setup`); every call overrides its prompt, first line and voice.
 
-## Scoring rubric
-Six dimensions, 0–10 each, plus overall: opener, discovery, objection_handling, value_prop, close, tone_and_pace. Each has a one-line rationale. Plus 3 strengths, 3 improvements, a coach summary, and time-stamped moments for the replay UI. The rubric is stable so scores are comparable across reps and over time.
+1. Browser `POST /api/calls` with target + level. Server builds the persona prompt (`src/lib/prompts/persona.ts`) from target, level brief, org context and the org's knowledge digests, inserts `call_sessions` (`created`), mints a WebRTC conversation token, and returns token + overrides. The API key never reaches the browser.
+2. Browser plays a ringback tone, then `useConversation().startSession({ conversationToken, overrides })`. On connect it `POST /api/calls/:id/start` with the ElevenLabs conversation id (`live`). Transcript events render live client-side only.
+3. On hang-up (either side; the agent has the `end_call` system tool and is told to use it) the browser `POST /api/calls/:id/end` (`ended`) and navigates to the report, which polls.
+4. `finalizeCall` (`src/lib/calls/finalize.ts`, service role, idempotent via the `ended → scoring` compare-and-set) fetches the conversation from ElevenLabs (polls until analysis is `done`), stores `call_transcripts`, computes deterministic metrics, calls the Claude grader, stores `call_scores`, sets outcome and `scored`.
+5. The ElevenLabs post-call webhook (`/api/webhooks/elevenlabs`, HMAC verified) triggers the same finalize as a safety net for closed tabs.
+
+**Outcome is decided by the prospect.** The agent has two post-call data-collection fields (`outcome`, `outcome_reason`) extracted by ElevenLabs from the prospect's own closing words. The grader's inferred outcome is only the fallback.
+
+## Scoring
+`src/lib/scoring/rubric.ts` defines six 0–10 dimensions: opener, reason_for_call, discovery, objection_handling, value_prop, close, with weights (reason for call, objections and close weigh most, matching what books meetings). Anchored in Gong's published analysis of 300M+ cold calls: explicit reason-for-call lifts success ~2x, "did I catch you at a bad time?" cuts it ~40%, the job of the call is to sell the meeting. `metrics.ts` computes talk ratio, longest monologue, questions, fillers, first objection and interruptions deterministically from turn timings; they are shown next to the model's judgement and fed to it. `score.ts` uses `messages.parse` with a Zod schema on `claude-opus-5`.
+
+Level recommendations (`src/lib/stats/progress.ts`): three calls averaging ≥ 7 at a level earns a "ready for the next level" nudge. Nothing is locked.
+
+## Engagement loops
+Streak (consecutive days with a call), personal best, weekly team leaderboard, level readiness, and a count-up score reveal straight after the call. Deliberately no locks or penalties: the loop is "call → immediate specific feedback → one concrete thing to try → call again".
 
 ## Knowledge grounding
-Uploaded transcripts (`knowledge_sources`) are digested by Claude into: common objections with example phrasing, prospect tone, what got meetings booked. That digest (not the raw text) is injected into persona prompts and the grader. Raw text stays server-side only.
+Managers upload CSV/TXT exports (Gong, Chorus, dialers) or paste text. `src/lib/knowledge/parse.ts` normalises the common CSV shapes. Files land in the private `knowledge` bucket under `org_id/`, text in `knowledge_sources.raw_text`, and `digest.ts` has Claude extract objections with real phrasing, prospect tone, what worked, what failed and vocabulary. The latest five digests (never the raw text) are injected into persona prompts and the grader.
 
 ## Levels
 Defined in `src/lib/domain/levels.ts`. The behavioural brief per level is what changes the ElevenLabs agent's disposition; target data changes *who* it is.
 
+## Theme
+System light/dark with a manual override (`src/components/theme`). Tokens in `globals.css`: warm paper / warm graphite, ink primary, one hot "signal" colour reserved for live and dial states.
+
 ## Not yet built
-Billing (Stripe), SSO, per-team grouping under managers, voice cloning from a real prospect, live coaching hints during the call.
+Billing (Stripe), SSO, audio playback of the call (ElevenLabs keeps the recording; a signed proxy route is the plan), manager assignment UI (schema and rep view exist), live coaching hints during the call.

@@ -19,3 +19,4 @@ B2B SaaS: SDRs practise cold calls against an AI prospect (ElevenLabs voice), ge
 
 ## Commands
 - `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`
+- `pnpm elevenlabs:setup` creates the shared prospect agent once; put the id in `ELEVENLABS_AGENT_ID`

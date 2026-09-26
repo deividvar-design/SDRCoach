@@ -23,6 +23,7 @@ const targetSchema = z.object({
   industry: z.string().optional(),
   company_size: z.string().optional(),
   persona_notes: z.string().optional(),
+  kind: z.enum(["real", "practice"]).default("real"),
 });
 
 export async function createTarget(_prev: TargetState, formData: FormData): Promise<TargetState> {

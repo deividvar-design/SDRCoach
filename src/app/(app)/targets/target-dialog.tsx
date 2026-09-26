@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createTarget, type TargetState } from "./actions";
 
@@ -55,6 +56,13 @@ export function TargetDialog() {
               <Label htmlFor="company_size">Company size</Label>
               <Input id="company_size" name="company_size" placeholder="200–500 employees" />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="kind">Type</Label>
+            <Select id="kind" name="kind" defaultValue="real">
+              <option value="real">Real account (someone the team is actually calling)</option>
+              <option value="practice">Practice persona</option>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="persona_notes">Persona notes</Label>

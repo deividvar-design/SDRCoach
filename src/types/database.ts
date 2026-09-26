@@ -31,12 +31,25 @@ export type ScoreDimension = {
 
 export type ScoreDimensions = {
   opener: ScoreDimension;
+  reason_for_call: ScoreDimension;
   discovery: ScoreDimension;
   objection_handling: ScoreDimension;
   value_prop: ScoreDimension;
   close: ScoreDimension;
-  tone_and_pace: ScoreDimension;
-}
+};
+
+export type CallMetrics = {
+  rep_talk_ratio: number;
+  longest_rep_monologue_secs: number;
+  rep_questions: number;
+  filler_words: number;
+  first_objection_secs: number | null;
+  rep_turns: number;
+  prospect_turns: number;
+  interruptions_by_rep: number;
+};
+
+export type TargetKind = "real" | "practice";
 
 export type ScoreMoment = {
   t_ms: number;
@@ -100,9 +113,25 @@ export type Target = {
   objections: string[];
   voice_id: string | null;
   is_archived: boolean;
+  kind: TargetKind;
+  template_key: string | null;
   created_at: string;
   updated_at: string;
-}
+};
+
+export type TargetTemplate = {
+  key: string;
+  sort: number;
+  name: string;
+  title: string;
+  company: string;
+  industry: string | null;
+  company_size: string | null;
+  persona_notes: string | null;
+  pain_points: string[];
+  objections: string[];
+  voice_id: string | null;
+};
 
 export type Assignment = {
   id: string;
@@ -134,8 +163,11 @@ export type CallSession = {
   duration_seconds: number | null;
   audio_path: string | null;
   error: string | null;
+  outcome_reason: string | null;
+  metrics: CallMetrics | null;
+  prospect_summary: string | null;
   created_at: string;
-}
+};
 
 export type CallTranscript = {
   session_id: string;
@@ -187,6 +219,7 @@ export type Database = {
         Organization,
         Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "created_at">
       >;
+      target_templates: Table<TargetTemplate, Insert<TargetTemplate, "sort" | "industry" | "company_size" | "persona_notes" | "pain_points" | "objections" | "voice_id">>;
       profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "created_at">>;
       memberships: Table<
         Membership,
@@ -207,7 +240,7 @@ export type Database = {
       >;
       targets: Table<
         Target,
-        Insert<Target, "id" | "created_by" | "industry" | "company_size" | "persona_notes" | "pain_points" | "objections" | "voice_id" | "is_archived" | "created_at" | "updated_at">,
+        Insert<Target, "id" | "created_by" | "industry" | "company_size" | "persona_notes" | "pain_points" | "objections" | "voice_id" | "is_archived" | "kind" | "template_key" | "created_at" | "updated_at">,
         [
           { foreignKeyName: "targets_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "organizations"; referencedColumns: ["id"] },
           { foreignKeyName: "targets_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
@@ -225,7 +258,7 @@ export type Database = {
       >;
       call_sessions: Table<
         CallSession,
-        Insert<CallSession, "id" | "target_id" | "assignment_id" | "status" | "outcome" | "elevenlabs_conversation_id" | "elevenlabs_agent_id" | "started_at" | "ended_at" | "duration_seconds" | "audio_path" | "error" | "created_at">,
+        Insert<CallSession, "id" | "target_id" | "assignment_id" | "status" | "outcome" | "elevenlabs_conversation_id" | "elevenlabs_agent_id" | "started_at" | "ended_at" | "duration_seconds" | "audio_path" | "error" | "outcome_reason" | "metrics" | "prospect_summary" | "created_at">,
         [
           { foreignKeyName: "call_sessions_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "organizations"; referencedColumns: ["id"] },
           { foreignKeyName: "call_sessions_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },

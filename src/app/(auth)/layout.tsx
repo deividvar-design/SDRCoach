@@ -9,7 +9,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
           <Logo />
         </Link>
         <div className="relative z-10 max-w-md space-y-4">
-          <p className="text-3xl font-semibold tracking-tight text-balance">
+          <p className="font-display text-4xl text-balance">
             Every rep’s first 100 cold calls, without burning 100 real prospects.
           </p>
           <p className="text-muted-foreground">

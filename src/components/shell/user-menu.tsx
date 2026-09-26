@@ -3,6 +3,7 @@
 import { ChevronsUpDown, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { initials } from "@/lib/utils";
 
 export function UserMenu({ name, email, avatarUrl, role }: { name: string; email: string; avatarUrl: string | null; role: string }) {
@@ -19,11 +20,16 @@ export function UserMenu({ name, email, avatarUrl, role }: { name: string; email
         </div>
         <ChevronsUpDown className="text-muted-foreground size-4" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
+      <DropdownMenuContent align="start" className="w-60">
         <DropdownMenuLabel className="font-normal">
           <div className="text-sm font-medium">{name}</div>
           <div className="text-muted-foreground text-xs">{email}</div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <div className="flex items-center justify-between px-2 py-1.5 text-sm">
+          <span className="text-muted-foreground">Theme</span>
+          <ThemeToggle />
+        </div>
         <DropdownMenuSeparator />
         <form action="/auth/signout" method="post">
           <DropdownMenuItem asChild>

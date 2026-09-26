@@ -11,7 +11,7 @@ import { PracticeSetup } from "./practice-setup";
 export const metadata = { title: "Start a call" };
 
 export default async function PracticePage({ searchParams }: PageProps<"/practice">) {
-  const { target, assignment } = await searchParams;
+  const { target, assignment, difficulty } = await searchParams;
   const viewer = await requireViewer();
   const supabase = await createClient();
 
@@ -38,7 +38,7 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
         targets={targets}
         levels={LEVEL_LIST}
         initialTargetId={assignmentRow?.target_id ?? (typeof target === "string" ? target : targets[0]!.id)}
-        initialDifficulty={assignmentRow?.difficulty ?? "warm"}
+        initialDifficulty={assignmentRow?.difficulty ?? (difficulty === "inbound" || difficulty === "cold" ? difficulty : "warm")}
         assignmentId={assignmentRow?.id ?? null}
       />
     </div>
