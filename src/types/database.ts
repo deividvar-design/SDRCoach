@@ -82,6 +82,22 @@ export type Organization = {
 };
 
 export type BillingEvent = { id: string; type: string; received_at: string };
+export type UsageEvent = {
+  id: string;
+  org_id: string;
+  session_id: string | null;
+  provider: "anthropic" | "elevenlabs";
+  kind: "score" | "digest" | "voice";
+  model: string | null;
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_tokens: number;
+  cache_write_tokens: number;
+  seconds: number;
+  cost_usd: number;
+  created_at: string;
+};
+export type AdminAction = { id: string; admin_email: string; org_id: string | null; action: string; payload: Json | null; created_at: string };
 export type EmailLog = { id: string; org_id: string; user_id: string | null; kind: string; sent_at: string };
 
 export type Profile = {
@@ -219,6 +235,8 @@ export type Database = {
         Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
+      usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
+      admin_actions: Table<AdminAction, Insert<AdminAction, "id" | "org_id" | "payload" | "created_at">>;
       email_log: Table<EmailLog, Insert<EmailLog, "id" | "user_id" | "sent_at">>;
       profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "created_at">>;
       memberships: Table<

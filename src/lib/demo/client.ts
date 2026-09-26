@@ -4,7 +4,7 @@
  * order, limit, single/maybeSingle, count head, insert/update/upsert/delete, rpc, auth, storage).
  * Purely for screenshots and UI work without a database. Not a test double for RLS.
  */
-import { ASSIGNMENTS, DEMO_USER, INVITES, KNOWLEDGE, MEMBERSHIPS, ORG, PROFILES, SCORES, SESSIONS, TARGETS, TRANSCRIPTS } from "./fixtures";
+import { ASSIGNMENTS, DEMO_USER, INVITES, KNOWLEDGE, MEMBERSHIPS, ORG, PROFILES, SCORES, SESSIONS, TARGETS, TRANSCRIPTS, USAGE } from "./fixtures";
 
 type Row = Record<string, unknown>;
 
@@ -19,6 +19,10 @@ const TABLES: Record<string, Row[]> = {
   call_transcripts: TRANSCRIPTS as unknown as Row[],
   call_scores: SCORES as unknown as Row[],
   knowledge_sources: KNOWLEDGE as unknown as Row[],
+  usage_events: USAGE as unknown as Row[],
+  admin_actions: [],
+  email_log: [],
+  billing_events: [],
 };
 
 interface Relation {
@@ -114,6 +118,11 @@ class Query implements PromiseLike<{ data: unknown; error: null; count: number |
   neq(col: string, val: unknown) { this.filters.push((r) => r[col] !== val); return this; }
   in(col: string, vals: unknown[]) { this.filters.push((r) => vals.includes(r[col])); return this; }
   is(col: string, val: unknown) { this.filters.push((r) => r[col] == val); return this; }
+  not(col: string, op: string, val: unknown) { if (op === "is") this.filters.push((r) => r[col] != val); return this; }
+  gt(col: string, val: string | number) { this.filters.push((r) => (r[col] as string | number) > val); return this; }
+  gte(col: string, val: string | number) { this.filters.push((r) => (r[col] as string | number) >= val); return this; }
+  lt(col: string, val: string | number) { this.filters.push((r) => (r[col] as string | number) < val); return this; }
+  lte(col: string, val: string | number) { this.filters.push((r) => (r[col] as string | number) <= val); return this; }
   order(col: string, opts?: { ascending?: boolean; nullsFirst?: boolean }) { this.orders.push({ col, asc: opts?.ascending ?? true, nullsFirst: opts?.nullsFirst ?? false }); return this; }
   limit(n: number) { this.max = n; return this; }
   single() { this.one = "single"; return this; }
@@ -170,6 +179,12 @@ export function createDemoClient() {
     rpc: async () => ({ data: ORG.id, error: null }),
     auth: {
       getUser: async () => ({ data: { user: DEMO_USER }, error: null }),
+      admin: {
+        getUserById: async (id: string) => {
+          const p = PROFILES.find((x) => x.id === id);
+          return { data: { user: p ? { id, email: `${p.full_name?.split(" ")[0]?.toLowerCase() ?? "user"}@brightline.io` } : null }, error: null };
+        },
+      },
       signOut: async () => ({ error: null }),
       signInWithPassword: async () => ({ data: {}, error: null }),
       signUp: async () => ({ data: { session: {} }, error: null }),

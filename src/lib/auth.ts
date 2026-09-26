@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Membership, Organization, Profile } from "@/types/database";
 
@@ -36,6 +36,19 @@ export const requireViewer = cache(async (): Promise<Viewer> => {
     org: membership.organizations,
   };
 });
+
+/** Internal console: allowlisted emails only (ADMIN_EMAILS, comma-separated). Non-admins get a 404 so the route stays invisible. */
+export function isAdminEmail(email: string | null | undefined) {
+  if (!email) return false;
+  const list = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  return list.includes(email.toLowerCase());
+}
+
+export async function requireAdmin() {
+  const viewer = await requireViewer();
+  if (!isAdminEmail(viewer.email)) notFound();
+  return viewer;
+}
 
 /** Like requireViewer but only for managers and owners. */
 export async function requireManager() {

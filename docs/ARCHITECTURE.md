@@ -39,6 +39,9 @@ Self-serve signup is business-email only: `src/lib/email/business.ts` checks the
 
 Every new workspace gets the six practice personas from `src/content/practice-personas.ts` inserted on creation. Every new org is `plan = 'trial'` with `trial_call_limit = 10`, `trial_ends_at = now() + 14 days`, and a unique `trial_domain` so a company gets one trial. `src/lib/billing/trial.ts` computes status from connected calls only; `POST /api/calls` returns 402 with `code: "trial_exhausted"` when the trial is spent, the app shell shows a banner, and `/upgrade` shows the plans. Plans live in `src/lib/billing/plans.ts` and feed both `/pricing` and `/upgrade`. Stripe Checkout starts subscriptions, the customer portal manages them, and a signature-verified webhook syncs state (`src/lib/billing/sync.ts`).
 
+## Internal admin console
+`/admin` is visible only to emails in `ADMIN_EMAILS`; everyone else gets a 404. It reads with the service role across all workspaces: plan and trial state, seats, calls, and estimated cost from `usage_events`, which the scorer, the digest job and the call finalizer write (tokens, voice seconds, USD estimate from `src/lib/usage/pricing.ts`). Actions (extend trial, set plan and seats, notes) are recorded in `admin_actions`. Plan changes there override the app only and never touch Stripe.
+
 ## Theme
 System light/dark with a manual override (`src/components/theme`). Tokens in `globals.css`: warm paper / warm graphite, ink primary, one hot "signal" colour reserved for live and dial states.
 

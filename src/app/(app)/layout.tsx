@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireViewer } from "@/lib/auth";
+import { isAdminEmail, requireViewer } from "@/lib/auth";
 import { canManage } from "@/lib/domain/roles";
 import { ROLE_LABEL } from "@/lib/domain/roles";
 import { Logo } from "@/components/logo";
@@ -15,6 +15,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const viewer = await requireViewer();
   const isManager = canManage(viewer.membership.role);
   const trial = await loadTrialStatus(await createClient(), viewer.org);
+  const isAdmin = isAdminEmail(viewer.email);
 
   return (
     <div className="flex min-h-dvh">
@@ -30,13 +31,14 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             email={viewer.email}
             avatarUrl={viewer.profile.avatar_url}
             role={ROLE_LABEL[viewer.membership.role]}
+            isAdmin={isAdmin}
           />
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="bg-background/90 sticky top-0 z-20 flex items-center justify-between border-b px-4 py-3 backdrop-blur md:hidden">
           <Logo />
-          <UserMenu compact name={viewer.profile.full_name ?? viewer.email} email={viewer.email} avatarUrl={viewer.profile.avatar_url} role={ROLE_LABEL[viewer.membership.role]} />
+          <UserMenu compact name={viewer.profile.full_name ?? viewer.email} email={viewer.email} avatarUrl={viewer.profile.avatar_url} role={ROLE_LABEL[viewer.membership.role]} isAdmin={isAdmin} />
         </header>
         <TrialBanner status={trial} isManager={isManager} />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-24 md:px-8 md:py-8">{children}</main>

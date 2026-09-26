@@ -117,5 +117,11 @@ ${renderTranscript(input.turns, input.repName, input.prospect.name)}`;
     inferred_outcome: parsed.inferred_outcome as CallOutcome,
     outcome_reason: parsed.outcome_reason,
     model: response.model,
+    usage: {
+      input_tokens: response.usage.input_tokens,
+      output_tokens: response.usage.output_tokens,
+      cache_read_tokens: response.usage.cache_read_input_tokens ?? 0,
+      cache_write_tokens: response.usage.cache_creation_input_tokens ?? 0,
+    },
   };
 }

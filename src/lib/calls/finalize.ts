@@ -7,6 +7,7 @@ import { loadOrgDigests } from "@/lib/knowledge/digest";
 import type { CallOutcome, TranscriptTurn } from "@/types/database";
 import { trialStatus } from "@/lib/billing/trial";
 import { sendLifecycle } from "@/lib/email/lifecycle";
+import { recordAnthropicUsage, recordVoiceUsage } from "@/lib/usage/record";
 
 const OUTCOMES: CallOutcome[] = ["meeting_booked", "callback", "info_sent", "rejected", "hung_up", "incomplete"];
 
@@ -47,6 +48,7 @@ export async function finalizeCall(sessionId: string) {
     });
 
     const metrics = computeMetrics(convo.turns, durationSecs);
+    if (durationSecs > 0) await recordVoiceUsage(db, { orgId: claimed.org_id, sessionId, seconds: durationSecs });
 
     if (turns.filter((t) => t.role === "rep").length === 0) {
       await db
@@ -66,6 +68,8 @@ export async function finalizeCall(sessionId: string) {
       orgPlaybook: digests,
       durationSecs,
     });
+
+    await recordAnthropicUsage(db, { orgId: claimed.org_id, sessionId, kind: "score", model: score.model, usage: score.usage });
 
     // The prospect decides. ElevenLabs' post-call data collection is the primary signal; the grader is the fallback.
     const collected = String(convo.dataCollection.outcome ?? "");

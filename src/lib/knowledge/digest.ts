@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { recordAnthropicUsage } from "@/lib/usage/record";
 
 export const DIGEST_MODEL = "claude-opus-5";
 
@@ -30,7 +31,7 @@ const client = new Anthropic();
 /** Digest one knowledge source with Claude and store the result. Safe to re-run. */
 export async function digestKnowledgeSource(id: string) {
   const db = createAdminClient();
-  const { data: source } = await db.from("knowledge_sources").select("id, name, kind, raw_text").eq("id", id).single();
+  const { data: source } = await db.from("knowledge_sources").select("id, org_id, name, kind, raw_text").eq("id", id).single();
   if (!source?.raw_text) return;
 
   await db.from("knowledge_sources").update({ status: "processing", error: null }).eq("id", id);
@@ -54,6 +55,12 @@ export async function digestKnowledgeSource(id: string) {
     if (!parsed) throw new Error("no parseable digest");
 
     await db.from("knowledge_sources").update({ status: "ready", summary: parsed.summary, extracted: parsed }).eq("id", id);
+    await recordAnthropicUsage(db, {
+      orgId: source.org_id,
+      kind: "digest",
+      model: response.model,
+      usage: { input_tokens: response.usage.input_tokens, output_tokens: response.usage.output_tokens, cache_read_tokens: response.usage.cache_read_input_tokens ?? 0, cache_write_tokens: response.usage.cache_creation_input_tokens ?? 0 },
+    });
   } catch (err) {
     await db
       .from("knowledge_sources")

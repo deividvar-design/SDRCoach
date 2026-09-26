@@ -2,7 +2,7 @@
  * Fixture data for demo mode (SDRCOACH_DEMO=1). Used for screenshots, design review and local UI
  * work without a Supabase project. Never enabled in a real deployment.
  */
-import type { Assignment, CallScore, CallSession, CallTranscript, Invite, KnowledgeSource, Membership, Organization, Profile, Target, TranscriptTurn } from "@/types/database";
+import type { Assignment, CallScore, CallSession, CallTranscript, Invite, KnowledgeSource, Membership, Organization, Profile, Target, TranscriptTurn, UsageEvent } from "@/types/database";
 
 const daysAgo = (d: number, h = 10) => {
   const t = new Date();
@@ -207,3 +207,8 @@ export const KNOWLEDGE: KnowledgeSource[] = [
 ];
 
 export const DEMO_USER = { id: "u-deividas", email: "deividas@brightline.io" };
+
+export const USAGE: UsageEvent[] = SESSIONS.flatMap((s, i) => [
+  { id: `ue-v-${i}`, org_id: ORG.id, session_id: s.id, provider: "elevenlabs" as const, kind: "voice" as const, model: null, input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_write_tokens: 0, seconds: s.duration_seconds ?? 0, cost_usd: Math.round(((s.duration_seconds ?? 0) / 60) * 0.1 * 100000) / 100000, created_at: s.created_at },
+  { id: `ue-s-${i}`, org_id: ORG.id, session_id: s.id, provider: "anthropic" as const, kind: "score" as const, model: "claude-opus-5", input_tokens: 3200 + i * 40, output_tokens: 1400, cache_read_tokens: 1800, cache_write_tokens: 0, seconds: 0, cost_usd: 0.052, created_at: s.created_at },
+]);
