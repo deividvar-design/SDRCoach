@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireManager, requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -46,4 +47,29 @@ export async function updateProfile(_prev: SettingsState, formData: FormData): P
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+export async function deleteWorkspace(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
+  const viewer = await requireViewer();
+  if (viewer.membership.role !== "owner") return { error: "Only the workspace owner can delete it." };
+  if (String(formData.get("confirm") ?? "").trim() !== viewer.org.slug) return { error: `Type ${viewer.org.slug} to confirm.` };
+
+  const supabase = await createClient();
+  // Storage first (no cascade there), then the org row; every table cascades from organizations.
+  const { data: files } = await supabase.storage.from("knowledge").list(viewer.org.id, { limit: 1000 });
+  if (files?.length) await supabase.storage.from("knowledge").remove(files.map((f) => `${viewer.org.id}/${f.name}`));
+  const { error } = await supabase.from("organizations").delete().eq("id", viewer.org.id);
+  if (error) return { error: error.message };
+
+  await supabase.auth.signOut();
+  redirect("/?deleted=1");
+}
+
+export async function leaveWorkspace() {
+  const viewer = await requireViewer();
+  if (viewer.membership.role === "owner") return;
+  const supabase = await createClient();
+  await supabase.from("memberships").delete().eq("id", viewer.membership.id);
+  await supabase.auth.signOut();
+  redirect("/login");
 }

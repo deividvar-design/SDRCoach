@@ -35,7 +35,10 @@ export function AuthForm({ mode, next, invite }: { mode: "login" | "signup"; nex
           {mode === "signup" && !invite && <p className="text-muted-foreground text-xs">Work email only. Personal addresses can’t start a trial.</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            {mode === "login" && <Link href="/forgot-password" className="text-muted-foreground text-xs hover:underline underline-offset-4">Forgot it?</Link>}
+          </div>
           <Input id="password" name="password" type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={8} required />
         </div>
         {state.error && <p className="text-destructive text-sm">{state.error}</p>}

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -52,4 +53,37 @@ export async function archiveTarget(id: string) {
   const supabase = await createClient();
   await supabase.from("targets").update({ is_archived: true }).eq("id", id);
   revalidatePath("/targets");
+}
+
+export async function updateTarget(id: string, _prev: TargetState, formData: FormData): Promise<TargetState> {
+  const parsed = targetSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+
+  const viewer = await requireViewer();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("targets")
+    .update({
+      ...parsed.data,
+      industry: parsed.data.industry || null,
+      company_size: parsed.data.company_size || null,
+      persona_notes: parsed.data.persona_notes || null,
+      pain_points: lines(formData.get("pain_points")),
+      objections: lines(formData.get("objections")),
+    })
+    .eq("id", id)
+    .eq("org_id", viewer.org.id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/targets");
+  revalidatePath(`/targets/${id}`);
+  return { ok: true };
+}
+
+export async function archiveTargetAndReturn(id: string) {
+  const viewer = await requireViewer();
+  const supabase = await createClient();
+  await supabase.from("targets").update({ is_archived: true }).eq("id", id).eq("org_id", viewer.org.id);
+  revalidatePath("/targets");
+  redirect("/targets");
 }

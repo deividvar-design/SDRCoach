@@ -64,7 +64,7 @@ export default async function TargetsPage({ searchParams }: PageProps<"/targets"
             <div key={t.id} className="bg-card group flex flex-col gap-3 rounded-2xl border p-5 transition-shadow hover:shadow-md">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="font-display text-xl">{t.name}</div>
+                  <Link href={`/targets/${t.id}`} className="font-display text-xl hover:underline underline-offset-4">{t.name}</Link>
                   <div className="text-muted-foreground text-sm">
                     {t.title} · {t.company}
                   </div>
