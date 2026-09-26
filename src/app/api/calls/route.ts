@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { mintConversationToken, agentId } from "@/lib/elevenlabs/client";
 import { buildPersonaPrompt, firstMessage } from "@/lib/prompts/persona";
 import { loadOrgDigests } from "@/lib/knowledge/digest";
+import { loadTrialStatus } from "@/lib/billing/usage";
 
 const DAILY_CALL_CAP = Number(process.env.CALLS_PER_ORG_PER_DAY ?? 200);
 
@@ -40,6 +41,14 @@ export async function POST(request: Request) {
       .gt("created_at", new Date(Date.now() - 24 * 3_600_000).toISOString()),
   ]);
   if ((liveCount ?? 0) > 0) return NextResponse.json({ error: "You already have a call in progress. Hang up before dialing again." }, { status: 409 });
+
+  const trial = await loadTrialStatus(supabase, viewer.org);
+  if (trial.exhausted) {
+    return NextResponse.json(
+      { error: trial.reason === "calls" ? "Your team has used all its trial calls." : "Your team's trial has ended.", code: "trial_exhausted" },
+      { status: 402 },
+    );
+  }
   if ((todayCount ?? 0) >= DAILY_CALL_CAP) return NextResponse.json({ error: "Your team has reached today's call limit. Try again tomorrow." }, { status: 429 });
 
   let token: string;

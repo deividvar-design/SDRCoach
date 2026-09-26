@@ -34,6 +34,11 @@ Managers upload CSV/TXT exports (Gong, Chorus, dialers) or paste text. `src/lib/
 ## Levels
 Defined in `src/lib/domain/levels.ts`. The behavioural brief per level is what changes the ElevenLabs agent's disposition; target data changes *who* it is.
 
+## Trials and billing
+Self-serve signup is business-email only: `src/lib/email/business.ts` checks the address against the `free-email-domains` and `disposable-email-domains` lists (including subdomains), then confirms the domain has MX records. It runs in the signup action and again in the onboarding action before a workspace is created. Workspace creation goes through the service-role client (`create_organization` is executable only by `service_role`), so the check cannot be bypassed with a direct RPC call. Invited teammates skip the gate: their manager vouches for them.
+
+Every new org is `plan = 'trial'` with `trial_call_limit = 10`, `trial_ends_at = now() + 14 days`, and a unique `trial_domain` so a company gets one trial. `src/lib/billing/trial.ts` computes status from connected calls only; `POST /api/calls` returns 402 with `code: "trial_exhausted"` when the trial is spent, the app shell shows a banner, and `/upgrade` shows the plans. Plans live in `src/lib/billing/plans.ts` and feed both `/pricing` and `/upgrade`. Stripe is the next step; until then upgrade CTAs open an email to sales.
+
 ## Theme
 System light/dark with a manual override (`src/components/theme`). Tokens in `globals.css`: warm paper / warm graphite, ink primary, one hot "signal" colour reserved for live and dial states.
 

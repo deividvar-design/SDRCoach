@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { validateBusinessEmail } from "@/lib/email/business";
 
 export interface AuthState {
   error?: string;
@@ -38,6 +39,13 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
 
   const supabase = await createClient();
   const invite = typeof formData.get("invite") === "string" ? String(formData.get("invite")) : "";
+
+  // Trials are for business addresses. Invited teammates are vouched for by their manager.
+  if (!invite) {
+    const check = await validateBusinessEmail(parsed.data.email);
+    if (!check.ok) return { error: check.message };
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,

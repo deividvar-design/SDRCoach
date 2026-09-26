@@ -16,7 +16,7 @@ export function AuthForm({ mode, next, invite }: { mode: "login" | "signup"; nex
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">{mode === "login" ? "Welcome back" : "Create your account"}</h1>
         <p className="text-muted-foreground text-sm">
-          {mode === "login" ? "Sign in to keep training." : invite ? "You've been invited to join a team." : "Start your team's trial."}
+          {mode === "login" ? "Sign in to keep training." : invite ? "You've been invited to join a team." : "Start your team's free trial: 10 calls, 14 days, no card."}
         </p>
       </div>
 
@@ -31,7 +31,8 @@ export function AuthForm({ mode, next, invite }: { mode: "login" | "signup"; nex
         )}
         <div className="space-y-2">
           <Label htmlFor="email">Work email</Label>
-          <Input id="email" name="email" type="email" autoComplete="email" required />
+          <Input id="email" name="email" type="email" autoComplete="email" required placeholder={mode === "signup" && !invite ? "you@company.com" : undefined} />
+          {mode === "signup" && !invite && <p className="text-muted-foreground text-xs">Work email only. Personal addresses can’t start a trial.</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>

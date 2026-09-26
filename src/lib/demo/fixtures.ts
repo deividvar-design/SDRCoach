@@ -20,6 +20,9 @@ export const ORG: Organization = {
   company_description: "Brightline sells fleet telematics to mid-market logistics companies.",
   product_description: "A dashboard and driver app that cut fuel spend and idle time; typically $40–80 per vehicle per month.",
   ideal_customer_profile: "VP Ops or fleet managers at 100–1,000 vehicle fleets in freight, last-mile and field services.",
+  trial_call_limit: 10,
+  trial_ends_at: daysAgo(-9),
+  trial_domain: "brightline.io",
   created_at: daysAgo(40),
 };
 

@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { validateBusinessEmail } from "@/lib/email/business";
 
 export interface OnboardingState {
   error?: string;
@@ -21,10 +23,23 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) redirect("/login");
+
+  // Self-serve workspaces (trials) are for business addresses only. Invited users never reach this page.
+  const check = await validateBusinessEmail(user.email);
+  if (!check.ok) return { error: check.message };
+
   const base = slugify(parsed.data.name) || "team";
   const slug = `${base}-${Math.random().toString(36).slice(2, 6)}`;
-  const { error } = await supabase.rpc("create_organization", { p_name: parsed.data.name, p_slug: slug });
-  if (error) return { error: error.message };
+  const db = process.env.SDRCOACH_DEMO === "1" ? supabase : createAdminClient();
+  const { error } = await db.rpc("create_organization", { p_name: parsed.data.name, p_slug: slug, p_user_id: user.id, p_trial_domain: check.domain });
+  if (error) {
+    if (error.message.includes("trial_exists")) return { error: `A workspace for ${check.domain} already exists. Ask its owner to invite you.` };
+    return { error: error.message };
+  }
 
   redirect("/onboarding/context");
 }

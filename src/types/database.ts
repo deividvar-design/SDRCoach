@@ -68,8 +68,11 @@ export type Organization = {
   company_description: string | null;
   product_description: string | null;
   ideal_customer_profile: string | null;
+  trial_call_limit: number;
+  trial_ends_at: string;
+  trial_domain: string | null;
   created_at: string;
-}
+};
 
 export type Profile = {
   id: string;
@@ -217,7 +220,7 @@ export type Database = {
     Tables: {
       organizations: Table<
         Organization,
-        Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "created_at">
+        Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "created_at">
       >;
       target_templates: Table<TargetTemplate, Insert<TargetTemplate, "sort" | "industry" | "company_size" | "persona_notes" | "pain_points" | "objections" | "voice_id">>;
       profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "created_at">>;
@@ -290,7 +293,7 @@ export type Database = {
       my_org_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
       my_role: { Args: { p_org: string }; Returns: MemberRole };
       is_manager: { Args: { p_org: string }; Returns: boolean };
-      create_organization: { Args: { p_name: string; p_slug: string }; Returns: string };
+      create_organization: { Args: { p_name: string; p_slug: string; p_user_id: string; p_trial_domain: string | null }; Returns: string };
       accept_invite: { Args: { p_token: string }; Returns: string };
     };
     Enums: {

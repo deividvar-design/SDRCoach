@@ -11,6 +11,9 @@ export default function LandingPage() {
         <Logo />
         <nav className="flex items-center gap-2">
           <Button variant="ghost" asChild>
+            <Link href="/pricing">Pricing</Link>
+          </Button>
+          <Button variant="ghost" asChild>
             <Link href="/login">Sign in</Link>
           </Button>
           <Button asChild>
@@ -36,9 +39,10 @@ export default function LandingPage() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link href="/login">Sign in</Link>
+              <Link href="/pricing">See pricing</Link>
             </Button>
           </div>
+          <p className="text-muted-foreground mt-4 text-sm">Free trial: 10 calls, 14 days, no card. Work email required.</p>
         </section>
 
         <section className="grid gap-6 border-t py-16 md:grid-cols-3">

@@ -79,6 +79,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
   const router = useRouter();
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [trialBlocked, setTrialBlocked] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [turns, setTurns] = useState<LiveTurn[]>([]);
   const sessionIdRef = useRef<string | null>(null);
@@ -154,6 +155,10 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
         body: JSON.stringify({ targetId: target.id, difficulty, assignmentId }),
       });
       const data = await res.json();
+      if (res.status === 402) {
+        setTrialBlocked(true);
+        throw new Error(data.error ?? "Trial limit reached");
+      }
       if (!res.ok) throw new Error(data.error ?? "Could not start the call");
       sessionIdRef.current = data.sessionId;
 
@@ -228,7 +233,17 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
             {stage === "dialing" && "Ringing…"}
             {stage === "live" && (prospectSpeaking ? `${target.name.split(" ")[0]} is speaking` : "Listening to you")}
             {stage === "ending" && "Call ended. Your coach is reviewing it…"}
-            {stage === "error" && <span className="text-destructive">{error}</span>}
+            {stage === "error" && (
+              <span className="text-destructive">
+                {error}
+                {trialBlocked && (
+                  <>
+                    {" "}
+                    <Link href="/upgrade" className="underline underline-offset-4">See plans</Link>
+                  </>
+                )}
+              </span>
+            )}
           </p>
 
           <div className="mt-8 flex items-center gap-3">
