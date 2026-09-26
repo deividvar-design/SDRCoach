@@ -5,6 +5,8 @@ import { computeMetrics } from "@/lib/scoring/metrics";
 import { scoreCall } from "@/lib/scoring/score";
 import { loadOrgDigests } from "@/lib/knowledge/digest";
 import type { CallOutcome, TranscriptTurn } from "@/types/database";
+import { trialStatus, TRIAL_USED_STATUSES } from "@/lib/billing/trial";
+import { sendLifecycle } from "@/lib/email/lifecycle";
 
 const OUTCOMES: CallOutcome[] = ["meeting_booked", "callback", "info_sent", "rejected", "hung_up", "incomplete"];
 
@@ -89,6 +91,15 @@ export async function finalizeCall(sessionId: string) {
         error: null,
       })
       .eq("id", sessionId);
+
+    // Trial emails: after this call, how many are left?
+    const { data: orgRow } = await db.from("organizations").select("plan, trial_call_limit, trial_ends_at").eq("id", claimed.org_id).single();
+    if (orgRow?.plan === "trial") {
+      const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", claimed.org_id).in("status", [...TRIAL_USED_STATUSES]);
+      const t = trialStatus(orgRow, count ?? 0);
+      if (t.callsLeft === 2) await sendLifecycle(claimed.org_id, "two_calls_left").catch(() => {});
+      if (t.callsLeft === 0) await sendLifecycle(claimed.org_id, "trial_ended_calls").catch(() => {});
+    }
 
     if (claimed.assignment_id && outcome !== "incomplete") {
       const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("assignment_id", claimed.assignment_id).eq("status", "scored");

@@ -20,6 +20,9 @@ describe("trialStatus", () => {
   it("exhausts on calls", () => {
     expect(trialStatus(org(), 10, now)).toMatchObject({ exhausted: true, reason: "calls" });
   });
+  it("blocks a canceled subscription", () => {
+    expect(trialStatus(org({ plan: "canceled" }), 3, now)).toMatchObject({ onTrial: false, exhausted: true, reason: "subscription" });
+  });
   it("exhausts on time", () => {
     expect(trialStatus(org({ trial_ends_at: "2026-09-20T00:00:00Z" }), 1, now)).toMatchObject({ exhausted: true, reason: "time" });
   });

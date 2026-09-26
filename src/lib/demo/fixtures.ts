@@ -23,6 +23,13 @@ export const ORG: Organization = {
   trial_call_limit: 10,
   trial_ends_at: daysAgo(-9),
   trial_domain: "brightline.io",
+  stripe_customer_id: "cus_demo",
+  stripe_subscription_id: "sub_demo",
+  stripe_price_id: "price_demo_team_month",
+  billing_interval: "month",
+  subscription_status: "active",
+  current_period_end: daysAgo(-21),
+  cancel_at_period_end: false,
   created_at: daysAgo(40),
 };
 

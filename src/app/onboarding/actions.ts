@@ -5,6 +5,8 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { validateBusinessEmail } from "@/lib/email/business";
+import { sendLifecycle } from "@/lib/email/lifecycle";
+import { after } from "next/server";
 
 export interface OnboardingState {
   error?: string;
@@ -35,7 +37,10 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
   const base = slugify(parsed.data.name) || "team";
   const slug = `${base}-${Math.random().toString(36).slice(2, 6)}`;
   const db = process.env.SDRCOACH_DEMO === "1" ? supabase : createAdminClient();
-  const { error } = await db.rpc("create_organization", { p_name: parsed.data.name, p_slug: slug, p_user_id: user.id, p_trial_domain: check.domain });
+  const { data: orgId, error } = await db.rpc("create_organization", { p_name: parsed.data.name, p_slug: slug, p_user_id: user.id, p_trial_domain: check.domain });
+  if (!error && orgId && process.env.SDRCOACH_DEMO !== "1") {
+    after(() => sendLifecycle(orgId, "welcome").catch((err) => console.error("welcome email failed", err)));
+  }
   if (error) {
     if (error.message.includes("trial_exists")) return { error: `A workspace for ${check.domain} already exists. Ask its owner to invite you.` };
     return { error: error.message };

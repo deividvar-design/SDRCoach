@@ -71,8 +71,18 @@ export type Organization = {
   trial_call_limit: number;
   trial_ends_at: string;
   trial_domain: string | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  stripe_price_id: string | null;
+  billing_interval: "month" | "year" | null;
+  subscription_status: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
   created_at: string;
 };
+
+export type BillingEvent = { id: string; type: string; received_at: string };
+export type EmailLog = { id: string; org_id: string; user_id: string | null; kind: string; sent_at: string };
 
 export type Profile = {
   id: string;
@@ -220,8 +230,10 @@ export type Database = {
     Tables: {
       organizations: Table<
         Organization,
-        Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "created_at">
+        Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
+      billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
+      email_log: Table<EmailLog, Insert<EmailLog, "id" | "user_id" | "sent_at">>;
       target_templates: Table<TargetTemplate, Insert<TargetTemplate, "sort" | "industry" | "company_size" | "persona_notes" | "pain_points" | "objections" | "voice_id">>;
       profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "created_at">>;
       memberships: Table<

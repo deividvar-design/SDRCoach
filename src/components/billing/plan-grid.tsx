@@ -7,8 +7,24 @@ import { cn } from "@/lib/utils";
 import { PLANS, SALES_EMAIL, TRIAL } from "@/lib/billing/plans";
 import { Button } from "@/components/ui/button";
 
-export function PlanGrid({ orgName, canBuy = true, marketing = false }: { orgName?: string; canBuy?: boolean; marketing?: boolean }) {
+export function PlanGrid({
+  orgName,
+  canBuy = true,
+  marketing = false,
+  checkoutAction,
+  defaultSeats = 3,
+  billingReady = false,
+}: {
+  orgName?: string;
+  canBuy?: boolean;
+  marketing?: boolean;
+  /** Server action that starts Stripe Checkout. When absent, CTAs fall back to links. */
+  checkoutAction?: (formData: FormData) => void | Promise<void>;
+  defaultSeats?: number;
+  billingReady?: boolean;
+}) {
   const [annual, setAnnual] = useState(true);
+  const [seats, setSeats] = useState(defaultSeats);
 
   return (
     <div className="space-y-6">
@@ -60,9 +76,37 @@ export function PlanGrid({ orgName, canBuy = true, marketing = false }: { orgNam
                   </li>
                 ))}
               </ul>
-              <Button className="mt-6 w-full" variant={p.highlight ? "default" : "outline"} disabled={!canBuy} asChild={canBuy}>
-                {canBuy ? <Link href={href}>{marketing ? p.cta : p.id === "enterprise" ? "Talk to sales" : `Choose ${p.name}`}</Link> : <span>Ask your manager</span>}
-              </Button>
+              {checkoutAction && p.id !== "enterprise" && canBuy ? (
+                <form action={checkoutAction} className="mt-6 space-y-3">
+                  <input type="hidden" name="plan" value={p.id} />
+                  <input type="hidden" name="interval" value={annual ? "year" : "month"} />
+                  <label className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Seats</span>
+                    <input
+                      type="number"
+                      name="seats"
+                      min={p.minSeats}
+                      max={500}
+                      value={Math.max(seats, p.minSeats)}
+                      onChange={(e) => setSeats(Number(e.target.value) || p.minSeats)}
+                      className="border-input h-8 w-20 rounded-md border bg-transparent px-2 text-right font-mono text-sm tabular"
+                    />
+                  </label>
+                  {price != null && (
+                    <div className="text-muted-foreground flex justify-between text-xs">
+                      <span>{annual ? "Billed yearly" : "Billed monthly"}</span>
+                      <span className="font-mono tabular">${(price * Math.max(seats, p.minSeats) * (annual ? 12 : 1)).toLocaleString()} / {annual ? "year" : "month"}</span>
+                    </div>
+                  )}
+                  <Button type="submit" className="w-full" variant={p.highlight ? "default" : "outline"} disabled={!billingReady}>
+                    {billingReady ? `Subscribe to ${p.name}` : "Checkout not configured yet"}
+                  </Button>
+                </form>
+              ) : (
+                <Button className="mt-6 w-full" variant={p.highlight ? "default" : "outline"} disabled={!canBuy} asChild={canBuy}>
+                  {canBuy ? <Link href={href}>{marketing ? p.cta : p.id === "enterprise" ? "Talk to sales" : `Choose ${p.name}`}</Link> : <span>Ask your manager</span>}
+                </Button>
+              )}
             </div>
           );
         })}

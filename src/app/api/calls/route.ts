@@ -45,7 +45,7 @@ export async function POST(request: Request) {
   const trial = await loadTrialStatus(supabase, viewer.org);
   if (trial.exhausted) {
     return NextResponse.json(
-      { error: trial.reason === "calls" ? "Your team has used all its trial calls." : "Your team's trial has ended.", code: "trial_exhausted" },
+      { error: trial.reason === "calls" ? "Your team has used all its trial calls." : trial.reason === "subscription" ? "Your team's subscription has ended." : "Your team's trial has ended.", code: "trial_exhausted" },
       { status: 402 },
     );
   }

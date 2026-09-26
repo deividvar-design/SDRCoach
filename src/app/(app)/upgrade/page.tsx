@@ -4,10 +4,13 @@ import { loadTrialStatus } from "@/lib/billing/usage";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/shell/page-header";
 import { PlanGrid } from "@/components/billing/plan-grid";
+import { startCheckout } from "./actions";
+import { stripeConfigured } from "@/lib/billing/stripe";
 
 export const metadata = { title: "Upgrade" };
 
-export default async function UpgradePage() {
+export default async function UpgradePage({ searchParams }: PageProps<"/upgrade">) {
+  const { error } = await searchParams;
   const viewer = await requireViewer();
   const trial = await loadTrialStatus(await createClient(), viewer.org);
   const isManager = canManage(viewer.membership.role);
@@ -25,8 +28,9 @@ export default async function UpgradePage() {
             : "You're on a paid plan. Contact us to change seats or plans."
         }
       />
-      <PlanGrid orgName={viewer.org.name} canBuy={isManager} />
-      <p className="text-muted-foreground text-sm">Card checkout is coming. Until then, every plan starts with a short conversation and an invoice, usually the same day.</p>
+      {typeof error === "string" && <p className="text-destructive text-sm">{error === "billing_unavailable" ? "Checkout is not configured on this deployment yet." : "Something went wrong starting checkout. Try again."}</p>}
+      <PlanGrid orgName={viewer.org.name} canBuy={isManager} checkoutAction={startCheckout} defaultSeats={Math.max(3, viewer.org.seat_limit)} billingReady={stripeConfigured()} />
+      <p className="text-muted-foreground text-sm">Secure card checkout by Stripe. Change seats, switch plans, update your card or cancel any time from Settings.</p>
     </div>
   );
 }

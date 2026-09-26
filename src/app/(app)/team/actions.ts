@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireManager } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { sendMail } from "@/lib/email/send";
+import { templates } from "@/lib/email/templates";
 
 export interface InviteState {
   error?: string;
@@ -18,6 +20,15 @@ export async function createInvite(_prev: InviteState, formData: FormData): Prom
 
   const viewer = await requireManager();
   const supabase = await createClient();
+
+  const [{ count: members }, { count: pending }] = await Promise.all([
+    supabase.from("memberships").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id),
+    supabase.from("invites").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id).is("accepted_at", null).gt("expires_at", new Date().toISOString()),
+  ]);
+  if ((members ?? 0) + (pending ?? 0) >= viewer.org.seat_limit) {
+    return { error: `All ${viewer.org.seat_limit} seats are in use. Add seats under Settings → Manage billing.` };
+  }
+
   const { data, error } = await supabase
     .from("invites")
     .insert({ org_id: viewer.org.id, email: parsed.data.email.toLowerCase(), role: parsed.data.role, invited_by: viewer.userId })
@@ -25,8 +36,12 @@ export async function createInvite(_prev: InviteState, formData: FormData): Prom
     .single();
   if (error) return { error: error.message };
 
+  const link = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invite/${data.token}`;
+  const mail = templates.invite({ inviterName: viewer.profile.full_name ?? "Your manager", orgName: viewer.org.name, role: parsed.data.role, link });
+  await sendMail({ to: parsed.data.email, ...mail }).catch((err) => console.error("invite email failed", err));
+
   revalidatePath("/team");
-  return { link: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invite/${data.token}` };
+  return { link };
 }
 
 export async function revokeInvite(id: string) {
