@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { validateBusinessEmail } from "@/lib/email/business";
 import { safeNext } from "@/lib/safe-next";
+import { isAdminEmail } from "@/lib/auth";
 
 export interface AuthState {
   error?: string;
@@ -40,7 +41,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   // Trials are for business addresses. Invited teammates are vouched for by their manager,
   // but only when the invite token is real.
   const invited = invite ? await inviteExists(invite) : false;
-  if (!invited) {
+  if (!invited && !isAdminEmail(parsed.data.email)) {
     const check = await validateBusinessEmail(parsed.data.email);
     if (!check.ok) return { error: check.message };
   }

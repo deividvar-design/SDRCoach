@@ -8,6 +8,7 @@ import { validateBusinessEmail } from "@/lib/email/business";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { after } from "next/server";
 import { PRACTICE_PERSONAS } from "@/content/practice-personas";
+import { isAdminEmail } from "@/lib/auth";
 
 export interface OnboardingState {
   error?: string;
@@ -32,7 +33,9 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
   if (!user?.email) redirect("/login");
 
   // Self-serve workspaces (trials) are for business addresses only. Invited users never reach this page.
-  const check = await validateBusinessEmail(user.email);
+  // Founders are exempt so they can test with any address; their workspace holds no trial domain.
+  const admin = isAdminEmail(user.email);
+  const check = admin ? ({ ok: true, domain: null } as const) : await validateBusinessEmail(user.email);
   if (!check.ok) return { error: check.message };
 
   const base = slugify(parsed.data.name) || "team";

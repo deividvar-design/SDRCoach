@@ -37,10 +37,13 @@ export const requireViewer = cache(async (): Promise<Viewer> => {
   };
 });
 
-/** Internal console: allowlisted emails only (ADMIN_EMAILS, comma-separated). Non-admins get a 404 so the route stays invisible. */
+/** Founders' addresses. ADMIN_EMAILS in the environment extends this list. */
+const DEFAULT_ADMIN_EMAILS = ["deividvar@gmail.com"];
+
+/** Internal console: allowlisted emails only. Non-admins get a 404 so the route stays invisible. */
 export function isAdminEmail(email: string | null | undefined) {
   if (!email) return false;
-  const list = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  const list = [...DEFAULT_ADMIN_EMAILS, ...(process.env.ADMIN_EMAILS ?? "").split(",")].map((e) => e.trim().toLowerCase()).filter(Boolean);
   return list.includes(email.toLowerCase());
 }
 
