@@ -38,6 +38,13 @@ export async function finalizeCall(sessionId: string) {
       return;
     }
     const turns: TranscriptTurn[] = convo.turns.map((t) => ({ role: t.role, text: t.text, t_start_ms: t.t_start_ms }));
+
+    // Still processing on the provider's side and nothing to show yet: hand the session back so the
+    // report poller, the post-call webhook or the sweep can finalize it once the transcript exists.
+    if (turns.length === 0 && convo.status !== "done") {
+      await db.from("call_sessions").update({ status: "ended", error: "Waiting for the transcript" }).eq("id", sessionId);
+      return;
+    }
     const endedAt = claimed.ended_at ? new Date(claimed.ended_at).getTime() : Date.now();
     const durationSecs = convo.durationSecs || Math.max(0, Math.round((endedAt - new Date(claimed.started_at ?? claimed.created_at).getTime()) / 1000));
 
@@ -51,9 +58,13 @@ export async function finalizeCall(sessionId: string) {
     if (durationSecs > 0) await recordVoiceUsage(db, { orgId: claimed.org_id, sessionId, seconds: durationSecs });
 
     if (turns.filter((t) => t.role === "rep").length === 0) {
+      const outcome_reason =
+        turns.length === 0
+          ? "No speech was captured on either side. Check that the microphone and speakers are allowed for this site."
+          : "No speech was captured from the rep. Check that the microphone is allowed for this site and not muted.";
       await db
         .from("call_sessions")
-        .update({ status: "scored", outcome: "incomplete", outcome_reason: "The rep did not say anything.", duration_seconds: durationSecs, ended_at: new Date().toISOString(), metrics })
+        .update({ status: "scored", outcome: "incomplete", outcome_reason, duration_seconds: durationSecs, ended_at: new Date().toISOString(), metrics, error: null })
         .eq("id", sessionId);
       return;
     }

@@ -39,9 +39,9 @@ export interface FetchedConversation {
 
 /**
  * Fetch a finished conversation. ElevenLabs takes a few seconds after hang-up to run analysis,
- * so poll briefly for `done` before giving up and using whatever transcript exists.
+ * so poll for `done` (up to a minute) before giving up and using whatever transcript exists.
  */
-export async function fetchConversation(conversationId: string, { attempts = 8, delayMs = 2500 } = {}): Promise<FetchedConversation> {
+export async function fetchConversation(conversationId: string, { attempts = 20, delayMs = 3000 } = {}): Promise<FetchedConversation> {
   let last: Awaited<ReturnType<ReturnType<typeof elevenlabs>["conversationalAi"]["conversations"]["get"]>> | null = null;
   for (let i = 0; i < attempts; i++) {
     last = await elevenlabs().conversationalAi.conversations.get(conversationId);

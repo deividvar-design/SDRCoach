@@ -51,7 +51,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
 
   return (
     <div className="space-y-8">
-      <ScorePoller active={pending} />
+      <ScorePoller active={pending} sessionId={session.id} />
       <PageHeader
         eyebrow={`${formatDate(session.created_at)} · ${formatDuration(session.duration_seconds)} · L${level.level} ${level.name}${!isOwn && session.profiles?.full_name ? ` · ${session.profiles.full_name}` : ""}`}
         title={session.targets ? `${session.targets.name}, ${session.targets.company}` : "Call"}
@@ -84,6 +84,26 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
             <div className="text-muted-foreground text-sm">Transcript, stats and a scored breakdown land here in about half a minute.</div>
           </div>
         </div>
+      )}
+
+      {session.status === "scored" && !score && (
+        <section className="bg-card rounded-2xl border p-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={outcome?.variant ?? "secondary"}>{outcome?.label ?? "Incomplete"}</Badge>
+            <span className="font-medium">This call was not scored</span>
+          </div>
+          {session.outcome_reason && <p className="text-muted-foreground mt-2 text-sm">{session.outcome_reason}</p>}
+          {transcript?.turns.length ? (
+            <div className="mt-5 space-y-4 border-t pt-5">
+              {transcript.turns.map((t, i) => (
+                <div key={i} className={t.role === "rep" ? "" : "pl-5"}>
+                  <div className="text-muted-foreground mb-1 font-mono text-[10px] tracking-wider uppercase">{t.role === "rep" ? "You" : session.targets?.name.split(" ")[0] ?? "Prospect"}</div>
+                  <p className={`text-sm leading-relaxed ${t.role === "prospect" ? "text-muted-foreground" : ""}`}>{t.text}</p>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </section>
       )}
 
       {session.status === "failed" && !score && (
