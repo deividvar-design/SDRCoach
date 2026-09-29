@@ -4,6 +4,7 @@ import { formatUsd } from "@/lib/usage/pricing";
 export function DailyBars({ data, metric }: { data: { key: string; label: string; calls: number; cost: number }[]; metric: "calls" | "cost" }) {
   const max = Math.max(1, ...data.map((d) => d[metric]));
   return (
+    <div>
     <div className="flex h-36 items-end gap-[3px]" role="img" aria-label={`${metric} per day, last 30 days`}>
       {data.map((d) => {
         const v = d[metric];
@@ -17,6 +18,20 @@ export function DailyBars({ data, metric }: { data: { key: string; label: string
           </div>
         );
       })}
+    </div>
+    <details className="mt-3 text-xs">
+      <summary className="text-muted-foreground cursor-pointer">Show as a table</summary>
+      <table className="mt-2 w-full">
+        <tbody>
+          {data.map((d) => (
+            <tr key={d.key} className="border-t">
+              <td className="py-1 pr-4">{d.label}</td>
+              <td className="py-1 text-right tabular-nums">{metric === "cost" ? formatUsd(d[metric]) : d[metric]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </details>
     </div>
   );
 }

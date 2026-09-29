@@ -17,12 +17,12 @@ export function MarketingFooter() {
           <Logo />
           <p className="text-muted-foreground max-w-xs text-sm">{SITE.description}</p>
           <p className="text-muted-foreground text-xs">
-            {SITE.company.legalName}{SITE.company.address ? ` · ${SITE.company.address}` : ""}
+            {SITE.company.legalName}{SITE.company.address ? `, ${SITE.company.address}` : ""}
           </p>
         </div>
         {COLS.map((c) => (
           <div key={c.title}>
-            <div className="text-muted-foreground mb-3 font-mono text-[11px] tracking-[0.14em] uppercase">{c.title}</div>
+            <div className="text-muted-foreground mb-3 text-xs">{c.title}</div>
             <ul className="space-y-2 text-sm">
               {c.links.map(([href, label]) => (
                 <li key={href}><Link href={href} className="hover:underline underline-offset-4">{label}</Link></li>

@@ -25,7 +25,7 @@ export default function PricingPage() {
       <JsonLd data={faqLd(FAQ)} />
       <div className="mx-auto w-full max-w-6xl px-6 pb-8">
         <section className="py-16 text-center">
-          <p className="text-muted-foreground font-mono text-[11px] tracking-[0.14em] uppercase">Pricing</p>
+          <p className="text-muted-foreground text-xs">Pricing</p>
           <h1 className="font-display mt-3 text-5xl text-balance md:text-6xl">Cheaper than one burned prospect.</h1>
           <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-balance">
             Per seat, with a monthly call allowance. Start with {TRIAL.calls} free calls over {TRIAL.days} days, no card, work email required.

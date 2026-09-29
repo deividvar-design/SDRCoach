@@ -11,12 +11,12 @@ export function VoiceSelect({ defaultValue }: { defaultValue?: string | null }) 
         <option value="">Default (Sarah, woman)</option>
         <optgroup label="Women">
           {VOICES.filter((v) => v.gender === "woman").map((v) => (
-            <option key={v.id} value={v.id}>{v.name} · {v.note}</option>
+            <option key={v.id} value={v.id}>{v.name}, {v.note}</option>
           ))}
         </optgroup>
         <optgroup label="Men">
           {VOICES.filter((v) => v.gender === "man").map((v) => (
-            <option key={v.id} value={v.id}>{v.name} · {v.note}</option>
+            <option key={v.id} value={v.id}>{v.name}, {v.note}</option>
           ))}
         </optgroup>
       </Select>

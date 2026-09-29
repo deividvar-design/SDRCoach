@@ -45,10 +45,10 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
               <>Free trial with {viewer.org.seat_limit} seats.</>
             ) : (
               <>
-                <span className="text-foreground">{PLANS.find((p) => p.id === viewer.org.plan)?.name ?? viewer.org.plan}</span> plan · {viewer.org.seat_limit} seats
-                {viewer.org.billing_interval ? ` · billed ${viewer.org.billing_interval === "year" ? "yearly" : "monthly"}` : ""}
-                {viewer.org.current_period_end ? ` · ${viewer.org.cancel_at_period_end ? "ends" : "renews"} ${formatDate(viewer.org.current_period_end)}` : ""}
-                {viewer.org.subscription_status === "past_due" && <span className="text-destructive"> · payment failed, please update your card</span>}
+                <span className="text-foreground">{PLANS.find((p) => p.id === viewer.org.plan)?.name ?? viewer.org.plan}</span> plan, {viewer.org.seat_limit} seats
+                {viewer.org.billing_interval ? `, billed ${viewer.org.billing_interval === "year" ? "yearly" : "monthly"}` : ""}
+                {viewer.org.current_period_end ? `, ${viewer.org.cancel_at_period_end ? "ends" : "renews"} ${formatDate(viewer.org.current_period_end)}` : ""}
+                {viewer.org.subscription_status === "past_due" && <span className="text-destructive">, payment failed, please update your card</span>}
               </>
             )}
           </p>

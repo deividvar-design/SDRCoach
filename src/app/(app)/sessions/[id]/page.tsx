@@ -71,7 +71,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
     <div className="space-y-8">
       <ScorePoller active={collecting || reviewing} sessionId={session.id} doneMessage={reviewing ? "Your review is ready" : null} />
       <PageHeader
-        eyebrow={`${formatDate(session.created_at)} · ${formatDuration(session.duration_seconds)} · L${level.level} ${level.name}${!isOwn && session.profiles?.full_name ? ` · ${session.profiles.full_name}` : ""}`}
+        eyebrow={`${formatDate(session.created_at)}, ${formatDuration(session.duration_seconds)}, L${level.level} ${level.name}${!isOwn && session.profiles?.full_name ? `, ${session.profiles.full_name}` : ""}`}
         title={session.targets ? `${session.targets.name}, ${session.targets.company}` : "Call"}
         description={session.targets?.title}
         actions={
@@ -120,12 +120,12 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
         <>
           <section className="bg-card paper-grain grid gap-6 rounded-2xl border p-6 md:grid-cols-[minmax(0,260px)_1fr] md:gap-10 md:p-8">
             <div>
-              <div className="text-muted-foreground mb-2 font-mono text-[11px] tracking-[0.14em] uppercase">The prospect decided</div>
+              <div className="text-muted-foreground mb-2 text-xs">The prospect decided</div>
               {outcome ? <Badge variant={outcome.variant}>{outcome.label}</Badge> : <span className="text-muted-foreground text-sm">Not recorded</span>}
               {session.outcome_reason && <p className="text-muted-foreground mt-2 text-sm italic">“{session.outcome_reason}”</p>}
             </div>
             <div className="md:border-l md:pl-10">
-              <div className="text-muted-foreground mb-2 font-mono text-[11px] tracking-[0.14em] uppercase">What happened</div>
+              <div className="text-muted-foreground mb-2 text-xs">What happened</div>
               <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">{session.prospect_summary ?? "No summary available for this call."}</p>
             </div>
           </section>
@@ -145,7 +145,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
             <div className="max-h-[640px] space-y-5 overflow-y-auto p-6">
               {transcript?.turns.map((t, i) => (
                 <div key={i} className={`max-w-3xl ${t.role === "rep" ? "" : "pl-5"}`}>
-                  <div className="text-muted-foreground mb-1 flex items-center gap-2 font-mono text-[10px] tracking-wider uppercase">
+                  <div className="text-muted-foreground mb-1 flex items-center gap-2 text-[11px]">
                     <span>{t.role === "rep" ? (isOwn ? "You" : session.profiles?.full_name ?? "Rep") : session.targets?.name.split(" ")[0] ?? "Prospect"}</span>
                     {typeof t.t_start_ms === "number" && <span className="tabular">{formatDuration(Math.floor(t.t_start_ms / 1000))}</span>}
                   </div>
@@ -169,7 +169,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
             <div className="mt-5 space-y-4 border-t pt-5">
               {transcript.turns.map((t, i) => (
                 <div key={i} className={t.role === "rep" ? "" : "pl-5"}>
-                  <div className="text-muted-foreground mb-1 font-mono text-[10px] tracking-wider uppercase">{t.role === "rep" ? "You" : session.targets?.name.split(" ")[0] ?? "Prospect"}</div>
+                  <div className="text-muted-foreground mb-1 text-[11px]">{t.role === "rep" ? "You" : session.targets?.name.split(" ")[0] ?? "Prospect"}</div>
                   <p className={`text-sm leading-relaxed ${t.role === "prospect" ? "text-muted-foreground" : ""}`}>{t.text}</p>
                 </div>
               ))}
@@ -196,19 +196,19 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
           <section className="bg-card paper-grain grid gap-6 rounded-2xl border p-6 md:grid-cols-[minmax(0,260px)_1fr] md:gap-10 md:p-8">
             <div className="flex flex-col justify-between gap-6">
               <div>
-                <div className="text-muted-foreground mb-3 font-mono text-[11px] tracking-[0.14em] uppercase">Overall</div>
+                <div className="text-muted-foreground mb-3 text-xs">Overall</div>
                 <ScoreReveal value={score.overall} animate={fresh === "1"} />
               </div>
               {outcome && (
                 <div>
-                  <div className="text-muted-foreground mb-2 font-mono text-[11px] tracking-[0.14em] uppercase">The prospect decided</div>
+                  <div className="text-muted-foreground mb-2 text-xs">The prospect decided</div>
                   <Badge variant={outcome.variant}>{outcome.label}</Badge>
                   {session.outcome_reason && <p className="text-muted-foreground mt-2 text-sm italic">“{session.outcome_reason}”</p>}
                 </div>
               )}
             </div>
             <div className="md:border-l md:pl-10">
-              <div className="text-muted-foreground mb-2 font-mono text-[11px] tracking-[0.14em] uppercase">Coach</div>
+              <div className="text-muted-foreground mb-2 text-xs">Coach</div>
               <p className="font-display max-w-prose text-lg leading-relaxed text-pretty md:text-xl">{score.coach_summary}</p>
             </div>
           </section>
@@ -229,9 +229,9 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
               <div>
                 <h2 className="text-warning mb-3 font-medium">Next time</h2>
                 <ol className="space-y-3">
-                  {score.improvements.map((s, i) => (
+                  {score.improvements.map((s) => (
                     <li key={s} className="flex gap-3 text-sm leading-relaxed">
-                      <span className="text-muted-foreground font-mono text-xs tabular">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="text-warning mt-2 size-1.5 shrink-0 rounded-full bg-current" />
                       <span>{s}</span>
                     </li>
                   ))}
@@ -269,7 +269,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
                 const moment = score.moments.find((mo) => typeof t.t_start_ms === "number" && Math.abs(mo.t_ms - t.t_start_ms) < 1500);
                 return (
                   <div key={i} className={`max-w-3xl ${t.role === "rep" ? "" : "pl-5"}`}>
-                    <div className="text-muted-foreground mb-1 flex items-center gap-2 font-mono text-[10px] tracking-wider uppercase">
+                    <div className="text-muted-foreground mb-1 flex items-center gap-2 text-[11px]">
                       <span>{t.role === "rep" ? (isOwn ? "You" : session.profiles?.full_name ?? "Rep") : session.targets?.name.split(" ")[0] ?? "Prospect"}</span>
                       {typeof t.t_start_ms === "number" && <span className="tabular">{formatDuration(Math.floor(t.t_start_ms / 1000))}</span>}
                       {moment && <Badge variant={moment.kind === "good" ? "success" : "warning"}>{moment.label}</Badge>}

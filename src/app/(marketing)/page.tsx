@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen, GraduationCap, MessageSquareText, Mic, Target, TrendingUp, Trophy } from "lucide-react";
+import { BookOpen, GraduationCap, MessageSquareText, Mic, Target, TrendingUp, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LEVEL_LIST } from "@/lib/domain/levels";
 import { SITE } from "@/lib/site";
@@ -10,7 +10,7 @@ import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/market
 import { JsonLd, organizationLd, softwareLd } from "@/components/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: { absolute: "SDRCoach · AI cold-call training for SDR teams" },
+  title: { absolute: "SDRCoach, AI cold-call training for SDR teams" },
   description: "Reps dial realistic AI prospects built from your own targets. Every call ends with the prospect's decision and a transcript; a scored coach's review is one click away. Managers see where the team struggles and what prospects push back on. Free trial, work email only.",
   alternates: { canonical: "/" },
 };
@@ -41,11 +41,11 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button size="lg" variant="signal" asChild>
-              <Link href="/signup">Start free trial <ArrowRight /></Link>
+              <Link href="/signup">Start free trial</Link>
             </Button>
             <Button size="lg" variant="outline" asChild><Link href="/pricing">See pricing</Link></Button>
           </div>
-          <p className="text-muted-foreground mt-4 text-sm">{TRIAL.calls} free calls · {TRIAL.days} days · no card · work email only</p>
+          <p className="text-muted-foreground mt-4 text-sm">{TRIAL.calls} free calls, {TRIAL.days} days, no card, work email only</p>
         </div>
         <div className="mt-14">
           <SampleCall />
@@ -56,12 +56,12 @@ export default function HomePage() {
       <Section className="border-t">
         <Eyebrow>How it works</Eyebrow>
         <H2>Three steps between a new rep and a booked meeting.</H2>
-        <ol className="mt-10 grid gap-6 md:grid-cols-3">
+        <ol className="mt-10 grid gap-8 md:grid-cols-3">
           {STEPS.map((s, i) => (
-            <li key={s.title} className="bg-card rounded-2xl border p-6">
+            <li key={s.title} className="border-t pt-6">
               <div className="flex items-center justify-between">
                 <s.icon className="text-signal size-5" />
-                <span className="text-muted-foreground font-mono text-xs">0{i + 1}</span>
+                <span className="text-muted-foreground text-sm">{i + 1}</span>
               </div>
               <h3 className="mt-4 text-lg font-medium">{s.title}</h3>
               <p className="text-muted-foreground mt-2 text-sm">{s.body}</p>
@@ -76,7 +76,7 @@ export default function HomePage() {
         <div className="mt-10 grid gap-4 md:grid-cols-3">
           {LEVEL_LIST.map((l) => (
             <div key={l.id} className="bg-card rounded-2xl border p-6">
-              <div className="text-muted-foreground font-mono text-xs">LEVEL {l.level}</div>
+              <div className="text-muted-foreground font-mono text-xs">Level {l.level}</div>
               <h3 className="font-display mt-2 text-2xl">{l.name}</h3>
               <p className="text-signal mt-1 text-sm">{l.tagline}</p>
               <p className="text-muted-foreground mt-3 text-sm">{l.description}</p>
@@ -94,16 +94,16 @@ export default function HomePage() {
         <p className="text-muted-foreground mt-5 max-w-2xl">
           You do not have to listen to fifty calls to know what to fix. The coaching view aggregates every reviewed call into the two things worth ten minutes in the next team meeting: the weakest skill and the most mishandled objection.
         </p>
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
+        <div className="mt-10 grid gap-8 md:grid-cols-3">
           {MANAGER_VIEW.map((m) => (
-            <div key={m.title} className="bg-card rounded-2xl border p-6">
+            <div key={m.title} className="border-t pt-6">
               <m.icon className="text-signal size-5" />
               <h3 className="mt-4 text-lg font-medium">{m.title}</h3>
               <p className="text-muted-foreground mt-2 text-sm">{m.body}</p>
             </div>
           ))}
         </div>
-        <Button className="mt-8" variant="outline" asChild><Link href="/for-managers">How managers use it <ArrowRight /></Link></Button>
+        <Button className="mt-8" variant="outline" asChild><Link href="/for-managers">How managers use it</Link></Button>
       </Section>
 
       <Section className="border-t">
@@ -114,10 +114,10 @@ export default function HomePage() {
             <p className="text-muted-foreground mt-5">
               Upload transcripts from Gong, Chorus or your dialer. SDRCoach extracts how your buyers talk, the objections they actually raise and the phrasing they use, then puts it in the prospect's mouth. The coach grades against your playbook, not a generic one.
             </p>
-            <Button className="mt-6" variant="outline" asChild><Link href="/for-enablement">How enablement teams use it <ArrowRight /></Link></Button>
+            <Button className="mt-6" variant="outline" asChild><Link href="/for-enablement">How enablement teams use it</Link></Button>
           </div>
           <div className="bg-card rounded-2xl border p-6">
-            <div className="text-muted-foreground mb-3 flex items-center gap-2 font-mono text-[11px] tracking-[0.14em] uppercase"><BookOpen className="size-3.5" /> Example digest from uploaded calls</div>
+            <div className="text-muted-foreground mb-3 flex items-center gap-2 text-xs"><BookOpen className="size-3.5" /> Example digest from uploaded calls</div>
             <ul className="space-y-3 text-sm">
               <li className="rounded-lg border p-3"><span className="text-muted-foreground">Objection, in their words:</span> “We already run Samsara on half the trucks.”</li>
               <li className="rounded-lg border p-3"><span className="text-muted-foreground">Tone:</span> Short answers. Impatient with scripts. Warms up to fuel-cost-per-mile language.</li>
@@ -138,7 +138,7 @@ export default function HomePage() {
             <Link key={c.href} href={c.href} className="bg-card group rounded-2xl border p-8 transition-shadow hover:shadow-lg">
               <h3 className="font-display text-3xl">{c.title}</h3>
               <p className="text-muted-foreground mt-3">{c.body}</p>
-              <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium">Learn more <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" /></span>
+              <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium">Learn more</span>
             </Link>
           ))}
         </div>

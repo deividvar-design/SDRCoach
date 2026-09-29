@@ -1,11 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
 
-function tone(v: number) {
-  return v >= 7.5 ? "text-success" : v >= 5 ? "text-warning" : "text-destructive";
-}
+
 
 /** Hero score. Counts up on first view so the number lands like a result, not a label. */
 export function ScoreReveal({ value, animate }: { value: number; animate: boolean }) {
@@ -29,7 +26,7 @@ export function ScoreReveal({ value, animate }: { value: number; animate: boolea
 
   return (
     <div className="flex items-baseline gap-2">
-      <span className={cn("font-mono text-7xl leading-none font-medium tabular", tone(value))}>{shown.toFixed(1)}</span>
+      <span className="text-foreground text-7xl leading-none font-semibold tracking-tight">{shown.toFixed(1)}</span>
       <span className="text-muted-foreground text-lg">/ 10</span>
     </div>
   );

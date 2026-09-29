@@ -24,10 +24,10 @@ export default async function AdminPage() {
       <PageHeader eyebrow="Internal" title="Admin" description="Every workspace, what it uses and what it costs. Actions here are logged." />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile label="Workspaces" value={totals.orgs} hint={`${totals.trials} trial · ${totals.paid} paid · ${totals.canceled} canceled`} />
-        <StatTile label="Calls, 30 days" value={totals.calls30d} hint={`${totals.calls7d} in the last 7 · ${totals.connected30d} connected`} />
-        <StatTile label="Est. cost, 30 days" value={formatUsd(totals.cost30d)} hint={`${formatUsd(tokens.voiceCost)} voice · ${formatUsd(tokens.anthropicCost)} scoring`} />
-        <StatTile label="Tokens, 30 days" value={fmtTokens(tokens.input + tokens.output)} hint={`${fmtTokens(tokens.input)} in · ${fmtTokens(tokens.output)} out · ${fmtTokens(tokens.cacheRead)} cached · ${Math.round(tokens.voiceSeconds / 60)} voice min`} />
+        <StatTile label="Workspaces" value={totals.orgs} hint={`${totals.trials} trial, ${totals.paid} paid, ${totals.canceled} canceled`} />
+        <StatTile label="Calls, 30 days" value={totals.calls30d} hint={`${totals.calls7d} in the last 7, ${totals.connected30d} connected`} />
+        <StatTile label="Est. cost, 30 days" value={formatUsd(totals.cost30d)} hint={`${formatUsd(tokens.voiceCost)} voice, ${formatUsd(tokens.anthropicCost)} scoring`} />
+        <StatTile label="Tokens, 30 days" value={fmtTokens(tokens.input + tokens.output)} hint={`${fmtTokens(tokens.input)} in, ${fmtTokens(tokens.output)} out, ${fmtTokens(tokens.cacheRead)} cached, ${Math.round(tokens.voiceSeconds / 60)} voice min`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -68,7 +68,7 @@ export default async function AdminPage() {
                   {r.org.subscription_status === "past_due" && <Badge variant="destructive" className="ml-1">past due</Badge>}
                 </TableCell>
                 <TableCell className="text-xs">
-                  {r.trial.onTrial ? (r.trial.exhausted ? <span className="text-destructive">exhausted</span> : `${r.trial.callsLeft} calls · ${r.trial.daysLeft}d left`) : "—"}
+                  {r.trial.onTrial ? (r.trial.exhausted ? <span className="text-destructive">exhausted</span> : `${r.trial.callsLeft} calls, ${r.trial.daysLeft}d left`) : "—"}
                 </TableCell>
                 <TableCell className="tabular">{r.members} / {r.org.seat_limit}</TableCell>
                 <TableCell className="tabular">{r.calls30d}<span className="text-muted-foreground"> ({r.connected30d})</span></TableCell>

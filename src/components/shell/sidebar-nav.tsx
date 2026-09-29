@@ -25,7 +25,7 @@ export function SidebarNav({ isManager, variant = "sidebar" }: { isManager: bool
     const overflow = items.slice(4);
     const overflowActive = overflow.some((o) => pathname === o.href || pathname.startsWith(`${o.href}/`));
     const barItem = (active: boolean) =>
-      cn("flex flex-col items-center gap-1 py-2 text-[10px] font-medium tracking-wide", active ? "text-foreground" : "text-muted-foreground");
+      cn("flex flex-col items-center gap-1 py-2 text-[10px] font-medium", active ? "text-foreground" : "text-muted-foreground");
     return (
       <nav className="grid auto-cols-fr grid-flow-col" aria-label="Primary">
         {primary.map((item) => {

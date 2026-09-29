@@ -18,7 +18,7 @@ export default function OgImage() {
           <div style={{ fontSize: 30, color: "#b8b3a8", fontFamily: "sans-serif" }}>AI cold-call training for SDR teams</div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 22, color: "#b8b3a8", fontFamily: "sans-serif" }}>
-          <span>10 free calls · work email only</span>
+          <span>10 free calls, work email only</span>
           <span style={{ color: "#f0623d" }}>● LIVE</span>
         </div>
       </div>

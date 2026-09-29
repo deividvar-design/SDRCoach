@@ -3,7 +3,6 @@ import { FeatureRow } from "@/components/marketing/feature-row";
 import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/marketing/sections";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "For sales managers",
@@ -22,7 +21,7 @@ export default function ForManagersPage() {
             A new SDR's first fifty dials are the worst calls your prospects will ever get. Give them fifty fake ones first, score every one, and put them on the phones when the numbers say they're ready.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial <ArrowRight /></Link></Button>
+            <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>
             <Button size="lg" variant="outline" asChild><Link href="/pricing">See pricing</Link></Button>
           </div>
         </div>

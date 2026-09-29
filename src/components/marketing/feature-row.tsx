@@ -5,7 +5,7 @@ export function FeatureRow({ eyebrow, title, body, image, alt, flip = false, wid
   return (
     <div className={cn("grid items-center gap-8 md:grid-cols-2 md:gap-14", flip && "md:[&>*:first-child]:order-2")}>
       <div>
-        <p className="text-muted-foreground font-mono text-[11px] tracking-[0.14em] uppercase">{eyebrow}</p>
+        <p className="text-muted-foreground text-xs">{eyebrow}</p>
         <h3 className="font-display mt-3 text-3xl text-balance md:text-4xl">{title}</h3>
         <div className="text-muted-foreground mt-4 space-y-3">{body}</div>
       </div>

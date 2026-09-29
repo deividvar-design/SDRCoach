@@ -79,7 +79,7 @@ export function SampleCall() {
           <div className="font-display text-2xl">{prospect.name}</div>
           <div className="text-muted-foreground text-sm">{prospect.title}, {prospect.company}</div>
           <div className="mt-3 flex items-center gap-2">
-            <Badge variant="secondary">Level 3 · Cold</Badge>
+            <Badge variant="secondary">Level 3, Cold</Badge>
             {playing && (
               <span className="text-signal flex items-center gap-1.5 font-mono text-xs">
                 <span className="bg-signal size-1.5 rounded-full live-pulse" /> LIVE
@@ -108,7 +108,7 @@ export function SampleCall() {
               {visible.length === 0 && <p className="text-muted-foreground text-sm">Press play. The prospect picks up.</p>}
               {visible.map((t, i) => (
                 <div key={i} className={cn("animate-in fade-in slide-in-from-bottom-1 duration-300", t.role === "prospect" && "pl-5")}>
-                  <div className="text-muted-foreground mb-1 font-mono text-[10px] tracking-wider uppercase">{t.role === "rep" ? "Sam" : "Rebecca"}</div>
+                  <div className="text-muted-foreground mb-1 text-[11px]">{t.role === "rep" ? "Sam" : "Rebecca"}</div>
                   <p className={cn("text-sm leading-relaxed", t.role === "prospect" && "text-muted-foreground")}>{t.text}</p>
                 </div>
               ))}
@@ -117,7 +117,7 @@ export function SampleCall() {
             <div className="animate-in fade-in flex-1 p-6 duration-500">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <div className="text-muted-foreground font-mono text-[11px] tracking-[0.14em] uppercase">Overall</div>
+                  <div className="text-muted-foreground text-xs">Overall</div>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-success font-mono text-6xl font-medium tabular">{result.overall.toFixed(1)}</span>
                     <span className="text-muted-foreground">/ 10</span>

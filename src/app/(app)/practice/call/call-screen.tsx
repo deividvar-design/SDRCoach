@@ -307,7 +307,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
         {/* Sidebar: research + live transcript */}
         <aside className="flex flex-col gap-4">
           <div className="bg-card rounded-2xl border p-5">
-            <div className="text-muted-foreground mb-2 font-mono text-[11px] tracking-[0.14em] uppercase">Your research</div>
+            <div className="text-muted-foreground mb-2 text-xs">Your research</div>
             <p className="text-sm">
               {target.name} is {target.title} at {target.company}
               {target.industry ? ` (${target.industry})` : ""}.
@@ -317,14 +317,14 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
           </div>
 
           <div className="bg-card flex min-h-[260px] flex-1 flex-col rounded-2xl border">
-            <div className="text-muted-foreground border-b px-5 py-3 font-mono text-[11px] tracking-[0.14em] uppercase">Live transcript</div>
+            <div className="text-muted-foreground border-b px-5 py-3 text-xs">Live transcript</div>
             <div ref={transcriptRef} className="max-h-[420px] flex-1 space-y-3 overflow-y-auto p-5">
               {turns.length === 0 ? (
                 <p className="text-muted-foreground text-sm">Words appear here as you both speak.</p>
               ) : (
                 turns.map((t, i) => (
                   <div key={i} className={cn("text-sm", t.role === "rep" ? "text-foreground" : "text-muted-foreground")}>
-                    <span className="mr-2 font-mono text-[10px] tracking-wider uppercase">{t.role === "rep" ? "You" : target.name.split(" ")[0]}</span>
+                    <span className="mr-2 text-[11px]">{t.role === "rep" ? "You" : target.name.split(" ")[0]}</span>
                     {t.text}
                   </div>
                 ))

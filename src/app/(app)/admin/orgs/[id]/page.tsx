@@ -16,7 +16,7 @@ import { ScorePill } from "@/components/score-pill";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExtendTrialForm, NoteForm, SetPlanForm } from "./org-actions";
 
-export const metadata = { title: "Admin · workspace" };
+export const metadata = { title: "Admin, workspace" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminOrgPage({ params }: PageProps<"/admin/orgs/[id]">) {
@@ -30,16 +30,16 @@ export default async function AdminOrgPage({ params }: PageProps<"/admin/orgs/[i
     <div className="space-y-8">
       <Button variant="ghost" size="sm" asChild><Link href="/admin"><ArrowLeft /> Admin</Link></Button>
       <PageHeader
-        eyebrow={`${org.plan}${org.subscription_status ? ` · ${org.subscription_status}` : ""} · created ${formatDate(org.created_at)}`}
+        eyebrow={`${org.plan}${org.subscription_status ? `, ${org.subscription_status}` : ""}, created ${formatDate(org.created_at)}`}
         title={org.name}
-        description={[org.trial_domain, org.stripe_customer_id ? `Stripe ${org.stripe_customer_id}` : "No Stripe customer", org.current_period_end ? `${org.cancel_at_period_end ? "ends" : "renews"} ${formatDate(org.current_period_end)}` : null].filter(Boolean).join(" · ")}
+        description={[org.trial_domain, org.stripe_customer_id ? `Stripe ${org.stripe_customer_id}` : "No Stripe customer", org.current_period_end ? `${org.cancel_at_period_end ? "ends" : "renews"} ${formatDate(org.current_period_end)}` : null].filter(Boolean).join(", ")}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile label="Connected calls" value={connected} hint={trial.onTrial ? `${trial.callsLeft} of ${org.trial_call_limit} trial calls left · ${trial.daysLeft} days` : "Paid plan"} highlight={trial.onTrial && trial.exhausted} />
+        <StatTile label="Connected calls" value={connected} hint={trial.onTrial ? `${trial.callsLeft} of ${org.trial_call_limit} trial calls left, ${trial.daysLeft} days` : "Paid plan"} highlight={trial.onTrial && trial.exhausted} />
         <StatTile label="Seats" value={`${members.length} / ${org.seat_limit}`} />
-        <StatTile label="Cost, 30 days" value={formatUsd(usage30d.cost)} hint={`${Math.round(usage30d.voiceSeconds / 60)} voice min · ${Math.round((usage30d.input + usage30d.output) / 1000)}k tokens`} />
-        <StatTile label="Cost, all time" value={formatUsd(usageAll.cost)} hint={`${Math.round(usageAll.voiceSeconds / 60)} voice min · ${Math.round((usageAll.input + usageAll.output) / 1000)}k tokens`} />
+        <StatTile label="Cost, 30 days" value={formatUsd(usage30d.cost)} hint={`${Math.round(usage30d.voiceSeconds / 60)} voice min, ${Math.round((usage30d.input + usage30d.output) / 1000)}k tokens`} />
+        <StatTile label="Cost, all time" value={formatUsd(usageAll.cost)} hint={`${Math.round(usageAll.voiceSeconds / 60)} voice min, ${Math.round((usageAll.input + usageAll.output) / 1000)}k tokens`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -71,14 +71,14 @@ export default async function AdminOrgPage({ params }: PageProps<"/admin/orgs/[i
               <li key={a.id} className="px-5 py-3">
                 <div className="flex justify-between gap-3">
                   <span className="font-medium">{a.action.replaceAll("_", " ")}</span>
-                  <span className="text-muted-foreground text-xs">{formatDate(a.created_at)} · {a.admin_email}</span>
+                  <span className="text-muted-foreground text-xs">{formatDate(a.created_at)}, {a.admin_email}</span>
                 </div>
                 {a.payload && <div className="text-muted-foreground mt-1 font-mono text-[11px] break-all">{typeof a.payload === "object" && a.payload && "note" in a.payload ? String((a.payload as { note: string }).note) : JSON.stringify(a.payload)}</div>}
               </li>
             ))}
             {emails.map((e, i) => (
               <li key={`e-${i}`} className="text-muted-foreground flex justify-between px-5 py-3 text-xs">
-                <span>email · {e.kind.replaceAll("_", " ")}</span>
+                <span>email, {e.kind.replaceAll("_", " ")}</span>
                 <span>{formatDate(e.sent_at)}</span>
               </li>
             ))}

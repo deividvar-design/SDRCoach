@@ -60,7 +60,7 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
   const trend = [...scored]
     .reverse()
     .slice(-20)
-    .map((s) => ({ id: s.id, label: `${formatDate(s.created_at)} · ${s.targets?.name ?? ""}`, value: s.call_scores!.overall }));
+    .map((s) => ({ id: s.id, label: `${formatDate(s.created_at)}, ${s.targets?.name ?? ""}`, value: s.call_scores!.overall }));
 
   const progress = levelProgress(lite);
 
@@ -137,7 +137,7 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
                   {p.ready && <Badge variant="success" className="ml-2">Ready for L{p.next?.level}</Badge>}
                 </span>
                 <span className="text-muted-foreground font-mono text-xs tabular">
-                  {p.calls} calls{p.recentAvg != null ? ` · ${p.recentAvg.toFixed(1)}` : ""}
+                  {p.calls} calls{p.recentAvg != null ? `, ${p.recentAvg.toFixed(1)}` : ""}
                 </span>
               </li>
             ))}

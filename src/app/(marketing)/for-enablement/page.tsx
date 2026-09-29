@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { FeatureRow } from "@/components/marketing/feature-row";
 import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/marketing/sections";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,7 @@ export default function ForEnablementPage() {
             You have thousands of recorded calls and one rubric in a slide deck. SDRCoach turns the recordings into prospects that talk like your market and turns the rubric into a score on every practice call, for every rep, every week.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial <ArrowRight /></Link></Button>
+            <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>
             <Button size="lg" variant="outline" asChild><Link href="/trust">How we handle your data</Link></Button>
           </div>
         </div>

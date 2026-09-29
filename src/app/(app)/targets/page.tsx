@@ -69,7 +69,7 @@ export default async function TargetsPage({ searchParams }: PageProps<"/targets"
                 <div>
                   <Link href={`/targets/${t.id}`} className="font-display text-xl hover:underline underline-offset-4">{t.name}</Link>
                   <div className="text-muted-foreground text-sm">
-                    {t.title} · {t.company}
+                    {t.title}, {t.company}
                   </div>
                 </div>
                 <Badge variant={t.kind === "practice" ? "outline" : "secondary"}>{t.kind}</Badge>

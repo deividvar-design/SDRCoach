@@ -42,7 +42,7 @@ export function PracticeSetup({
           <Select id="target" value={targetId} onChange={(e) => setTargetId(e.target.value)}>
             {targets.map((t) => (
               <option key={t.id} value={t.id}>
-                {t.name} · {t.title}, {t.company}
+                {t.name}, {t.title}, {t.company}
               </option>
             ))}
           </Select>
@@ -63,7 +63,7 @@ export function PracticeSetup({
                   difficulty === l.id ? "border-primary bg-primary/5" : "bg-card hover:bg-accent/40",
                 )}
               >
-                <div className="text-muted-foreground font-mono text-xs">LEVEL {l.level}</div>
+                <div className="text-muted-foreground font-mono text-xs">Level {l.level}</div>
                 <div className="mt-1 font-medium">{l.name}</div>
                 <div className="text-muted-foreground mt-1 text-xs">{l.tagline}</div>
               </button>
@@ -74,7 +74,7 @@ export function PracticeSetup({
 
       <aside className="bg-card h-fit space-y-5 rounded-xl border p-5">
         <div>
-          <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Dialing</div>
+          <div className="text-muted-foreground text-xs">Dialing</div>
           <div className="mt-1 text-lg font-medium">{target.name}</div>
           <div className="text-muted-foreground text-sm">{target.title}, {target.company}</div>
         </div>

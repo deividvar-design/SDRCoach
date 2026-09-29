@@ -98,12 +98,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       <StatusToast message={welcome === "1" ? "Your workspace is ready. Make the first call whenever you like." : null} />
       <PageHeader
         eyebrow={new Date().toLocaleDateString("en-GB", { weekday: "long", month: "long", day: "numeric", timeZone: tz || "UTC" })}
-        title={
-          <>
-            {streak >= 2 ? `Day ${streak}, ${firstName}.` : `Hey ${firstName}.`}{" "}
-            <em className="text-muted-foreground">{mine.length === 0 ? "Make the first dial." : streak >= 2 ? "Keep it rolling." : "Pick up the phone."}</em>
-          </>
-        }
+        title={streak >= 2 ? `Day ${streak}, ${firstName}.` : `Hey ${firstName}.`}
+        description={mine.length === 0 ? "Make the first dial." : streak >= 2 ? "Keep it rolling." : "Pick up the phone."}
         actions={
           <Button asChild variant="signal">
             <Link href="/practice">
@@ -162,9 +158,9 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">
                         {s.targets?.name ?? "Deleted target"}
-                        {isManager && s.profiles?.full_name ? <span className="text-muted-foreground font-normal"> · {s.profiles.full_name}</span> : null}
+                        {isManager && s.profiles?.full_name ? <span className="text-muted-foreground font-normal">, {s.profiles.full_name}</span> : null}
                       </div>
-                      <div className="text-muted-foreground text-xs">{formatDate(s.created_at)} · L{LEVELS[s.difficulty].level} {LEVELS[s.difficulty].name}</div>
+                      <div className="text-muted-foreground text-xs">{formatDate(s.created_at)}, L{LEVELS[s.difficulty].level} {LEVELS[s.difficulty].name}</div>
                     </div>
                     {s.outcome === "meeting_booked" && <Badge variant="success">Booked</Badge>}
                     {!s.outcome && s.status !== "scored" && <Badge variant="secondary">{SESSION_STATUS[s.status].label}</Badge>}
@@ -197,7 +193,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                     </div>
                     <div className="text-muted-foreground text-xs">
                       {p.calls} call{p.calls === 1 ? "" : "s"}
-                      {p.recentAvg != null ? ` · last ${Math.min(p.calls, 3)} avg ${p.recentAvg.toFixed(1)}` : ""}
+                      {p.recentAvg != null ? `, last ${Math.min(p.calls, 3)} avg ${p.recentAvg.toFixed(1)}` : ""}
                     </div>
                   </div>
                   <Button size="sm" variant="outline" asChild>
@@ -218,7 +214,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                   <li key={n.id} className="px-5 py-3 text-sm">
                     <Link href={`/sessions/${n.session_id}`} className="block">
                       <p className="line-clamp-3 leading-relaxed">{n.body}</p>
-                      <div className="text-muted-foreground mt-1 text-xs">{n.profiles?.full_name ?? "Manager"} · on your {n.call_sessions?.targets?.name ?? "call"} call · {formatDate(n.created_at)}</div>
+                      <div className="text-muted-foreground mt-1 text-xs">{n.profiles?.full_name ?? "Manager"}, on your {n.call_sessions?.targets?.name ?? "call"} call, {formatDate(n.created_at)}</div>
                     </Link>
                   </li>
                 ))}
@@ -237,8 +233,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                     <div className="min-w-0">
                       <div className="truncate font-medium">{a.targets?.name}</div>
                       <div className="text-muted-foreground text-xs">
-                        L{LEVELS[a.difficulty].level} · {a.required_calls} call{a.required_calls === 1 ? "" : "s"}
-                        {a.due_at ? ` · due ${formatDate(a.due_at)}` : ""}
+                        L{LEVELS[a.difficulty].level}, {a.required_calls} call{a.required_calls === 1 ? "" : "s"}
+                        {a.due_at ? `, due ${formatDate(a.due_at)}` : ""}
                       </div>
                     </div>
                     <Button size="sm" variant="outline" asChild>
@@ -268,7 +264,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                   {isManager || viewer.org.reps_see_team ? <Link href={`/team/${r.user_id}`} className="hover:underline">{r.name}</Link> : r.name}
                   {r.user_id === viewer.userId && <span className="text-muted-foreground font-normal"> (you)</span>}
                 </span>
-                <span className="text-muted-foreground hidden font-mono text-xs tabular sm:inline">{r.calls} {r.calls === 1 ? "call" : "calls"} · {r.booked} booked</span>
+                <span className="text-muted-foreground hidden font-mono text-xs tabular sm:inline">{r.calls} {r.calls === 1 ? "call" : "calls"}, {r.booked} booked</span>
                 {r.avg == null ? <span className="text-muted-foreground text-xs">no review yet</span> : <ScorePill value={r.avg} />}
               </li>
             ))}

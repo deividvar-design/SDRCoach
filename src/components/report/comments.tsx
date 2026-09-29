@@ -35,7 +35,7 @@ export function Comments({ sessionId, comments, viewerId, canDeleteAny, dateOf }
         {comments.map((c) => (
           <div key={c.id} className="flex gap-3">
             <div className="min-w-0 flex-1">
-              <div className="text-muted-foreground mb-1 flex items-center gap-2 font-mono text-[10px] tracking-wider uppercase">
+              <div className="text-muted-foreground mb-1 flex items-center gap-2 text-[11px]">
                 <span>{c.author}</span>
                 <span>{dateOf[c.id]}</span>
                 {(c.author_id === viewerId || canDeleteAny) && (

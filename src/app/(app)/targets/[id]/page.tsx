@@ -32,7 +32,7 @@ export default async function TargetPage({ params }: PageProps<"/targets/[id]">)
       <PageHeader
         eyebrow={target.kind === "practice" ? "Practice persona" : "Real account"}
         title={target.name}
-        description={`${target.title}, ${target.company}${target.industry ? ` · ${target.industry}` : ""}`}
+        description={`${target.title}, ${target.company}${target.industry ? `, ${target.industry}` : ""}`}
         actions={
           <Button variant="signal" asChild>
             <Link href={`/practice?target=${target.id}`}><Phone /> Call {target.name.split(" ")[0]}</Link>
@@ -71,7 +71,7 @@ export default async function TargetPage({ params }: PageProps<"/targets/[id]">)
                   <Link href={`/sessions/${c.id}`} className="hover:bg-accent/40 flex items-center gap-3 px-5 py-3 text-sm">
                     <div className="min-w-0 flex-1">
                       <div className="truncate">{c.profiles?.full_name ?? "Rep"}</div>
-                      <div className="text-muted-foreground text-xs">{formatDate(c.created_at)} · L{LEVELS[c.difficulty].level}</div>
+                      <div className="text-muted-foreground text-xs">{formatDate(c.created_at)}, L{LEVELS[c.difficulty].level}</div>
                     </div>
                     {c.outcome === "meeting_booked" && <Badge variant="success">Booked</Badge>}
                     <ScorePill value={c.call_scores?.overall ?? null} />

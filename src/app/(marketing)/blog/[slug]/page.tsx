@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): P
 const components = {
   Practise: ({ children }: { children: React.ReactNode }) => (
     <aside className="bg-card not-prose my-8 rounded-2xl border p-6">
-      <div className="text-muted-foreground font-mono text-[11px] tracking-[0.14em] uppercase">Practise this</div>
+      <div className="text-muted-foreground text-xs">Practise this</div>
       <div className="mt-2 text-sm">{children}</div>
       <Button size="sm" className="mt-4" asChild><Link href="/signup">Dial it against an AI prospect</Link></Button>
     </aside>
@@ -65,7 +65,7 @@ export default async function BlogPost({ params }: PageProps<"/blog/[slug]">) {
 
       {related.length > 0 && (
         <section className="mx-auto w-full max-w-3xl px-6 pb-8">
-          <h2 className="text-muted-foreground font-mono text-[11px] tracking-[0.14em] uppercase">Keep reading</h2>
+          <h2 className="text-muted-foreground text-xs">Keep reading</h2>
           <ul className="mt-4 grid gap-4 sm:grid-cols-3">
             {related.map((p) => (
               <li key={p.slug}>

@@ -91,7 +91,7 @@ export default async function TeamPage() {
         <p className="text-muted-foreground mb-4 text-sm">Give a rep a specific target and level to work before the real outreach starts. It lands on their dashboard.</p>
         <AssignForm
           reps={(members ?? []).map((m) => ({ id: m.user_id, label: m.profiles?.full_name ?? "Rep" }))}
-          targets={(targets ?? []).map((t) => ({ id: t.id, label: `${t.name} · ${t.title}, ${t.company}` }))}
+          targets={(targets ?? []).map((t) => ({ id: t.id, label: `${t.name}, ${t.title}, ${t.company}` }))}
         />
         {!!assignments?.length && (
           <ul className="mt-6 divide-y border-t">
@@ -108,7 +108,7 @@ export default async function TeamPage() {
                     </div>
                     <div className="text-muted-foreground text-xs">
                       {a.due_at ? `Due ${formatDate(a.due_at)}` : "No due date"}
-                      {a.note ? ` · ${a.note}` : ""}
+                      {a.note ? `, ${a.note}` : ""}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 sm:w-64">

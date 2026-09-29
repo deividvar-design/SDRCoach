@@ -13,7 +13,7 @@ export function Section({ children, className, id }: { children: React.ReactNode
 }
 
 export function Eyebrow({ children }: { children: React.ReactNode }) {
-  return <p className="text-muted-foreground font-mono text-[11px] tracking-[0.14em] uppercase">{children}</p>;
+  return <p className="text-muted-foreground text-xs">{children}</p>;
 }
 
 export function H2({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -33,7 +33,7 @@ export function ProofSection() {
       <dl className="mt-10 grid gap-6 md:grid-cols-3">
         {PROOF.stats.map((s) => (
           <div key={s.label} className="bg-card rounded-2xl border p-6">
-            <dd className="font-mono text-5xl font-medium tabular">{s.value}</dd>
+            <dd className="text-5xl font-semibold tracking-tight">{s.value}</dd>
             <dt className="mt-2 font-medium">{s.label}</dt>
             <p className="text-muted-foreground mt-1 text-sm">{s.detail}</p>
           </div>
@@ -66,7 +66,7 @@ export function CtaBand({ title = "Ten free calls. Then decide.", body = "Work e
           <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>
           <Button size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10" asChild><Link href="/pricing">See pricing</Link></Button>
         </div>
-        <p className="mt-4 text-xs opacity-60">{TRIAL.calls} calls · {TRIAL.days} days · work email only</p>
+        <p className="mt-4 text-xs opacity-60">{TRIAL.calls} calls, {TRIAL.days} days, work email only</p>
       </div>
     </Section>
   );

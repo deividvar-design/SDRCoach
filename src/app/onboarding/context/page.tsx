@@ -20,7 +20,7 @@ export default async function OnboardingContextPage() {
       <div className="w-full max-w-xl space-y-8">
         <Logo />
         <div className="space-y-2">
-          <div className="text-muted-foreground font-mono text-[11px] tracking-[0.14em] uppercase">Step 2 of 2</div>
+          <div className="text-muted-foreground text-xs">Step 2 of 2</div>
           <h1 className="font-display text-4xl">Tell the prospects who you are.</h1>
           <p className="text-muted-foreground text-sm">
             Every AI prospect knows this much about {membership.organizations?.name ?? "your company"}, the same as a real buyer would after a glance at your website. The more specific, the more realistic the objections.

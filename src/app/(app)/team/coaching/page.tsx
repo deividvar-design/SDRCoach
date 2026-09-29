@@ -3,7 +3,7 @@ import { requireManager } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { OBJECTIONS, RUBRIC, RUBRIC_KEYS, type ObjectionKind, type RubricKey } from "@/lib/scoring/rubric";
 import { PageHeader } from "@/components/shell/page-header";
-import { ScorePill } from "@/components/score-pill";
+import { ScorePill, scoreStep } from "@/components/score-pill";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
@@ -31,8 +31,7 @@ const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.le
 const DAY = 86_400_000;
 
 function heat(v: number | null) {
-  if (v == null) return "text-muted-foreground";
-  return v >= 7.5 ? "bg-success/15 text-success" : v >= 5 ? "bg-warning/15 text-warning" : "bg-destructive/15 text-destructive";
+  return v == null ? "text-muted-foreground" : `score-${scoreStep(v)}`;
 }
 
 export default async function CoachingPage({ searchParams }: PageProps<"/team/coaching">) {
@@ -119,11 +118,10 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
         <>
           {focus.length > 0 && (
             <section className="bg-card paper-grain rounded-2xl border p-6 md:p-8">
-              <div className="text-muted-foreground mb-4 font-mono text-[11px] tracking-[0.14em] uppercase">Focus · {RANGES[range]}</div>
+              <div className="text-muted-foreground mb-4 text-xs">Focus, {RANGES[range]}</div>
               <ol className="grid gap-5 md:grid-cols-3">
-                {focus.map((f, i) => (
+                {focus.map((f) => (
                   <li key={f.title} className="flex gap-3">
-                    <span className="text-signal font-mono text-sm tabular">{String(i + 1).padStart(2, "0")}</span>
                     <div>
                       <div className="font-display text-xl leading-snug">{f.title}</div>
                       <p className="text-muted-foreground mt-1 text-sm leading-relaxed">{f.detail}</p>
@@ -137,7 +135,11 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
           <section className="bg-card rounded-2xl border">
             <div className="border-b px-6 py-4">
               <h2 className="font-medium">Skills by rep</h2>
-              <p className="text-muted-foreground text-sm">Average score per rubric dimension. Lowest reps first.</p>
+              <p className="text-muted-foreground text-sm">Average score per rubric dimension, lowest reps first. Darker is better; 7.0 is the bar for moving up a level.</p>
+              <div className="mt-2 flex items-center gap-1 text-xs" aria-hidden="true">
+                {[1, 2, 3, 4, 5].map((s) => <span key={s} className={`score-${s} h-3 w-6 rounded-sm`} />)}
+                <span className="text-muted-foreground ml-2">0 → 10</span>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <Table>
@@ -208,8 +210,8 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
                           <div className="bg-destructive h-full" style={{ width: `${(o.missed / o.count) * 100}%` }} />
                         </div>
                         <div className="text-muted-foreground mt-1.5 text-xs">
-                          Handled cleanly {Math.round(cleanRate * 100)}% · partial {o.partial} · missed {o.missed}
-                          {strugglers.length > 0 && <> · struggles most: {strugglers.map(([n, c]) => `${n} (${c})`).join(", ")}</>}
+                          Handled cleanly {Math.round(cleanRate * 100)}%, partial {o.partial}, missed {o.missed}
+                          {strugglers.length > 0 && <>, struggles most: {strugglers.map(([n, c]) => `${n} (${c})`).join(", ")}</>}
                         </div>
                         {o.example && (
                           <p className="text-muted-foreground mt-2 text-sm italic">
@@ -218,7 +220,7 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
                         )}
                       </div>
                       <div className="border-l pl-4 md:pl-6">
-                        <div className="text-muted-foreground mb-1 font-mono text-[10px] tracking-wider uppercase">Coach it with</div>
+                        <div className="text-muted-foreground mb-1 text-[11px]">Coach it with</div>
                         <p className="text-sm leading-relaxed">{OBJECTIONS[o.kind].coaching}</p>
                       </div>
                     </li>

@@ -24,7 +24,7 @@ export function TrendChart({ points, max = 10 }: { points: TrendPoint[]; max?: n
     <svg viewBox={`0 0 ${w} ${h}`} className="h-auto w-full" role="img" aria-label="Score over time">
       {[2.5, 5, 7.5].map((g) => (
         <g key={g}>
-          <line x1={padX} x2={w - padX} y1={y(g)} y2={y(g)} className="stroke-border" strokeWidth={1} strokeDasharray="2 4" />
+          <line x1={padX} x2={w - padX} y1={y(g)} y2={y(g)} className="stroke-border" strokeWidth={1} />
           <text x={w - padX} y={y(g) - 4} textAnchor="end" className="fill-muted-foreground font-mono text-[10px]">
             {g}
           </text>
