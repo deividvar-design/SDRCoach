@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScorePill } from "@/components/score-pill";
 import { InviteForm } from "./invite-form";
+import { CopyLink } from "./copy-link";
 import { AssignForm } from "./assign-form";
 import { deleteAssignment, revokeInvite } from "./actions";
 import { LEVELS } from "@/lib/domain/levels";
@@ -72,9 +73,12 @@ export default async function TeamPage() {
                   <span>{i.email}</span> <Badge variant="secondary" className="ml-2">{ROLE_LABEL[i.role]}</Badge>
                   <div className="text-muted-foreground text-xs">Expires {formatDate(i.expires_at)}</div>
                 </div>
-                <form action={revokeInvite.bind(null, i.id)}>
-                  <Button size="sm" variant="ghost" type="submit">Revoke</Button>
-                </form>
+                <div className="flex items-center gap-2">
+                  <CopyLink link={`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invite/${i.token}`} />
+                  <form action={revokeInvite.bind(null, i.id)}>
+                    <Button size="sm" variant="ghost" type="submit">Revoke</Button>
+                  </form>
+                </div>
               </li>
             ))}
           </ul>
