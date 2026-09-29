@@ -56,7 +56,8 @@ export interface ScoreInput {
   turns: TranscriptTurn[];
   metrics: CallMetrics;
   difficulty: Difficulty;
-  prospect: { name: string; title: string; company: string };
+  prospect: { name: string; title: string; company: string; pain_points?: string[]; objections?: string[] };
+  company: { name: string; company_description: string | null; product_description: string | null; ideal_customer_profile: string | null };
   repName: string;
   orgPlaybook: KnowledgeDigest[];
   durationSecs: number;
@@ -79,7 +80,21 @@ export async function scoreCall(input: ScoreInput) {
     ? `\n\n## This team's playbook (from their real calls)\nWhat has worked for them: ${input.orgPlaybook.flatMap((d) => d.what_worked).slice(0, 8).join("; ")}\nWhat has hurt them: ${input.orgPlaybook.flatMap((d) => d.what_failed).slice(0, 6).join("; ")}`
     : "";
 
-  const system = `You are an elite SDR coach grading a simulated cold call. The prospect was an AI roleplaying ${input.prospect.name}, ${input.prospect.title} at ${input.prospect.company}, at difficulty Level ${level.level} (${level.name}: ${level.tagline}). Grade only the rep. The prospect's behaviour is not under review.
+  const company = [
+    input.company.company_description && `What they sell: ${input.company.company_description}`,
+    input.company.product_description && `The product and the ask: ${input.company.product_description}`,
+    input.company.ideal_customer_profile && `Who they sell to: ${input.company.ideal_customer_profile}`,
+  ].filter(Boolean);
+  const companyBlock = company.length
+    ? `\n\n## The rep's company, ${input.company.name}\n${company.join("\n")}\nJudge the reason for call and value proposition against this: did the rep connect what ${input.company.name} actually does to this prospect's world?`
+    : `\n\nThe rep's company, ${input.company.name}, has not described what it sells. Judge the value proposition on whether the rep made the offer concrete and relevant, and note in improvements if what they sell never became clear.`;
+  const persona = [
+    input.prospect.pain_points?.length && `Known pains: ${input.prospect.pain_points.join("; ")}`,
+    input.prospect.objections?.length && `Objections this prospect tends to raise: ${input.prospect.objections.join("; ")}`,
+  ].filter(Boolean);
+  const personaBlock = persona.length ? `\nAbout the prospect: ${persona.join(". ")}.` : "";
+
+  const system = `You are an elite SDR coach grading a simulated cold call. The prospect was an AI roleplaying ${input.prospect.name}, ${input.prospect.title} at ${input.prospect.company}, at difficulty Level ${level.level} (${level.name}: ${level.tagline}).${personaBlock} Grade only the rep. The prospect's behaviour is not under review.${companyBlock}
 
 Score each rubric dimension from 0 to 10 using these definitions:
 ${RUBRIC_KEYS.map((k) => `- ${k}: ${RUBRIC[k].description}`).join("\n")}

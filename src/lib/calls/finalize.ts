@@ -26,7 +26,7 @@ export async function finalizeCall(sessionId: string) {
     .update({ status: "scoring" })
     .eq("id", sessionId)
     .in("status", ["ended", "live", "failed", "collected"])
-    .select("*, targets(name, title, company), profiles(full_name), organizations(id)")
+    .select("*, targets(name, title, company, pain_points, objections), profiles(full_name), organizations(name, company_description, product_description, ideal_customer_profile)")
     .maybeSingle();
   if (!claimed) return;
   if (!claimed.elevenlabs_conversation_id) {
@@ -122,7 +122,8 @@ export async function finalizeCall(sessionId: string) {
       turns,
       metrics: metrics ?? computeMetrics(turns, durationSecs),
       difficulty: claimed.difficulty,
-      prospect: claimed.targets ?? { name: "Prospect", title: "", company: "" },
+      prospect: claimed.targets ?? { name: "Prospect", title: "", company: "", pain_points: [], objections: [] },
+      company: claimed.organizations ?? { name: "the rep's company", company_description: null, product_description: null, ideal_customer_profile: null },
       repName: claimed.profiles?.full_name ?? "Rep",
       orgPlaybook: digests,
       durationSecs,

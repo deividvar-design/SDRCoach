@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Target as TargetIcon } from "lucide-react";
 import { requireViewer } from "@/lib/auth";
+import { canManage } from "@/lib/domain/roles";
 import { LEVEL_LIST } from "@/lib/domain/levels";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/shell/page-header";
@@ -31,9 +32,28 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
     );
   }
 
+  const noContext = !viewer.org.product_description && !viewer.org.company_description;
+  const isManager = canManage(viewer.membership.role);
+
   return (
     <div className="space-y-8">
       <PageHeader title="Start a call" description="Pick who you're calling and how hard they'll make it." />
+      {noContext && (
+        <div className="border-signal/40 bg-card flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="font-medium">The prospect doesn't know what you sell yet</div>
+            <p className="text-muted-foreground text-sm">
+              Without company context the prospect reacts only to what you say on the call, and the coach can't judge whether your pitch fit.
+              {isManager ? " Two minutes in Settings fixes both." : " Ask your manager to fill in the company context in Settings."}
+            </p>
+          </div>
+          {isManager && (
+            <Button variant="outline" asChild>
+              <Link href="/settings#company">Add company context</Link>
+            </Button>
+          )}
+        </div>
+      )}
       <PracticeSetup
         targets={targets}
         levels={LEVEL_LIST}

@@ -45,7 +45,7 @@ export default async function SettingsPage() {
         </section>
       )}
       {canManage(viewer.membership.role) && (
-        <section className="bg-card rounded-xl border p-6">
+        <section id="company" className="bg-card rounded-xl border p-6">
           <h2 className="mb-1 font-medium">Company context</h2>
           <p className="text-muted-foreground mb-4 text-sm">Injected into every prospect persona so objections and reactions fit what you actually sell.</p>
           <OrganizationForm org={viewer.org} />
