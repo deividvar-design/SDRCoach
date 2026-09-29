@@ -22,9 +22,10 @@ export const requireViewer = cache(async (): Promise<Viewer> => {
 
   const [{ data: profile }, { data: memberships }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
-    supabase.from("memberships").select("*, organizations(*)").eq("user_id", user.id).order("created_at"),
+    supabase.from("memberships").select("*, organizations(*)").eq("user_id", user.id).order("created_at", { ascending: false }),
   ]);
 
+  // Most recently joined workspace wins, so accepting an invite lands you there.
   const membership = memberships?.[0] as (Membership & { organizations: Organization }) | undefined;
   if (!membership) redirect("/onboarding");
 
