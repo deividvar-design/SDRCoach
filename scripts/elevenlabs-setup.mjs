@@ -47,7 +47,7 @@ const res = await client.conversationalAi.agents.create({
         },
       },
     },
-    tts: { modelId: "eleven_flash_v2_5", voiceId: "EXAVITQu4vr4xnSDxMaL" },
+    tts: { modelId: "eleven_flash_v2", voiceId: "EXAVITQu4vr4xnSDxMaL" },
     turn: { turnTimeout: 12, silenceEndCallTimeout: 25 },
     conversation: { maxDurationSeconds: 900 },
   },
