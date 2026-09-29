@@ -193,6 +193,13 @@ export type CallTranscript = {
   created_at: string;
 }
 
+export type ScoreObjection = {
+  kind: string;
+  quote: string;
+  t_ms: number;
+  handled: "handled" | "partial" | "missed";
+};
+
 export type CallScore = {
   session_id: string;
   overall: number;
@@ -201,6 +208,7 @@ export type CallScore = {
   improvements: string[];
   coach_summary: string;
   moments: ScoreMoment[];
+  objections: ScoreObjection[];
   model: string | null;
   created_at: string;
 }
@@ -293,7 +301,7 @@ export type Database = {
       >;
       call_scores: Table<
         CallScore,
-        Insert<CallScore, "strengths" | "improvements" | "moments" | "model" | "created_at">,
+        Insert<CallScore, "strengths" | "improvements" | "moments" | "objections" | "model" | "created_at">,
         [{ foreignKeyName: "call_scores_session_id_fkey"; columns: ["session_id"]; isOneToOne: true; referencedRelation: "call_sessions"; referencedColumns: ["id"] }]
       >;
       knowledge_sources: Table<

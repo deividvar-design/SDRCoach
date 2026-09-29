@@ -142,6 +142,7 @@ export async function finalizeCall(sessionId: string) {
       improvements: score.improvements,
       coach_summary: score.coach_summary,
       moments: score.moments,
+      objections: score.objections,
       model: score.model,
     });
 

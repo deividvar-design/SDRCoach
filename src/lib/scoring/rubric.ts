@@ -56,3 +56,26 @@ export function weightedOverall(d: Record<RubricKey, { score: number }>) {
   return Math.round(total * 10) / 10;
 }
 export const LEVEL_UP_MIN_CALLS = 3;
+
+/**
+ * Objection taxonomy. The grader tags every objection the prospect raises with one of these so
+ * managers can see what the team hears most and how it is handled. Stable keys, human labels, and
+ * the coaching move that usually works.
+ */
+export const OBJECTIONS = {
+  no_time: { label: "No time right now", coaching: "Ask for thirty seconds, not fifteen minutes. Earn the extension with a reason for the call that fits their role." },
+  not_interested: { label: "Not interested", coaching: "Do not defend. Ask one question about the problem behind the product, then decide whether to continue." },
+  send_email: { label: "Send me an email", coaching: "Agree, then ask what would make it worth reading. That question restarts discovery." },
+  already_have_solution: { label: "Already have a solution", coaching: "Ask what they use it for and what it does not cover. Never argue with the incumbent." },
+  no_budget: { label: "No budget", coaching: "Budget is a timing signal. Ask when it is set and what the current cost of the problem is." },
+  not_decision_maker: { label: "Not the right person", coaching: "Ask who owns the problem and what they would need to see. A referral is a win." },
+  bad_timing: { label: "Bad timing / call later", coaching: "Pin a date and time before hanging up. A vague 'later' is a no." },
+  happy_as_is: { label: "Happy with how things are", coaching: "Ask what they would change if they could. Contentment usually has an exception." },
+  price: { label: "Too expensive", coaching: "Price came before value. Go back to the cost of the problem and a peer result." },
+  skeptical: { label: "Doubts it works", coaching: "Offer one specific proof point for a company like theirs, then ask what would convince them." },
+  how_did_you_get_my_number: { label: "How did you get my number", coaching: "Answer plainly, then return to the reason for the call. Do not apologise twice." },
+  other: { label: "Other", coaching: "Acknowledge, isolate the real concern, reframe, redirect to a question." },
+} as const;
+
+export type ObjectionKind = keyof typeof OBJECTIONS;
+export const OBJECTION_KEYS = Object.keys(OBJECTIONS) as ObjectionKind[];

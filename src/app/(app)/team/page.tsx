@@ -51,7 +51,15 @@ export default async function TeamPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Team" description={`${members?.length ?? 0} of ${viewer.org.seat_limit} seats in use.`} />
+      <PageHeader
+        title="Team"
+        description={`${members?.length ?? 0} of ${viewer.org.seat_limit} seats in use.`}
+        actions={
+          <Button variant="outline" asChild>
+            <Link href="/team/coaching">Coaching insights</Link>
+          </Button>
+        }
+      />
 
       <section className="bg-card rounded-xl border p-6">
         <h2 className="mb-4 font-medium">Invite someone</h2>

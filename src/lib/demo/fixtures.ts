@@ -181,6 +181,12 @@ export const SCORES: CallScore[] = SPECS.map((s) => {
       { t_ms: 238000, label: "Acknowledged Samsara well", kind: "good" },
       { t_ms: 355000, label: "Specific close", kind: "good" },
     ],
+    objections: [
+      { kind: "already_have_solution", quote: "We already use Samsara though. Why would I run two of these?", t_ms: 150000, handled: base >= 6 ? "handled" : "partial" },
+      { kind: "bad_timing", quote: "Not this quarter. We've got the renewal first.", t_ms: 300000, handled: base >= 7.5 ? "handled" : base >= 5.5 ? "partial" : "missed" },
+      ...(base < 6.5 ? [{ kind: "send_email", quote: "Just send me something I can forward.", t_ms: 330000, handled: "missed" as const }] : []),
+      ...(base < 5 ? [{ kind: "no_time", quote: "I've got about a minute.", t_ms: 9000, handled: "partial" as const }] : []),
+    ],
     model: "claude-opus-5",
     created_at: daysAgo(s.day, s.hour),
   };

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, LayoutDashboard, Phone, Settings, Target, Users } from "lucide-react";
+import { BookOpen, GraduationCap, LayoutDashboard, Phone, Settings, Target, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -10,6 +10,7 @@ const NAV = [
   { href: "/targets", label: "Targets", icon: Target },
   { href: "/sessions", label: "Calls", icon: Phone },
   { href: "/team", label: "Team", icon: Users, managerOnly: true },
+  { href: "/team/coaching", label: "Coaching", icon: GraduationCap, managerOnly: true },
   { href: "/knowledge", label: "Knowledge", icon: BookOpen, managerOnly: true },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -22,7 +23,7 @@ export function SidebarNav({ isManager, variant = "sidebar" }: { isManager: bool
     return (
       <nav className="grid auto-cols-fr grid-flow-col" aria-label="Primary">
         {items.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const active = pathname === item.href || (pathname.startsWith(`${item.href}/`) && !items.some((o) => o.href !== item.href && o.href.startsWith(item.href) && pathname.startsWith(o.href)));
           return (
             <Link
               key={item.href}
@@ -47,7 +48,7 @@ export function SidebarNav({ isManager, variant = "sidebar" }: { isManager: bool
   return (
     <nav className="flex flex-col gap-1" aria-label="Primary">
       {items.map((item) => {
-        const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const active = pathname === item.href || (pathname.startsWith(`${item.href}/`) && !items.some((o) => o.href !== item.href && o.href.startsWith(item.href) && pathname.startsWith(o.href)));
         return (
           <Link
             key={item.href}

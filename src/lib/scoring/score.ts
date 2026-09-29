@@ -4,7 +4,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { LEVELS } from "@/lib/domain/levels";
 import type { CallMetrics, CallOutcome, Difficulty, ScoreDimensions, TranscriptTurn } from "@/types/database";
-import { RUBRIC, RUBRIC_KEYS, weightedOverall } from "./rubric";
+import { OBJECTION_KEYS, OBJECTIONS, RUBRIC, RUBRIC_KEYS, weightedOverall, type ObjectionKind } from "./rubric";
 import type { KnowledgeDigest } from "@/lib/knowledge/digest";
 
 export const SCORING_MODEL = "claude-opus-5";
@@ -33,6 +33,17 @@ const ScoreSchema = z.object({
       }),
     )
     .max(6),
+  objections: z
+    .array(
+      z.object({
+        kind: z.enum(OBJECTION_KEYS as [string, ...string[]]).describe("The closest category from the list"),
+        quote: z.string().describe("The prospect's words, verbatim or lightly trimmed, max 20 words"),
+        t_ms: z.number().describe("Timestamp of the prospect's turn, from the transcript"),
+        handled: z.enum(["handled", "partial", "missed"]).describe("handled = acknowledged, isolated and redirected; partial = acknowledged but caved or argued; missed = ignored or talked over"),
+      }),
+    )
+    .max(8)
+    .describe("Every distinct objection or pushback the prospect raised, in order. Empty if none."),
   inferred_outcome: z
     .enum(["meeting_booked", "callback", "info_sent", "rejected", "hung_up", "incomplete"])
     .describe("What the prospect decided, judged strictly from the prospect's own words at the end of the call"),
@@ -75,6 +86,9 @@ ${RUBRIC_KEYS.map((k) => `- ${k}: ${RUBRIC[k].description}`).join("\n")}
 
 Calibration: 5 is an average new SDR. 7 is a solid rep who would book meetings at a normal rate. 9+ is rare and requires the rep to have done that dimension near-perfectly for this call. Score a dimension low if the rep never attempted it (for example no close at all is a 1, not a 5). Do not inflate. Be specific: every rationale must reference something the rep said or failed to say. If the call was very short or the prospect hung up early, judge what was attempted and mark untouched dimensions low with a one-line explanation.
 
+Tag every objection or pushback the prospect raised with the closest category and judge how the rep handled it:
+${OBJECTION_KEYS.map((k) => `- ${k}: ${OBJECTIONS[k].label}`).join("\n")}
+
 The outcome is decided by the prospect, not the rep. Infer it strictly from the prospect's final words.${playbook}`;
 
   const user = `## Call
@@ -114,6 +128,7 @@ ${renderTranscript(input.turns, input.repName, input.prospect.name)}`;
     improvements: parsed.improvements,
     coach_summary: parsed.coach_summary,
     moments: parsed.moments,
+    objections: parsed.objections.map((o) => ({ ...o, kind: (OBJECTION_KEYS as string[]).includes(o.kind) ? (o.kind as ObjectionKind) : "other" })),
     inferred_outcome: parsed.inferred_outcome as CallOutcome,
     outcome_reason: parsed.outcome_reason,
     model: response.model,
