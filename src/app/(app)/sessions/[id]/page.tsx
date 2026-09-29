@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Phone, RotateCcw } from "lucide-react";
 import { requireViewer } from "@/lib/auth";
 import { LEVELS, LEVEL_LIST } from "@/lib/domain/levels";
+import { canManage } from "@/lib/domain/roles";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatDuration } from "@/lib/utils";
 import { PageHeader } from "@/components/shell/page-header";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ScoreReveal } from "@/components/report/score-reveal";
 import { ScorePoller } from "@/components/report/score-poller";
 import { DimensionBars } from "@/components/report/dimension-bars";
+import { ReviewPrompt } from "@/components/report/review-prompt";
 import { StatTile } from "@/components/stat-tile";
 import type { CallOutcome } from "@/types/database";
 
@@ -42,16 +44,25 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
   ]);
 
   const level = LEVELS[session.difficulty];
-  const pending = !score && (session.status === "scoring" || session.status === "ended" || session.status === "live");
   const isOwn = session.user_id === viewer.userId;
   const nextLevel = LEVEL_LIST.find((l) => l.level === level.level + 1);
   const outcome = session.outcome ? OUTCOME_LABEL[session.outcome] : null;
   const m = session.metrics;
-  const hasRecording = Boolean(process.env.ELEVENLABS_API_KEY && session.elevenlabs_conversation_id && score);
+
+  const working = session.status === "scoring" || session.status === "ended" || session.status === "live";
+  const collected = session.status === "collected";
+  const reviewRequested = session.review_requested_at !== null;
+  const unscored = !score && (working || collected);
+  // Transcript still on its way (no review asked yet) or the coach is scoring (review asked).
+  const collecting = unscored && working && !reviewRequested;
+  const reviewing = unscored && reviewRequested && session.status !== "failed";
+  const noSpeech = unscored && collected && session.outcome === "incomplete" && !session.metrics?.rep_turns;
+  const askReview = unscored && !reviewRequested && !noSpeech && (isOwn || canManage(viewer.membership.role));
+  const hasRecording = Boolean(process.env.ELEVENLABS_API_KEY && session.elevenlabs_conversation_id && (score || collected));
 
   return (
     <div className="space-y-8">
-      <ScorePoller active={pending} sessionId={session.id} />
+      <ScorePoller active={collecting || reviewing} sessionId={session.id} doneMessage={reviewing ? "Your review is ready" : null} />
       <PageHeader
         eyebrow={`${formatDate(session.created_at)} · ${formatDuration(session.duration_seconds)} · L${level.level} ${level.name}${!isOwn && session.profiles?.full_name ? ` · ${session.profiles.full_name}` : ""}`}
         title={session.targets ? `${session.targets.name}, ${session.targets.company}` : "Call"}
@@ -76,17 +87,68 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
         }
       />
 
-      {pending && (
+      {askReview && <ReviewPrompt sessionId={session.id} skipped={session.review_skipped_at !== null} collecting={working} />}
+
+      {reviewing && (
         <div className="bg-card flex items-center gap-4 rounded-2xl border p-6">
           <span className="bg-signal size-2.5 rounded-full live-pulse" />
           <div>
             <div className="font-medium">Your coach is reviewing the call</div>
-            <div className="text-muted-foreground text-sm">Transcript, stats and a scored breakdown land here in about half a minute.</div>
+            <div className="text-muted-foreground text-sm">A scored breakdown with key moments lands here in about half a minute.</div>
           </div>
         </div>
       )}
 
-      {session.status === "scored" && !score && (
+      {collecting && !askReview && (
+        <div className="bg-card flex items-center gap-4 rounded-2xl border p-6">
+          <span className="bg-signal size-2.5 rounded-full live-pulse" />
+          <div className="text-muted-foreground text-sm">Fetching the transcript…</div>
+        </div>
+      )}
+
+      {unscored && collected && !noSpeech && (
+        <>
+          <section className="bg-card paper-grain grid gap-6 rounded-2xl border p-6 md:grid-cols-[minmax(0,260px)_1fr] md:gap-10 md:p-8">
+            <div>
+              <div className="text-muted-foreground mb-2 font-mono text-[11px] tracking-[0.14em] uppercase">The prospect decided</div>
+              {outcome ? <Badge variant={outcome.variant}>{outcome.label}</Badge> : <span className="text-muted-foreground text-sm">Not recorded</span>}
+              {session.outcome_reason && <p className="text-muted-foreground mt-2 text-sm italic">“{session.outcome_reason}”</p>}
+            </div>
+            <div className="md:border-l md:pl-10">
+              <div className="text-muted-foreground mb-2 font-mono text-[11px] tracking-[0.14em] uppercase">What happened</div>
+              <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">{session.prospect_summary ?? "No summary available for this call."}</p>
+            </div>
+          </section>
+          {m && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatTile label="You talked" value={`${Math.round(m.rep_talk_ratio * 100)}%`} />
+              <StatTile label="Longest monologue" value={m.longest_rep_monologue_secs} unit="sec" />
+              <StatTile label="Questions asked" value={m.rep_questions} />
+              <StatTile label="Filler words" value={m.filler_words} />
+            </div>
+          )}
+          <section className="bg-card rounded-2xl border">
+            <div className="flex flex-col gap-4 border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="font-medium">Transcript</h2>
+              {hasRecording && <audio controls preload="none" className="h-9 w-full sm:max-w-sm" src={`/api/calls/${session.id}/audio`} />}
+            </div>
+            <div className="max-h-[640px] space-y-5 overflow-y-auto p-6">
+              {transcript?.turns.map((t, i) => (
+                <div key={i} className={`max-w-3xl ${t.role === "rep" ? "" : "pl-5"}`}>
+                  <div className="text-muted-foreground mb-1 flex items-center gap-2 font-mono text-[10px] tracking-wider uppercase">
+                    <span>{t.role === "rep" ? (isOwn ? "You" : session.profiles?.full_name ?? "Rep") : session.targets?.name.split(" ")[0] ?? "Prospect"}</span>
+                    {typeof t.t_start_ms === "number" && <span className="tabular">{formatDuration(Math.floor(t.t_start_ms / 1000))}</span>}
+                  </div>
+                  <p className={`text-sm leading-relaxed ${t.role === "prospect" ? "text-muted-foreground" : ""}`}>{t.text}</p>
+                </div>
+              ))}
+              {!transcript?.turns.length && <p className="text-muted-foreground text-sm">No transcript captured.</p>}
+            </div>
+          </section>
+        </>
+      )}
+
+      {noSpeech && (
         <section className="bg-card rounded-2xl border p-6">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={outcome?.variant ?? "secondary"}>{outcome?.label ?? "Incomplete"}</Badge>

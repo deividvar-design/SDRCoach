@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 
   const db = createAdminClient();
   const { data: session } = await db.from("call_sessions").select("id, status").eq("elevenlabs_conversation_id", payload.data.conversation_id).maybeSingle();
-  if (session && session.status !== "scored" && session.status !== "scoring") {
+  if (session && session.status !== "scored" && session.status !== "scoring" && session.status !== "collected") {
     after(async () => {
       try {
         await finalizeCall(session.id);

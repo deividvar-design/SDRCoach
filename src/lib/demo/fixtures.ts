@@ -124,10 +124,27 @@ export const SESSIONS: CallSession[] = SPECS.map((s) => ({
     interruptions_by_rep: s.score > 7 ? 0 : 2,
   },
   prospect_summary: null,
+  review_requested_at: daysAgo(s.day, s.hour),
+  review_skipped_at: null,
   created_at: daysAgo(s.day, s.hour),
 }));
 
 const dim = (score: number, rationale: string) => ({ score, rationale });
+
+// One call collected but not reviewed: the rep has not decided yet.
+SESSIONS.push({
+  ...SESSIONS[SESSIONS.length - 1],
+  id: "s-21",
+  status: "collected",
+  outcome: "callback",
+  outcome_reason: "Interesting enough, but I'm mid-quarter close. Call me in two weeks.",
+  prospect_summary: "The rep opened with a fleet-size hook, asked two discovery questions about idle time, then pitched for most of the call. The prospect asked to be called back after quarter close.",
+  review_requested_at: null,
+  review_skipped_at: null,
+  started_at: daysAgo(0, 9),
+  ended_at: daysAgo(0, 9),
+  created_at: daysAgo(0, 9),
+});
 
 export const SCORES: CallScore[] = SPECS.map((s) => {
   const base = s.score;

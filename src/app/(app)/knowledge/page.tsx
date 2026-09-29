@@ -29,7 +29,7 @@ export default async function KnowledgePage() {
 
   return (
     <div className="space-y-8">
-      <ScorePoller active={busy} />
+      <ScorePoller active={busy} doneMessage="Your transcripts are ready" />
       <PageHeader
         eyebrow="Grounding"
         title="Knowledge"

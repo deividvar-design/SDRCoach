@@ -36,7 +36,7 @@ export default async function TeamPage() {
 
   const doneByAssignment = new Map<string, number>();
   for (const s of sessions ?? []) {
-    if (s.assignment_id && s.status === "scored") doneByAssignment.set(s.assignment_id, (doneByAssignment.get(s.assignment_id) ?? 0) + 1);
+    if (s.assignment_id && (s.status === "scored" || s.status === "collected") && s.outcome !== "incomplete") doneByAssignment.set(s.assignment_id, (doneByAssignment.get(s.assignment_id) ?? 0) + 1);
   }
 
   const statsByUser = new Map<string, { calls: number; booked: number; scores: number[] }>();

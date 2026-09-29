@@ -156,6 +156,8 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
     let stopRing: (() => void) | null = null;
     try {
       micRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // So the "review is ready" notice can reach a backgrounded tab. Browsers only ever ask once.
+      if (typeof Notification !== "undefined" && Notification.permission === "default") Notification.requestPermission().catch(() => {});
       const ctx = new AudioContext();
       stopRing = playRingback(ctx, 2);
 
