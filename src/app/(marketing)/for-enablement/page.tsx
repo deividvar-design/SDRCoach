@@ -47,7 +47,7 @@ export default function ForEnablementPage() {
         <FeatureRow
           eyebrow="Measurement"
           title="Skill over time, per rep and per dimension."
-          body={<><p>Trend lines per rep. Weakest dimension highlighted. Levels that unlock on evidence, three calls averaging seven or better. Export-ready numbers for the QBR instead of anecdotes.</p></>}
+          body={<><p>Trend lines per rep. Weakest dimension highlighted. Levels recommended on evidence, three calls averaging seven or better, never locked. A team heatmap and an objection league table on the coaching view. CSV export per rep for the QBR instead of anecdotes.</p></>}
           image="/screens/rep.png"
           alt="Per-rep view with trend chart and dimension averages"
         />
@@ -61,8 +61,9 @@ export default function ForEnablementPage() {
             ["Real voice, real interruptions", "Full-duplex voice. The prospect cuts in when a rep monologues, the same as a buyer would."],
             ["Prospect-decided outcomes", "Booked, callback, info requested, rejected or hung up, judged from the prospect's own closing words. No self-reporting."],
             ["Your targets, your levels", "Real accounts alongside six built-in personas. Three difficulty levels with distinct behavioural briefs."],
-            ["Recordings and transcripts", "Every call is replayable with key moments pinned to the transcript."],
-            ["Roles and tenancy", "Owners, managers and reps. Reps see their own calls. Managers see the org. Enforced in the database."],
+            ["Recordings and transcripts", "Every call is replayable with key moments pinned to the transcript. Delete a call and it is gone, recording included."],
+            ["Objections, tagged", "Twelve objection types tagged on every reviewed call with how the rep handled them, so 'send me an email' has a number, not a feeling."],
+            ["Roles and tenancy", "Owners, managers and reps. Reps see their own calls, or the whole team's when you turn that on. Managers see everything. Enforced in the database."],
             ["No training on your data", "Your transcripts ground your prospects and nothing else. Delete a source and its digest goes with it."],
           ].map(([t, b]) => (
             <li key={t} className="bg-card rounded-2xl border p-6">
@@ -74,7 +75,7 @@ export default function ForEnablementPage() {
       </Section>
 
       <ProofSection />
-      <CtaBand title="Ground a prospect in your calls this afternoon." body="Ten free calls. Upload transcripts on the Team plan trial. Work email only." />
+      <CtaBand title="Ground a prospect in your calls this afternoon." body="Ten free calls. Upload transcripts during the trial. Work email only." />
     </>
   );
 }

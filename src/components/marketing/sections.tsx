@@ -25,10 +25,10 @@ export function ProofSection() {
     <Section className="border-t">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Eyebrow>Results</Eyebrow>
-          <H2>What changes after twenty practice calls.</H2>
+          <Eyebrow>{PROOF.placeholder ? "What to expect" : "Results"}</Eyebrow>
+          <H2>What twenty practice calls should change.</H2>
         </div>
-        {PROOF.placeholder && <span className="text-muted-foreground rounded-full border px-3 py-1 text-xs">Illustrative results from pilot teams</span>}
+        {PROOF.placeholder && <span className="text-muted-foreground rounded-full border px-3 py-1 text-xs">Illustrative targets, not customer results</span>}
       </div>
       <dl className="mt-10 grid gap-6 md:grid-cols-3">
         {PROOF.stats.map((s) => (

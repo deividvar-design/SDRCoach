@@ -11,7 +11,7 @@ function layout(title: string, bodyHtml: string, cta?: { label: string; href: st
 <tr><td style="padding:20px 32px 0;font-size:26px;line-height:1.2;font-family:Georgia,'Times New Roman',serif">${esc(title)}</td></tr>
 <tr><td style="padding:16px 32px 0;font-size:15px;line-height:1.6;color:#3b3833">${bodyHtml}</td></tr>
 ${cta ? `<tr><td style="padding:24px 32px 0"><a href="${cta.href}" style="display:inline-block;background:#1c1b19;color:#f7f5f0;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;font-size:15px">${esc(cta.label)}</a></td></tr>` : ""}
-<tr><td style="padding:28px 32px 32px;font-size:12px;color:#8a857a">${esc(SITE.company.legalName)} · ${esc(SITE.company.address)} · <a href="${absoluteUrl("/privacy")}" style="color:#8a857a">Privacy</a></td></tr>
+<tr><td style="padding:28px 32px 32px;font-size:12px;color:#8a857a">${esc(SITE.company.legalName)}${SITE.company.address ? ` · ${esc(SITE.company.address)}` : ""} · <a href="${absoluteUrl("/privacy")}" style="color:#8a857a">Privacy</a></td></tr>
 </table></td></tr></table></body></html>`;
 }
 

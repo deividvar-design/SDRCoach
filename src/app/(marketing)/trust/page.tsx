@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const PILLARS = [
   { icon: Lock, title: "Your data never trains models", body: "Transcripts and recordings are used only to ground your own team's prospects and grade your own team's calls. We do not train, fine-tune or share models with them. Our AI providers are contractually bound the same way." },
-  { icon: Users, title: "Tenant isolation in the database", body: "Every row belongs to one workspace. Access is enforced at the database level, not only in application code. Reps see their own calls. Managers see their workspace. Nobody sees another company's." },
+  { icon: Users, title: "Tenant isolation in the database", body: "Every row belongs to one workspace. Access is enforced at the database level, not only in application code. Reps see their own calls, or the whole team's when a manager allows it. Managers see their workspace. Nobody sees another company's." },
   { icon: Globe, title: "Hosted in the EU", body: "Your database, authentication and file storage live in the European Union. Real-time voice and call scoring are performed by specialised providers under contract; the full list, with regions, is in our data processing agreement." },
   { icon: Database, title: "Encryption", body: "Encrypted in transit and at rest." },
   { icon: Trash2, title: "Retention and deletion", body: "Recordings and transcripts are kept while your workspace is active. Delete a call, a source or your workspace and the data is removed, including from subprocessors, within 30 days. Export on request." },
@@ -53,8 +53,8 @@ export default function TrustPage() {
       <Section className="border-t">
         <Eyebrow>Processing</Eyebrow>
         <H2>What happens to the data, and where.</H2>
-        <div className="bg-card mt-8 overflow-hidden rounded-2xl border">
-          <table className="w-full text-sm">
+        <div className="bg-card mt-8 overflow-x-auto rounded-2xl border">
+          <table className="w-full min-w-[560px] text-sm">
             <thead className="text-muted-foreground bg-muted/50 text-left text-xs uppercase tracking-wide">
               <tr><th className="px-5 py-3">Function</th><th className="px-5 py-3">Purpose</th><th className="px-5 py-3">Where and how</th></tr>
             </thead>

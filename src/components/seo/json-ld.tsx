@@ -54,7 +54,7 @@ export function articleLd(p: { title: string; description: string; slug: string;
     description: p.description,
     datePublished: p.date,
     dateModified: p.updated ?? p.date,
-    author: { "@type": "Person", name: p.author },
+    author: p.author === SITE.name ? { "@type": "Organization", name: SITE.name, url: SITE.url } : { "@type": "Person", name: p.author },
     publisher: { "@type": "Organization", name: SITE.name, logo: { "@type": "ImageObject", url: absoluteUrl("/opengraph-image") } },
     mainEntityOfPage: absoluteUrl(`/blog/${p.slug}`),
     image: absoluteUrl("/opengraph-image"),

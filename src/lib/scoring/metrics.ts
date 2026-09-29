@@ -1,7 +1,7 @@
 import type { CallMetrics, TranscriptTurn } from "@/types/database";
 
-const FILLERS = /\b(um+|uh+|erm|like,|you know|basically|literally|sort of|kind of|actually)\b/gi;
-const OBJECTION_HINTS = /\b(not interested|no budget|already (have|use|work)|send (me )?(an )?email|bad time|busy|call (me )?back|not the (right )?person|who is this|how did you get|remove me|no thanks|we'?re (good|fine|happy)|too expensive|how much)\b/i;
+const FILLERS = /\b(um+|uh+|erm|you know|basically|literally|sort of|kind of|actually)\b|\blike,/gi;
+const OBJECTION_HINTS = /\b(not interested|no budget|already (have|use|work)|send (me )?(an |some )?(email|info|something)|bad time|in the middle of|call (me )?back|not the (right )?person|who is this|how did you get|remove me|no thanks|we'?re (good|fine|happy|all set)|too expensive|not (this|a) (quarter|priority))\b/i;
 
 interface TimedTurn extends TranscriptTurn {
   t_start_ms: number;
@@ -25,7 +25,10 @@ export function computeMetrics(rawTurns: TranscriptTurn[], durationSecs: number)
     const next = turns[i + 1]?.t_start_ms ?? endMs;
     // Estimate speaking time from words when the gap to the next turn is generous.
     const words = t.text.split(/\s+/).filter(Boolean).length;
-    const spoken = Math.min(Math.max(next - t.t_start_ms, 0), words * 400 + 800);
+    const byWords = words * 400 + 800;
+    const gap = next - t.t_start_ms;
+    // The last turn has no successor (or the call clock stopped early): fall back to the word estimate.
+    const spoken = gap > 0 ? Math.min(gap, byWords) : byWords;
     if (t.role === "rep") {
       repMs += spoken;
       longestRep = Math.max(longestRep, spoken);

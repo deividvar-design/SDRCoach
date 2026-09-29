@@ -17,7 +17,7 @@ export function MarketingFooter() {
           <Logo />
           <p className="text-muted-foreground max-w-xs text-sm">{SITE.description}</p>
           <p className="text-muted-foreground text-xs">
-            {SITE.company.legalName} · {SITE.company.address}
+            {SITE.company.legalName}{SITE.company.address ? ` · ${SITE.company.address}` : ""}
           </p>
         </div>
         {COLS.map((c) => (

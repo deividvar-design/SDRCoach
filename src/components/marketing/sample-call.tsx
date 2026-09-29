@@ -91,7 +91,7 @@ export function SampleCall() {
             {playing ? (
               <Button size="icon-lg" variant="outline" onClick={pause} aria-label="Pause"><Pause /></Button>
             ) : (
-              <Button size="icon-lg" variant="signal" onClick={start} aria-label={done ? "Play again" : "Play sample call"}>
+              <Button size="icon-lg" variant="signal" onClick={start} aria-label={done ? "Play again" : "Play the example call"}>
                 <Play />
               </Button>
             )}
@@ -99,7 +99,7 @@ export function SampleCall() {
               <Button size="icon-lg" variant="ghost" onClick={reset} aria-label="Restart"><RotateCcw /></Button>
             )}
           </div>
-          <p className="text-muted-foreground mt-4 text-xs">{done ? "Scored in 41 seconds." : started ? (prospectSpeaking ? "Rebecca is speaking" : "Sam is speaking") : "Hear a rep take on a Level 3 prospect"}</p>
+          <p className="text-muted-foreground mt-4 text-xs">{done ? "Reviewed and scored." : started ? (prospectSpeaking ? "Rebecca is speaking" : "Sam is speaking") : "Watch a rep take on a Level 3 prospect"}</p>
         </div>
 
         <div className="flex min-h-[380px] flex-col">

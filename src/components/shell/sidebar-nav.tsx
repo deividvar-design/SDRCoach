@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, GraduationCap, LayoutDashboard, Phone, Settings, Target, Users } from "lucide-react";
+import { BookOpen, GraduationCap, LayoutDashboard, MoreHorizontal, Phone, Settings, Target, Users } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -20,20 +21,17 @@ export function SidebarNav({ isManager, variant = "sidebar" }: { isManager: bool
   const items = NAV.filter((n) => !n.managerOnly || isManager);
 
   if (variant === "bar") {
+    const primary = items.slice(0, 4);
+    const overflow = items.slice(4);
+    const overflowActive = overflow.some((o) => pathname === o.href || pathname.startsWith(`${o.href}/`));
+    const barItem = (active: boolean) =>
+      cn("flex flex-col items-center gap-1 py-2 text-[10px] font-medium tracking-wide", active ? "text-foreground" : "text-muted-foreground");
     return (
       <nav className="grid auto-cols-fr grid-flow-col" aria-label="Primary">
-        {items.map((item) => {
-          const active = pathname === item.href || (pathname.startsWith(`${item.href}/`) && !items.some((o) => o.href !== item.href && o.href.startsWith(item.href) && pathname.startsWith(o.href)));
+        {primary.map((item) => {
+          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex flex-col items-center gap-1 py-2 text-[10px] font-medium tracking-wide",
-                active ? "text-foreground" : "text-muted-foreground",
-              )}
-            >
+            <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={barItem(active)}>
               <span className={cn("grid h-7 w-12 place-items-center rounded-full transition-colors", active && "bg-accent")}>
                 <item.icon className="size-[18px]" />
               </span>
@@ -41,6 +39,25 @@ export function SidebarNav({ isManager, variant = "sidebar" }: { isManager: bool
             </Link>
           );
         })}
+        {overflow.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger className={barItem(overflowActive)} aria-label="More">
+              <span className={cn("grid h-7 w-12 place-items-center rounded-full transition-colors", overflowActive && "bg-accent")}>
+                <MoreHorizontal className="size-[18px]" />
+              </span>
+              More
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="top" className="mb-2 min-w-44">
+              {overflow.map((item) => (
+                <DropdownMenuItem key={item.href} asChild>
+                  <Link href={item.href} className="flex items-center gap-2">
+                    <item.icon className="size-4" /> {item.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </nav>
     );
   }

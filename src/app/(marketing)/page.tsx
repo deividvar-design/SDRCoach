@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Mic, Target, TrendingUp } from "lucide-react";
+import { ArrowRight, BookOpen, GraduationCap, MessageSquareText, Mic, Target, TrendingUp, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LEVEL_LIST } from "@/lib/domain/levels";
 import { SITE } from "@/lib/site";
@@ -11,14 +11,20 @@ import { JsonLd, organizationLd, softwareLd } from "@/components/seo/json-ld";
 
 export const metadata: Metadata = {
   title: { absolute: "SDRCoach · AI cold-call training for SDR teams" },
-  description: "Reps dial realistic AI prospects built from your own targets and get a scored coaching report after every call. Free trial, work email only.",
+  description: "Reps dial realistic AI prospects built from your own targets. Every call ends with the prospect's decision and a transcript; a scored coach's review is one click away. Managers see where the team struggles and what prospects push back on. Free trial, work email only.",
   alternates: { canonical: "/" },
 };
 
 const STEPS = [
-  { icon: Target, title: "Add who you're calling", body: "Real accounts from this quarter's list, or one of six built-in personas. Each becomes a live prospect with its own objections." },
-  { icon: Mic, title: "Dial", body: "A real, interruptible voice call. Level 1 is friendly. Level 3 tries to hang up on you. The prospect decides how it ends." },
-  { icon: TrendingUp, title: "Get coached in under a minute", body: "Transcript, talk ratio, a six-dimension score and the one thing to do differently next time. Managers see every rep." },
+  { icon: Target, title: "Add who you're calling", body: "Real accounts from this quarter's list, or one of six built-in personas. Pick a voice, add the pains and objections, and each one becomes a live prospect." },
+  { icon: Mic, title: "Dial", body: "A real, interruptible voice call. Level 1 is friendly. Level 3 tries to hang up on you. The prospect decides how it ends, and says why." },
+  { icon: TrendingUp, title: "Get coached, when you want it", body: "Every call keeps its transcript, stats and outcome. Ask for the review and the coach scores six skills, tags every objection and names the one thing to change next time." },
+];
+
+const MANAGER_VIEW = [
+  { icon: GraduationCap, title: "Skills by rep", body: "One heatmap: six skills across every rep, weakest first, so the next 1:1 starts from evidence." },
+  { icon: MessageSquareText, title: "What prospects push back on", body: "Every objection the coach tagged, ranked by frequency, with how often the team handled it cleanly and who struggles with it." },
+  { icon: Trophy, title: "A floor that competes", body: "Streaks, personal bests and a weekly leaderboard reps can see. Notes from you land on their dashboard. A Monday digest lands in yours." },
 ];
 
 export default function HomePage() {
@@ -31,7 +37,7 @@ export default function HomePage() {
           <Eyebrow>AI cold-call training for SDR teams</Eyebrow>
           <h1 className="font-display mt-4 text-5xl text-balance md:text-7xl">{SITE.tagline}</h1>
           <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg text-balance">
-            Your reps dial an AI prospect built from your real targets and your real call transcripts. They get a score, a coach's breakdown and a replay in under a minute. You see who's ready for the phones.
+            Your reps dial an AI prospect built from your real targets, at three levels of difficulty. Every call ends with the prospect's decision, a transcript and a replay. A scored coach's review is one click away. You see who's ready for the phones, where the team struggles and what prospects push back on.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button size="lg" variant="signal" asChild>
@@ -43,7 +49,7 @@ export default function HomePage() {
         </div>
         <div className="mt-14">
           <SampleCall />
-          <p className="text-muted-foreground mt-3 text-center text-xs">A scripted Level 3 call against a built-in persona. Your prospects sound like your market.</p>
+          <p className="text-muted-foreground mt-3 text-center text-xs">A scripted example of a Level 3 call, shown as text. Your prospects speak, interrupt, and sound like your market.</p>
         </div>
       </Section>
 
@@ -83,6 +89,24 @@ export default function HomePage() {
       </Section>
 
       <Section className="border-t">
+        <Eyebrow>For the manager</Eyebrow>
+        <H2>Coach the pattern, not the call.</H2>
+        <p className="text-muted-foreground mt-5 max-w-2xl">
+          You do not have to listen to fifty calls to know what to fix. The coaching view aggregates every reviewed call into the two things worth ten minutes in the next team meeting: the weakest skill and the most mishandled objection.
+        </p>
+        <div className="mt-10 grid gap-4 md:grid-cols-3">
+          {MANAGER_VIEW.map((m) => (
+            <div key={m.title} className="bg-card rounded-2xl border p-6">
+              <m.icon className="text-signal size-5" />
+              <h3 className="mt-4 text-lg font-medium">{m.title}</h3>
+              <p className="text-muted-foreground mt-2 text-sm">{m.body}</p>
+            </div>
+          ))}
+        </div>
+        <Button className="mt-8" variant="outline" asChild><Link href="/for-managers">How managers use it <ArrowRight /></Link></Button>
+      </Section>
+
+      <Section className="border-t">
         <div className="grid items-center gap-10 md:grid-cols-2">
           <div>
             <Eyebrow>Grounded in your calls</Eyebrow>
@@ -93,7 +117,7 @@ export default function HomePage() {
             <Button className="mt-6" variant="outline" asChild><Link href="/for-enablement">How enablement teams use it <ArrowRight /></Link></Button>
           </div>
           <div className="bg-card rounded-2xl border p-6">
-            <div className="text-muted-foreground mb-3 flex items-center gap-2 font-mono text-[11px] tracking-[0.14em] uppercase"><BookOpen className="size-3.5" /> From 142 uploaded calls</div>
+            <div className="text-muted-foreground mb-3 flex items-center gap-2 font-mono text-[11px] tracking-[0.14em] uppercase"><BookOpen className="size-3.5" /> Example digest from uploaded calls</div>
             <ul className="space-y-3 text-sm">
               <li className="rounded-lg border p-3"><span className="text-muted-foreground">Objection, in their words:</span> “We already run Samsara on half the trucks.”</li>
               <li className="rounded-lg border p-3"><span className="text-muted-foreground">Tone:</span> Short answers. Impatient with scripts. Warms up to fuel-cost-per-mile language.</li>
@@ -108,7 +132,7 @@ export default function HomePage() {
       <Section className="border-t">
         <div className="grid gap-6 md:grid-cols-2">
           {[
-            { href: "/for-managers", title: "For sales managers", body: "Ramp new hires in days, see every rep's weakest skill, assign practice before the real sequence starts." },
+            { href: "/for-managers", title: "For sales managers", body: "Ramp new hires in days, see every rep's weakest skill and the objections the team fumbles, assign practice before the real sequence starts." },
             { href: "/for-enablement", title: "For enablement teams", body: "Turn your call library into a training ground. One rubric, every rep, measurable week over week." },
           ].map((c) => (
             <Link key={c.href} href={c.href} className="bg-card group rounded-2xl border p-8 transition-shadow hover:shadow-lg">

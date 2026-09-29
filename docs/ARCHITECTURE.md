@@ -47,3 +47,14 @@ System light/dark with a manual override (`src/components/theme`). Tokens in `gl
 
 ## Not yet built
 SSO, usage metering for call allowances and overage, copying recordings into our own storage, live coaching hints during the call.
+
+## Trust boundaries added in the hardening pass
+
+- `call_sessions` is server-owned: reps have no insert or update grant. `POST /api/calls` inserts with the service role and stores a SHA-256 of the prospect prompt it issued; `finalizeCall` compares it with the override ElevenLabs recorded on the conversation and marks a mismatch `collected`/`incomplete` with `error = "prompt mismatch"`, never scored. One open call per rep and one voice usage row per session are unique indexes (migration 0012).
+- Targets are manager-only. Target text, company context and the transcript are framed as evidence in both prompts; lengths are capped in the action.
+- Every finalize claim bumps `finalize_attempts` and pins `ended_at`. Transcript still processing → hand back to `ended` (up to three waits); scorer failure → stay `collected` with the error and let the report retry; five attempts → stop. Collected data is written before scoring starts, so nothing is lost.
+- Recovery paths: `/end` is compare-and-set; `/api/calls/[id]/finalize` (rep or manager) retries `ended`, `collected`+requested, and frees a `scoring` claim older than five minutes; `sweepStaleSessions` does the cheap status repairs inline and defers transcript fetches to `after()` on the dial path; the daily cron (exempt from the login proxy) sends emails first, then sweeps a capped batch.
+- Team visibility (`organizations.reps_see_team`, default on) is enforced by `can_see_org_calls()` in the read policies for sessions, transcripts, scores and comments.
+- `call_comments` (migration 0013) are notes on a call from anyone who can read it; the rep sees them on the dashboard. `profiles.email` is synced from `auth.users` by trigger so digests and the Team page never need admin lookups.
+- Monday digest: `buildWeeklyDigest` aggregates the last seven days per workspace; `sendLifecycle` dedupes on `weekly_digest:<date>` per manager.
+- Deleting a call (`deleteCall`) removes the ElevenLabs conversation too, so the privacy page's promise holds.
