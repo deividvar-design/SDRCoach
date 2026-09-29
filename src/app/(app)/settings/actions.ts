@@ -18,7 +18,6 @@ export async function updateOrganization(_prev: SettingsState, formData: FormDat
       company_description: z.string().optional(),
       product_description: z.string().optional(),
       ideal_customer_profile: z.string().optional(),
-      reps_see_team: z.string().optional(),
     })
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
@@ -32,9 +31,17 @@ export async function updateOrganization(_prev: SettingsState, formData: FormDat
       company_description: parsed.data.company_description || null,
       product_description: parsed.data.product_description || null,
       ideal_customer_profile: parsed.data.ideal_customer_profile || null,
-      reps_see_team: parsed.data.reps_see_team === "on",
     })
     .eq("id", viewer.org.id);
+  if (error) return { error: error.message };
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function updateTeamVisibility(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
+  const viewer = await requireManager();
+  const supabase = await createClient();
+  const { error } = await supabase.from("organizations").update({ reps_see_team: formData.get("reps_see_team") === "on" }).eq("id", viewer.org.id);
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
   return { ok: true };

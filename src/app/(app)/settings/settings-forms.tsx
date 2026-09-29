@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Organization, Profile } from "@/types/database";
-import { updateOrganization, updateProfile, type SettingsState } from "./actions";
+import { updateOrganization, updateProfile, updateTeamVisibility, type SettingsState } from "./actions";
 
 function useToastOnOk(state: SettingsState) {
   useEffect(() => {
@@ -51,11 +51,24 @@ export function OrganizationForm({ org }: { org: Organization }) {
         <Label htmlFor="ideal_customer_profile">Ideal customer profile</Label>
         <Textarea id="ideal_customer_profile" name="ideal_customer_profile" defaultValue={org.ideal_customer_profile ?? ""} placeholder="Company size, industries, the titles you call, the trigger events you look for." />
       </div>
-      <label className="flex items-start gap-3 rounded-md border p-3 text-sm">
+      {state.error && <p className="text-destructive text-sm">{state.error}</p>}
+      <Button type="submit" disabled={pending}>{pending ? "Saving…" : "Save"}</Button>
+    </form>
+  );
+}
+
+export function TeamVisibilityForm({ org }: { org: Organization }) {
+  const [state, formAction, pending] = useActionState<SettingsState, FormData>(updateTeamVisibility, {});
+  useEffect(() => {
+    if (state.ok) toast.success("Saved");
+  }, [state]);
+  return (
+    <form action={formAction} className="space-y-4">
+      <label className="flex items-start gap-3 text-sm">
         <input type="checkbox" name="reps_see_team" defaultChecked={org.reps_see_team} className="mt-0.5" />
         <span>
           <span className="font-medium">Reps can see each other's calls and scores</span>
-          <span className="text-muted-foreground block text-xs">Turns the dashboard leaderboard into a full team view: every rep can open a teammate's page and reports. Managers always can.</span>
+          <span className="text-muted-foreground block text-xs">On: the leaderboard links to every teammate's page, the Calls list gets a Team view, and reports open read-only for the whole team. Off: reps see only their own calls. Managers always see everything.</span>
         </span>
       </label>
       {state.error && <p className="text-destructive text-sm">{state.error}</p>}

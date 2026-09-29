@@ -1,7 +1,7 @@
 import { requireViewer } from "@/lib/auth";
 import { canManage } from "@/lib/domain/roles";
 import { PageHeader } from "@/components/shell/page-header";
-import { OrganizationForm, ProfileForm } from "./settings-forms";
+import { OrganizationForm, ProfileForm, TeamVisibilityForm } from "./settings-forms";
 import { DangerZone } from "./danger-zone";
 import { Button } from "@/components/ui/button";
 import { leaveWorkspace } from "./actions";
@@ -49,6 +49,13 @@ export default async function SettingsPage() {
           <h2 className="mb-1 font-medium">Company context</h2>
           <p className="text-muted-foreground mb-4 text-sm">Injected into every prospect persona so objections and reactions fit what you actually sell.</p>
           <OrganizationForm org={viewer.org} />
+        </section>
+      )}
+      {canManage(viewer.membership.role) && (
+        <section id="team" className="bg-card rounded-xl border p-6">
+          <h2 className="mb-1 font-medium">Team</h2>
+          <p className="text-muted-foreground mb-4 text-sm">Who sees whose calls.</p>
+          <TeamVisibilityForm org={viewer.org} />
         </section>
       )}
       {canManage(viewer.membership.role) ? (
