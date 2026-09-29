@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { sweepStaleSessions } from "@/lib/calls/sweep";
+import { orgManagers } from "@/lib/email/lifecycle";
+import { buildWeeklyDigest } from "@/lib/stats/weekly-digest";
 
 export const maxDuration = 300;
 
@@ -29,7 +31,7 @@ export async function GET(request: Request) {
 
   const db = createAdminClient();
   const now = Date.now();
-  const results = { nudged: 0, ended: 0, swept: { failed: 0, finalized: 0 } };
+  const results = { nudged: 0, ended: 0, digests: 0, swept: { failed: 0, finalized: 0 } };
 
   const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at").eq("plan", "trial").gt("trial_ends_at", new Date(now - 14 * DAY).toISOString()).limit(1000);
   for (const org of trials ?? []) {
@@ -44,6 +46,20 @@ export async function GET(request: Request) {
     if (new Date(org.trial_ends_at).getTime() <= now) {
       const r = await sendLifecycle(org.id, "trial_ended").catch(() => ({ sent: false }));
       if (r.sent) results.ended += 1;
+    }
+  }
+
+  // Monday: last week on the floor, to every manager of a workspace that made calls.
+  if (new Date(now).getUTCDay() === 1) {
+    const weekKey = new Date(now).toISOString().slice(0, 10);
+    const { data: active } = await db.from("call_sessions").select("org_id").gte("created_at", new Date(now - 7 * DAY).toISOString()).not("started_at", "is", null).limit(5000);
+    for (const orgId of new Set((active ?? []).map((r) => r.org_id))) {
+      const digest = await buildWeeklyDigest(db, orgId, now).catch(() => null);
+      if (!digest || digest.calls === 0) continue;
+      for (const manager of await orgManagers(orgId)) {
+        const r = await sendLifecycle(orgId, `weekly_digest:${weekKey}`, { userId: manager.userId, to: manager, digest }).catch(() => ({ sent: false }));
+        if (r.sent) results.digests += 1;
+      }
     }
   }
 

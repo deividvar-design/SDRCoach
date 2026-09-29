@@ -66,11 +66,16 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
 
   return (
     <div className="space-y-8">
-      <Button variant="ghost" size="sm" asChild>
-        <Link href="/team">
-          <ArrowLeft /> Team
-        </Link>
-      </Button>
+      <div className="flex items-center justify-between gap-3">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href={isManager ? "/team" : "/dashboard"}>
+            <ArrowLeft /> {isManager ? "Team" : "Dashboard"}
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <a href={`/api/export/rep?user=${userId}`}>Download CSV</a>
+        </Button>
+      </div>
       <PageHeader
         eyebrow={ROLE_LABEL[membership.role]}
         title={

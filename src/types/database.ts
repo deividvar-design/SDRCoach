@@ -106,8 +106,18 @@ export type Profile = {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
+  email: string | null;
   created_at: string;
 }
+
+export type CallComment = {
+  id: string;
+  session_id: string;
+  org_id: string;
+  author_id: string;
+  body: string;
+  created_at: string;
+};
 
 export type Membership = {
   id: string;
@@ -252,7 +262,15 @@ export type Database = {
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
       admin_actions: Table<AdminAction, Insert<AdminAction, "id" | "org_id" | "payload" | "created_at">>;
       email_log: Table<EmailLog, Insert<EmailLog, "id" | "user_id" | "sent_at">>;
-      profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "created_at">>;
+      profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "email" | "created_at">>;
+      call_comments: Table<
+        CallComment,
+        Insert<CallComment, "id" | "created_at">,
+        [
+          { foreignKeyName: "call_comments_session_id_fkey"; columns: ["session_id"]; isOneToOne: false; referencedRelation: "call_sessions"; referencedColumns: ["id"] },
+          { foreignKeyName: "call_comments_author_id_fkey"; columns: ["author_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      >;
       memberships: Table<
         Membership,
         Insert<Membership, "id" | "role" | "manager_id" | "created_at">,

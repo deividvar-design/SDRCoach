@@ -24,7 +24,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const isManager = canManage(viewer.membership.role);
   const tz = (await cookies()).get("tz")?.value;
 
-  const [{ data: rows }, { data: members }, { count: targetCount }, { data: assignments }] = await Promise.all([
+  const [{ data: rows }, { data: members }, { count: targetCount }, { data: assignments }, { data: notes }] = await Promise.all([
     supabase
       .from("call_sessions")
       .select("id, user_id, created_at, difficulty, outcome, status, targets(name, company), profiles(full_name), call_scores(overall)")
@@ -40,6 +40,13 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       .is("completed_at", null)
       .order("due_at", { ascending: true, nullsFirst: false })
       .limit(5),
+    supabase
+      .from("call_comments")
+      .select("id, body, created_at, session_id, author_id, profiles!call_comments_author_id_fkey(full_name), call_sessions!inner(user_id, targets(name))")
+      .eq("call_sessions.user_id", viewer.userId)
+      .neq("author_id", viewer.userId)
+      .order("created_at", { ascending: false })
+      .limit(4),
   ]);
 
   // First-run checklist for managers: what stands between them and a useful first week.
@@ -200,6 +207,24 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
               ))}
             </ul>
           </section>
+
+          {!!notes?.length && (
+            <section className="bg-card rounded-2xl border">
+              <div className="border-b px-5 py-4">
+                <h2 className="font-medium">Coach said</h2>
+              </div>
+              <ul className="divide-y">
+                {notes.map((n) => (
+                  <li key={n.id} className="px-5 py-3 text-sm">
+                    <Link href={`/sessions/${n.session_id}`} className="block">
+                      <p className="line-clamp-3 leading-relaxed">{n.body}</p>
+                      <div className="text-muted-foreground mt-1 text-xs">{n.profiles?.full_name ?? "Manager"} · on your {n.call_sessions?.targets?.name ?? "call"} call · {formatDate(n.created_at)}</div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {!isManager && !!assignments?.length && (
             <section className="bg-card rounded-2xl border">

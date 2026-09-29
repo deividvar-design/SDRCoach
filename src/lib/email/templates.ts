@@ -78,4 +78,18 @@ export const templates = {
     const lines = [`Hi ${p.firstName},`, `${p.orgName}'s subscription has ended. Your workspace stays readable for 30 days and you can export everything from Settings.`, "If this was a mistake, pick a plan again and nothing is lost."];
     return { subject: `${p.orgName}'s subscription has ended`, html: layout("Subscription ended.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
   },
+
+  weeklyDigest(p: { firstName: string; orgName: string; d: { calls: number; reviewed: number; booked: number; avg: number | null; topRep: { name: string; avg: number; calls: number } | null; weakest: { label: string; avg: number } | null; objection: { label: string; count: number; clean: number; coaching: string } | null; unreviewed: number } }): Rendered {
+    const cta = { label: "Open the coaching view", href: absoluteUrl("/team/coaching") };
+    const d = p.d;
+    const lines = [
+      `Hi ${p.firstName}, here is last week on the floor at ${p.orgName}.`,
+      `${d.calls} ${d.calls === 1 ? "call" : "calls"}, ${d.reviewed} reviewed, ${d.booked} ${d.booked === 1 ? "meeting" : "meetings"} booked${d.avg != null ? `, team average ${d.avg.toFixed(1)}/10` : ""}.`,
+      d.topRep ? `Top of the board: ${d.topRep.name} at ${d.topRep.avg.toFixed(1)} over ${d.topRep.calls} ${d.topRep.calls === 1 ? "call" : "calls"}.` : "",
+      d.weakest ? `Weakest skill: ${d.weakest.label.toLowerCase()} at ${d.weakest.avg.toFixed(1)}. Worth ten minutes in the next team meeting.` : "",
+      d.objection ? `Most mishandled objection: "${d.objection.label}", heard ${d.objection.count} times, handled cleanly ${d.objection.clean}. ${d.objection.coaching}` : "",
+      d.unreviewed > 0 ? `${d.unreviewed} ${d.unreviewed === 1 ? "call was" : "calls were"} made without a review. You can request one from the report.` : "",
+    ].filter(Boolean);
+    return { subject: `Last week on the floor: ${d.calls} ${d.calls === 1 ? "call" : "calls"}, ${d.booked} booked`, html: layout("Last week on the floor.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
 };

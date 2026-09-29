@@ -13,6 +13,8 @@ import { ScoreReveal } from "@/components/report/score-reveal";
 import { ScorePoller } from "@/components/report/score-poller";
 import { DimensionBars } from "@/components/report/dimension-bars";
 import { ReviewPrompt } from "@/components/report/review-prompt";
+import { Comments } from "@/components/report/comments";
+import { DeleteCallButton } from "@/components/report/delete-call";
 import { StatTile } from "@/components/stat-tile";
 import type { CallOutcome } from "@/types/database";
 
@@ -40,10 +42,13 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
     .maybeSingle();
   if (!session) notFound();
 
-  const [{ data: score }, { data: transcript }] = await Promise.all([
+  const [{ data: score }, { data: transcript }, { data: commentRows }] = await Promise.all([
     supabase.from("call_scores").select("*").eq("session_id", id).maybeSingle(),
     supabase.from("call_transcripts").select("*").eq("session_id", id).maybeSingle(),
+    supabase.from("call_comments").select("id, body, created_at, author_id, profiles!call_comments_author_id_fkey(full_name)").eq("session_id", id).order("created_at"),
   ]);
+  const comments = (commentRows ?? []).map((c) => ({ id: c.id, body: c.body, created_at: c.created_at, author_id: c.author_id, author: c.profiles?.full_name ?? "Teammate" }));
+  const commentDates = Object.fromEntries(comments.map((c) => [c.id, formatDate(c.created_at)]));
 
   const level = LEVELS[session.difficulty];
   const isOwn = session.user_id === viewer.userId;
@@ -70,7 +75,9 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
         title={session.targets ? `${session.targets.name}, ${session.targets.company}` : "Call"}
         description={session.targets?.title}
         actions={
-          session.targets && isOwn ? (
+          <>
+            {(isOwn || canManage(viewer.membership.role)) && <DeleteCallButton sessionId={session.id} />}
+          {session.targets && isOwn ? (
             <>
               <Button variant="outline" asChild>
                 <Link href={`/practice/call?target=${session.targets.id}&difficulty=${session.difficulty}`}>
@@ -85,7 +92,8 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
                 </Button>
               )}
             </>
-          ) : null
+          ) : null}
+          </>
         }
       />
 
@@ -275,6 +283,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
           </section>
         </>
       )}
+      {(score || collected) && <Comments sessionId={session.id} comments={comments} viewerId={viewer.userId} canDeleteAny={canManage(viewer.membership.role)} dateOf={commentDates} />}
     </div>
   );
 }

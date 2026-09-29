@@ -24,7 +24,7 @@ export default async function TeamPage() {
   const supabase = await createClient();
 
   const [{ data: members }, { data: invites }, { data: sessions }, { data: targets }, { data: assignments }] = await Promise.all([
-    supabase.from("memberships").select("*, profiles!memberships_user_id_fkey(full_name, avatar_url)").eq("org_id", viewer.org.id).order("created_at"),
+    supabase.from("memberships").select("*, profiles!memberships_user_id_fkey(full_name, avatar_url, email)").eq("org_id", viewer.org.id).order("created_at"),
     supabase.from("invites").select("*").eq("org_id", viewer.org.id).is("accepted_at", null).order("created_at", { ascending: false }),
     supabase.from("call_sessions").select("user_id, outcome, assignment_id, status, call_scores(overall)").eq("org_id", viewer.org.id),
     supabase.from("targets").select("id, name, title, company").eq("org_id", viewer.org.id).eq("is_archived", false).order("name"),
@@ -148,7 +148,10 @@ export default async function TeamPage() {
                         {m.profiles?.avatar_url && <AvatarImage src={m.profiles.avatar_url} alt="" />}
                         <AvatarFallback>{initials(m.profiles?.full_name)}</AvatarFallback>
                       </Avatar>
-                      <Link href={`/team/${m.user_id}`} className="font-medium hover:underline">{m.profiles?.full_name ?? "—"}</Link>
+                      <div className="min-w-0">
+                        <Link href={`/team/${m.user_id}`} className="font-medium hover:underline">{m.profiles?.full_name ?? "—"}</Link>
+                        {m.profiles?.email && <div className="text-muted-foreground truncate text-xs">{m.profiles.email}</div>}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>

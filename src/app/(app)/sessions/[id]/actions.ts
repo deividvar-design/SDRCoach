@@ -6,6 +6,10 @@ import { requireViewer } from "@/lib/auth";
 import { canManage } from "@/lib/domain/roles";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { finalizeCall } from "@/lib/calls/finalize";
+import { createClient } from "@/lib/supabase/server";
+import { elevenlabs } from "@/lib/elevenlabs/client";
+import { redirect } from "next/navigation";
+import { z } from "zod";
 
 /** The rep who made the call, or a manager in the same workspace. */
 async function ownSession(sessionId: string) {
@@ -39,4 +43,47 @@ export async function skipReview(sessionId: string) {
   if (!session) return;
   await db.from("call_sessions").update({ review_skipped_at: new Date().toISOString() }).eq("id", sessionId);
   revalidatePath(`/sessions/${sessionId}`);
+}
+
+export interface CommentState {
+  error?: string;
+  ok?: boolean;
+}
+
+/** Anyone who can read the call can comment on it; the rep sees it on their dashboard. */
+export async function addComment(sessionId: string, _prev: CommentState, formData: FormData): Promise<CommentState> {
+  const body = z.string().trim().min(1, "Write something first").max(2000, "Keep it under 2,000 characters").safeParse(formData.get("body"));
+  if (!body.success) return { error: body.error.issues[0]?.message };
+  const viewer = await requireViewer();
+  const supabase = await createClient();
+  const { error } = await supabase.from("call_comments").insert({ session_id: sessionId, org_id: viewer.org.id, author_id: viewer.userId, body: body.data });
+  if (error) return { error: error.message };
+  revalidatePath(`/sessions/${sessionId}`);
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
+
+export async function deleteComment(id: string, sessionId: string) {
+  await requireViewer();
+  const supabase = await createClient();
+  await supabase.from("call_comments").delete().eq("id", id);
+  revalidatePath(`/sessions/${sessionId}`);
+}
+
+/** Removes the call everywhere: our rows (cascade) and the recording and transcript at the voice provider. */
+export async function deleteCall(sessionId: string) {
+  const { db, session } = await ownSession(sessionId);
+  if (!session) return { error: "Not found" };
+  const { data: full } = await db.from("call_sessions").select("elevenlabs_conversation_id").eq("id", sessionId).maybeSingle();
+  if (full?.elevenlabs_conversation_id && process.env.ELEVENLABS_API_KEY) {
+    try {
+      await elevenlabs().conversationalAi.conversations.delete(full.elevenlabs_conversation_id);
+    } catch (err) {
+      console.error("provider delete failed", sessionId, err);
+    }
+  }
+  await db.from("call_sessions").delete().eq("id", sessionId);
+  revalidatePath("/sessions");
+  revalidatePath("/dashboard");
+  redirect("/sessions");
 }
