@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { fetchConversation } from "@/lib/elevenlabs/client";
 import { computeMetrics } from "@/lib/scoring/metrics";
@@ -11,12 +12,21 @@ import { recordAnthropicUsage, recordVoiceUsage } from "@/lib/usage/record";
 
 const OUTCOMES: CallOutcome[] = ["meeting_booked", "callback", "info_sent", "rejected", "hung_up", "incomplete"];
 
+/** Attempts before we stop waiting for the provider and use whatever transcript exists. */
+const MAX_TRANSCRIPT_WAITS = 3;
+/** Attempts before a call that keeps failing to score is left alone. */
+const MAX_ATTEMPTS = 5;
+
+export const hashPrompt = (prompt: string) => createHash("sha256").update(prompt).digest("hex");
+
+type Db = ReturnType<typeof createAdminClient>;
+
 /**
  * Turn an ended ElevenLabs conversation into a transcript, metrics and (on request) a coach score.
  *
- * Two phases. Collecting (transcript, stats, the prospect's decision) always happens. Scoring costs
- * model tokens and only runs once the rep asked for a review, so a call the rep already knows went
- * badly never gets scored. Idempotent: only one caller wins the `-> scoring` transition.
+ * Two phases. Collecting (transcript, stats, the prospect's decision) always happens and is written
+ * before scoring starts, so a scorer failure never loses it. Scoring costs model tokens and only runs
+ * once the rep asked for a review. Idempotent: only one caller wins the `-> scoring` transition.
  */
 export async function finalizeCall(sessionId: string) {
   const db = createAdminClient();
@@ -29,8 +39,14 @@ export async function finalizeCall(sessionId: string) {
     .select("*, targets(name, title, company, pain_points, objections), profiles(full_name), organizations(name, company_description, product_description, ideal_customer_profile)")
     .maybeSingle();
   if (!claimed) return;
+
+  // Every claim counts as an attempt and pins ended_at, so a hand-back is never invisible to the sweep.
+  const attempts = claimed.finalize_attempts + 1;
+  const endedAt = claimed.ended_at ?? new Date().toISOString();
+  await db.from("call_sessions").update({ finalize_attempts: attempts, ended_at: endedAt }).eq("id", sessionId);
+
   if (!claimed.elevenlabs_conversation_id) {
-    await db.from("call_sessions").update({ status: "failed", error: "no conversation id" }).eq("id", sessionId);
+    await db.from("call_sessions").update({ status: "failed", error: "The call never connected" }).eq("id", sessionId);
     return;
   }
 
@@ -56,17 +72,26 @@ export async function finalizeCall(sessionId: string) {
         await db.from("call_sessions").update({ status: "failed", error: "The voice provider reported the conversation as failed" }).eq("id", sessionId);
         return;
       }
-      turns = convo.turns.map((t) => ({ role: t.role, text: t.text, t_start_ms: t.t_start_ms }));
 
-      // Still processing on the provider's side and nothing to show yet: hand the session back so the
-      // report poller, the post-call webhook or the sweep can try again once the transcript exists.
-      if (turns.length === 0 && convo.status !== "done") {
+      // Still processing on the provider's side: hand the session back so the report poller, the
+      // post-call webhook or the sweep can try again once the transcript and analysis exist.
+      if (convo.status !== "done" && attempts <= MAX_TRANSCRIPT_WAITS) {
         await db.from("call_sessions").update({ status: restoreTo, error: "Waiting for the transcript" }).eq("id", sessionId);
         return;
       }
 
-      const endedAt = claimed.ended_at ? new Date(claimed.ended_at).getTime() : Date.now();
-      durationSecs = convo.durationSecs || Math.max(0, Math.round((endedAt - new Date(claimed.started_at ?? claimed.created_at).getTime()) / 1000));
+      // The browser sent the prospect brief as an override. If it does not match what the server issued, the
+      // call was tampered with: keep the record, never score it, never let it on the leaderboard.
+      if (claimed.prompt_hash && convo.overridePrompt !== null && hashPrompt(convo.overridePrompt) !== claimed.prompt_hash) {
+        await db
+          .from("call_sessions")
+          .update({ status: "collected", outcome: "incomplete", outcome_reason: "The prospect brief was altered on this call, so it was not scored.", error: "prompt mismatch", review_requested_at: null, ended_at: endedAt })
+          .eq("id", sessionId);
+        return;
+      }
+
+      turns = convo.turns.map((t) => ({ role: t.role, text: t.text, t_start_ms: t.t_start_ms, interrupted: t.interrupted }));
+      durationSecs = convo.durationSecs || Math.max(0, Math.round((new Date(endedAt).getTime() - new Date(claimed.started_at ?? claimed.created_at).getTime()) / 1000));
 
       await db.from("call_transcripts").upsert({
         session_id: sessionId,
@@ -75,13 +100,13 @@ export async function finalizeCall(sessionId: string) {
       });
 
       metrics = computeMetrics(convo.turns, durationSecs);
-      if (durationSecs > 0 && claimed.status !== "collected") await recordVoiceUsage(db, { orgId: claimed.org_id, sessionId, seconds: durationSecs });
+      if (durationSecs > 0) await recordVoiceUsage(db, { orgId: claimed.org_id, sessionId, seconds: durationSecs });
 
       collectedOutcome = String(convo.dataCollection.outcome ?? "");
       collectedReason = typeof convo.dataCollection.outcome_reason === "string" && convo.dataCollection.outcome_reason ? convo.dataCollection.outcome_reason : null;
       summary = convo.summary;
 
-      await afterCollect(db, claimed.org_id);
+      if (claimed.status !== "collected" && claimed.status !== "failed") await afterCollect(db, claimed.org_id);
     }
 
     const repSpoke = turns.some((t) => t.role === "rep");
@@ -94,44 +119,51 @@ export async function finalizeCall(sessionId: string) {
           : "No speech was captured from the rep. Check that the microphone is allowed for this site and not muted.";
       await db
         .from("call_sessions")
-        .update({ status: "collected", outcome: "incomplete", outcome_reason, duration_seconds: durationSecs, ended_at: claimed.ended_at ?? new Date().toISOString(), metrics, error: null })
+        .update({ status: "collected", outcome: "incomplete", outcome_reason, duration_seconds: durationSecs, ended_at: endedAt, metrics, error: null, review_requested_at: null })
         .eq("id", sessionId);
       return;
     }
+
+    // Persist everything collected now, while still holding the claim, so a scorer failure loses nothing.
+    await db
+      .from("call_sessions")
+      .update({ outcome: prospectDecided, outcome_reason: collectedReason, prospect_summary: summary, duration_seconds: durationSecs, ended_at: endedAt, metrics, error: null })
+      .eq("id", sessionId);
+
+    await completeAssignment(db, claimed.assignment_id, prospectDecided);
 
     // The rep may have asked for the review while we were collecting. Re-read before deciding.
     const { data: fresh } = await db.from("call_sessions").select("review_requested_at").eq("id", sessionId).maybeSingle();
     const scoreNow = wantsScore || fresh?.review_requested_at != null;
 
     if (!scoreNow) {
-      await db
-        .from("call_sessions")
-        .update({
-          status: "collected",
-          outcome: prospectDecided,
-          outcome_reason: collectedReason,
-          prospect_summary: summary,
-          duration_seconds: durationSecs,
-          ended_at: claimed.ended_at ?? new Date().toISOString(),
-          metrics,
-          error: null,
-        })
-        .eq("id", sessionId);
+      await db.from("call_sessions").update({ status: "collected" }).eq("id", sessionId);
       return;
     }
 
     // ---- Phase 2: score.
-    const digests = await loadOrgDigests(claimed.org_id);
-    const score = await scoreCall({
-      turns,
-      metrics: metrics ?? computeMetrics(turns, durationSecs),
-      difficulty: claimed.difficulty,
-      prospect: claimed.targets ?? { name: "Prospect", title: "", company: "", pain_points: [], objections: [] },
-      company: claimed.organizations ?? { name: "the rep's company", company_description: null, product_description: null, ideal_customer_profile: null },
-      repName: claimed.profiles?.full_name ?? "Rep",
-      orgPlaybook: digests,
-      durationSecs,
-    });
+    let score: Awaited<ReturnType<typeof scoreCall>>;
+    try {
+      const digests = await loadOrgDigests(claimed.org_id);
+      score = await scoreCall({
+        turns,
+        metrics: metrics ?? computeMetrics(turns, durationSecs),
+        difficulty: claimed.difficulty,
+        prospect: claimed.targets ?? { name: "Prospect", title: "", company: "", pain_points: [], objections: [] },
+        company: claimed.organizations ?? { name: "the rep's company", company_description: null, product_description: null, ideal_customer_profile: null },
+        repName: claimed.profiles?.full_name ?? "Rep",
+        orgPlaybook: digests,
+        durationSecs,
+      });
+    } catch (err) {
+      // Keep the collected call; the report offers a retry until the attempt budget runs out.
+      const giveUp = attempts >= MAX_ATTEMPTS;
+      await db
+        .from("call_sessions")
+        .update({ status: "collected", error: `Scoring failed: ${err instanceof Error ? err.message : String(err)}`, ...(giveUp ? { review_requested_at: null } : {}) })
+        .eq("id", sessionId);
+      return;
+    }
 
     await recordAnthropicUsage(db, { orgId: claimed.org_id, sessionId, kind: "score", model: score.model, usage: score.usage });
 
@@ -151,27 +183,8 @@ export async function finalizeCall(sessionId: string) {
       model: score.model,
     });
 
-    await db
-      .from("call_sessions")
-      .update({
-        status: "scored",
-        outcome,
-        outcome_reason: outcomeReason,
-        prospect_summary: summary,
-        duration_seconds: durationSecs,
-        ended_at: claimed.ended_at ?? new Date().toISOString(),
-        metrics,
-        error: null,
-      })
-      .eq("id", sessionId);
-
-    if (claimed.assignment_id && outcome !== "incomplete") {
-      const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("assignment_id", claimed.assignment_id).in("status", ["scored", "collected"]).neq("outcome", "incomplete");
-      const { data: assignment } = await db.from("assignments").select("required_calls").eq("id", claimed.assignment_id).single();
-      if (assignment && (count ?? 0) >= assignment.required_calls) {
-        await db.from("assignments").update({ completed_at: new Date().toISOString() }).eq("id", claimed.assignment_id).is("completed_at", null);
-      }
-    }
+    await db.from("call_sessions").update({ status: "scored", outcome, outcome_reason: outcomeReason, error: null }).eq("id", sessionId);
+    if (!prospectDecided) await completeAssignment(db, claimed.assignment_id, outcome);
   } catch (err) {
     await db
       .from("call_sessions")
@@ -181,11 +194,21 @@ export async function finalizeCall(sessionId: string) {
   }
 }
 
+/** Marks an assignment done once enough decided calls exist, reviewed or not. */
+async function completeAssignment(db: Db, assignmentId: string | null, outcome: CallOutcome | null) {
+  if (!assignmentId || !outcome || outcome === "incomplete") return;
+  const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("assignment_id", assignmentId).in("status", ["scored", "collected", "scoring"]).not("outcome", "is", null).neq("outcome", "incomplete");
+  const { data: assignment } = await db.from("assignments").select("required_calls").eq("id", assignmentId).single();
+  if (assignment && (count ?? 0) >= assignment.required_calls) {
+    await db.from("assignments").update({ completed_at: new Date().toISOString() }).eq("id", assignmentId).is("completed_at", null);
+  }
+}
+
 /** Trial emails: after this call, how many are left? Runs once per call, when it is first collected. */
-async function afterCollect(db: ReturnType<typeof createAdminClient>, orgId: string) {
+async function afterCollect(db: Db, orgId: string) {
   const { data: orgRow } = await db.from("organizations").select("plan, trial_call_limit, trial_ends_at").eq("id", orgId).single();
   if (orgRow?.plan !== "trial") return;
-  const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", orgId).not("started_at", "is", null);
+  const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", orgId).not("started_at", "is", null).neq("status", "failed");
   const t = trialStatus(orgRow, count ?? 0);
   if (t.callsLeft <= 2 && t.callsLeft > 0) await sendLifecycle(orgId, "two_calls_left").catch(() => {});
   if (t.callsLeft === 0) await sendLifecycle(orgId, "trial_ended", { reason: "calls" }).catch(() => {});

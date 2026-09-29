@@ -17,6 +17,8 @@ import { StatTile } from "@/components/stat-tile";
 import type { CallOutcome } from "@/types/database";
 
 export const metadata = { title: "Call report" };
+// The review action runs the scorer in after(); give it the same budget as the API routes.
+export const maxDuration = 120;
 
 const OUTCOME_LABEL: Record<CallOutcome, { label: string; variant: "success" | "warning" | "secondary" | "destructive" }> = {
   meeting_booked: { label: "Meeting booked", variant: "success" },
@@ -169,10 +171,16 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
       )}
 
       {session.status === "failed" && !score && (
-        <div className="bg-card rounded-2xl border p-6">
-          <div className="font-medium">This call could not be scored</div>
-          <div className="text-muted-foreground mt-1 text-sm">{session.error ?? "Something went wrong."}</div>
+        <div className="bg-card flex flex-col gap-4 rounded-2xl border p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="font-medium">This call could not be processed</div>
+            <div className="text-muted-foreground mt-1 text-sm">{session.error ?? "Something went wrong."}</div>
+          </div>
+          {(isOwn || canManage(viewer.membership.role)) && session.finalize_attempts < 5 && session.elevenlabs_conversation_id && <ReviewPrompt sessionId={session.id} skipped={false} collecting={false} variant="retry" />}
         </div>
+      )}
+      {collected && !score && session.error?.startsWith("Scoring failed") && reviewRequested && (
+        <p className="text-muted-foreground text-sm">The last scoring attempt failed and will be retried automatically. {session.finalize_attempts >= 5 ? "It has now been retried enough times; ask your manager to look at it." : ""}</p>
       )}
 
       {score && (

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Target as TargetIcon } from "lucide-react";
 import { requireViewer } from "@/lib/auth";
+import { canManage } from "@/lib/domain/roles";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/shell/page-header";
@@ -16,6 +17,7 @@ export default async function TargetsPage({ searchParams }: PageProps<"/targets"
   const { kind } = await searchParams;
   const filter = kind === "practice" ? "practice" : kind === "real" ? "real" : "all";
   const viewer = await requireViewer();
+  const isManager = canManage(viewer.membership.role);
   const supabase = await createClient();
   const { data: all } = await supabase
     .from("targets")
@@ -34,7 +36,7 @@ export default async function TargetsPage({ searchParams }: PageProps<"/targets"
         eyebrow="Who you're calling"
         title="Targets"
         description="Real accounts your team is working, plus practice personas to warm up on. Each one becomes a live AI prospect."
-        actions={<TargetDialog />}
+        actions={isManager ? <TargetDialog /> : undefined}
       />
 
       <div className="flex gap-1 border-b">
@@ -57,7 +59,7 @@ export default async function TargetsPage({ searchParams }: PageProps<"/targets"
           icon={TargetIcon}
           title={filter === "real" ? "No real targets yet" : "No targets yet"}
           description="Add the accounts and people your reps are actually calling this quarter. The AI will play them."
-          action={<TargetDialog />}
+          action={isManager ? <TargetDialog /> : undefined}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

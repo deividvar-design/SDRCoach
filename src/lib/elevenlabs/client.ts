@@ -35,6 +35,8 @@ export interface FetchedConversation {
   turns: FetchedTurn[];
   summary: string | null;
   dataCollection: Record<string, unknown>;
+  /** The prompt override the browser sent when it joined, so the server can check it was not tampered with. */
+  overridePrompt: string | null;
 }
 
 /**
@@ -68,5 +70,6 @@ export async function fetchConversation(conversationId: string, { attempts = 20,
     turns,
     summary: last.analysis?.transcriptSummary ?? null,
     dataCollection,
+    overridePrompt: last.conversationInitiationClientData?.conversationConfigOverride?.agent?.prompt?.prompt ?? null,
   };
 }

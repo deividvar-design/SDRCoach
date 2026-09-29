@@ -30,5 +30,6 @@ export async function recordVoiceUsage(db: Db, p: { orgId: string; sessionId: st
     seconds: p.seconds,
     cost_usd: voiceCost(p.seconds),
   });
-  if (error) console.error("usage record failed", error.message);
+  // 23505: a voice row already exists for this session (re-finalize). Never count minutes twice.
+  if (error && error.code !== "23505") console.error("usage record failed", error.message);
 }

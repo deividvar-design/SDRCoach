@@ -10,6 +10,7 @@ export async function loadTrialStatus(supabase: SupabaseClient<Database>, org: P
     .from("call_sessions")
     .select("id", { count: "exact", head: true })
     .eq("org_id", org.id)
-    .not("started_at", "is", null);
+    .not("started_at", "is", null)
+    .neq("status", "failed");
   return trialStatus(org, count ?? 0);
 }

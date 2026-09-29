@@ -22,6 +22,7 @@ export type TranscriptTurn = {
   text: string;
   t_start_ms?: number;
   t_end_ms?: number;
+  interrupted?: boolean;
 }
 
 export type ScoreDimension = {
@@ -184,6 +185,8 @@ export type CallSession = {
   prospect_summary: string | null;
   review_requested_at: string | null;
   review_skipped_at: string | null;
+  prompt_hash: string | null;
+  finalize_attempts: number;
   created_at: string;
 };
 
@@ -287,7 +290,7 @@ export type Database = {
       >;
       call_sessions: Table<
         CallSession,
-        Insert<CallSession, "id" | "target_id" | "assignment_id" | "status" | "outcome" | "elevenlabs_conversation_id" | "elevenlabs_agent_id" | "started_at" | "ended_at" | "duration_seconds" | "audio_path" | "error" | "outcome_reason" | "metrics" | "prospect_summary" | "review_requested_at" | "review_skipped_at" | "created_at">,
+        Insert<CallSession, "id" | "target_id" | "assignment_id" | "status" | "outcome" | "elevenlabs_conversation_id" | "elevenlabs_agent_id" | "started_at" | "ended_at" | "duration_seconds" | "audio_path" | "error" | "outcome_reason" | "metrics" | "prospect_summary" | "review_requested_at" | "review_skipped_at" | "prompt_hash" | "finalize_attempts" | "created_at">,
         [
           { foreignKeyName: "call_sessions_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "organizations"; referencedColumns: ["id"] },
           { foreignKeyName: "call_sessions_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },

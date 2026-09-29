@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -8,6 +8,7 @@ import { loadOrgDigests } from "@/lib/knowledge/digest";
 import { loadTrialStatus } from "@/lib/billing/usage";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sweepStaleSessions } from "@/lib/calls/sweep";
+import { finalizeCall, hashPrompt } from "@/lib/calls/finalize";
 
 const DAILY_CALL_CAP = Number(process.env.CALLS_PER_ORG_PER_DAY ?? 200);
 
@@ -33,7 +34,15 @@ export async function POST(request: Request) {
   }
 
   // Repair this rep's own abandoned sessions before the concurrency check so a failed dial never locks them out.
-  if (process.env.SDRCOACH_DEMO !== "1") await sweepStaleSessions(createAdminClient(), { userId: viewer.userId }).catch(() => {});
+  // Status repairs are instant; transcript fetches and scoring run after the response.
+  if (process.env.SDRCOACH_DEMO !== "1") {
+    const swept = await sweepStaleSessions(createAdminClient(), { userId: viewer.userId, deferFinalize: true }).catch(() => null);
+    if (swept?.pending.length) {
+      after(async () => {
+        for (const id of swept.pending) await finalizeCall(id).catch((err) => console.error("deferred finalize failed", id, err));
+      });
+    }
+  }
 
   // Guardrails: one live call per rep, and a daily cap per org so a runaway client cannot burn the voice budget.
   const staleCutoff = new Date(Date.now() - 20 * 60_000).toISOString();
@@ -72,7 +81,8 @@ export async function POST(request: Request) {
   const repName = viewer.profile.full_name ?? "the rep";
   const prompt = buildPersonaPrompt({ target, difficulty: parsed.data.difficulty, org: viewer.org, digests, repName });
 
-  const { data: session, error } = await supabase
+  // Sessions are server-owned: reps cannot insert or update rows themselves (migration 0012).
+  const { data: session, error } = await createAdminClient()
     .from("call_sessions")
     .insert({
       org_id: viewer.org.id,
@@ -82,9 +92,11 @@ export async function POST(request: Request) {
       difficulty: parsed.data.difficulty,
       elevenlabs_agent_id: agentId(),
       status: "created",
+      prompt_hash: hashPrompt(prompt),
     })
     .select("id")
     .single();
+  if (error?.code === "23505") return NextResponse.json({ error: "You already have a call in progress. Hang up before dialing again." }, { status: 409 });
   if (error || !session) return NextResponse.json({ error: error?.message ?? "Could not create session" }, { status: 500 });
 
   return NextResponse.json({

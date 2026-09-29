@@ -20,7 +20,15 @@ export async function POST(_request: Request, { params }: RouteContext<"/api/cal
     return NextResponse.json({ ok: true, status: "failed" });
   }
 
-  await db.from("call_sessions").update({ status: "ended", ended_at: new Date().toISOString() }).eq("id", id);
+  // Compare-and-set: the pagehide beacon and the SDK disconnect both hit this route. Only the first one finalizes.
+  const { data: ended } = await db
+    .from("call_sessions")
+    .update({ status: "ended", ended_at: new Date().toISOString() })
+    .eq("id", id)
+    .in("status", ["created", "live"])
+    .select("id")
+    .maybeSingle();
+  if (!ended) return NextResponse.json({ ok: true, status: "ended" });
   after(async () => {
     try {
       await finalizeCall(id);

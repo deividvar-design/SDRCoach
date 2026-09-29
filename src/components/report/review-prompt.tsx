@@ -6,8 +6,16 @@ import { Button } from "@/components/ui/button";
 import { requestReview, skipReview } from "@/app/(app)/sessions/[id]/actions";
 
 /** After a call: ask before spending a review on it. Reps often already know how it went. */
-export function ReviewPrompt({ sessionId, skipped, collecting }: { sessionId: string; skipped: boolean; collecting: boolean }) {
+export function ReviewPrompt({ sessionId, skipped, collecting, variant = "ask" }: { sessionId: string; skipped: boolean; collecting: boolean; variant?: "ask" | "retry" }) {
   const [busy, start] = useTransition();
+
+  if (variant === "retry") {
+    return (
+      <Button variant="outline" disabled={busy} onClick={() => start(() => requestReview(sessionId))}>
+        Try again
+      </Button>
+    );
+  }
 
   if (skipped) {
     return (

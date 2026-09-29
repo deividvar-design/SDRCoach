@@ -85,6 +85,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
   const [turns, setTurns] = useState<LiveTurn[]>([]);
   const sessionIdRef = useRef<string | null>(null);
   const endedRef = useRef(false);
+  const startedRef = useRef<Promise<unknown> | null>(null);
   const micRef = useRef<MediaStream | null>(null);
   const releaseMic = () => {
     micRef.current?.getTracks().forEach((t) => t.stop());
@@ -95,6 +96,8 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
   const endOnServer = useCallback(async () => {
     if (endedRef.current || !sessionIdRef.current) return;
     endedRef.current = true;
+    // /start may still be in flight when a call drops immediately; let it land so the conversation is linked.
+    await startedRef.current?.catch(() => {});
     await fetch(`/api/calls/${sessionIdRef.current}/end`, { method: "POST" }).catch(() => {});
   }, []);
 
@@ -102,7 +105,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
     onConnect: ({ conversationId }) => {
       setStage("live");
       if (sessionIdRef.current) {
-        fetch(`/api/calls/${sessionIdRef.current}/start`, {
+        startedRef.current = fetch(`/api/calls/${sessionIdRef.current}/start`, {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ conversationId }),
@@ -151,6 +154,12 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
   }, [stage]);
 
   async function dial() {
+    // A fresh dial is a fresh session: forget the previous one so its hang-up flag cannot swallow this call's /end.
+    sessionIdRef.current = null;
+    endedRef.current = false;
+    startedRef.current = null;
+    setTurns([]);
+    setElapsed(0);
     setError(null);
     setStage("dialing");
     let stopRing: (() => void) | null = null;

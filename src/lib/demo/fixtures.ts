@@ -127,6 +127,8 @@ export const SESSIONS: CallSession[] = SPECS.map((s) => ({
   prospect_summary: null,
   review_requested_at: daysAgo(s.day, s.hour),
   review_skipped_at: null,
+  prompt_hash: null,
+  finalize_attempts: 1,
   created_at: daysAgo(s.day, s.hour),
 }));
 

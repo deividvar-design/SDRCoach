@@ -15,6 +15,21 @@ export interface KnowledgeState {
 
 const KIND = z.enum(["call_transcript", "script", "playbook", "objection_sheet"]);
 const MAX_BYTES = 8 * 1024 * 1024;
+const MAX_SOURCES = { trial: 10, paid: 100 };
+const MAX_PER_DAY = 20;
+
+/** Digests run on the strongest model; cap how many sources a workspace can hold and add per day. */
+async function checkCaps(supabase: Awaited<ReturnType<typeof createClient>>, orgId: string, plan: string, adding: number): Promise<string | null> {
+  const cap = plan === "trial" ? MAX_SOURCES.trial : MAX_SOURCES.paid;
+  const since = new Date(Date.now() - 86_400_000).toISOString();
+  const [{ count: total }, { count: today }] = await Promise.all([
+    supabase.from("knowledge_sources").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+    supabase.from("knowledge_sources").select("id", { count: "exact", head: true }).eq("org_id", orgId).gt("created_at", since),
+  ]);
+  if ((total ?? 0) + adding > cap) return plan === "trial" ? `Trial workspaces can hold ${cap} sources. Remove one, or upgrade for more.` : `This workspace can hold ${cap} sources. Remove one first.`;
+  if ((today ?? 0) + adding > MAX_PER_DAY) return `You can add ${MAX_PER_DAY} sources a day. Try again tomorrow.`;
+  return null;
+}
 
 function scheduleDigest(id: string) {
   if (!process.env.ANTHROPIC_API_KEY) return;
@@ -35,6 +50,8 @@ export async function addKnowledgeText(_prev: KnowledgeState, formData: FormData
 
   const viewer = await requireManager();
   const supabase = await createClient();
+  const capped = await checkCaps(supabase, viewer.org.id, viewer.org.plan, 1);
+  if (capped) return { error: capped };
   const { data, error } = await supabase
     .from("knowledge_sources")
     .insert({ org_id: viewer.org.id, uploaded_by: viewer.userId, ...parsed.data, status: "pending" })
@@ -55,6 +72,8 @@ export async function uploadKnowledgeFiles(_prev: KnowledgeState, formData: Form
 
   const viewer = await requireManager();
   const supabase = await createClient();
+  const capped = await checkCaps(supabase, viewer.org.id, viewer.org.plan, files.length);
+  if (capped) return { error: capped };
 
   for (const file of files) {
     if (file.size > MAX_BYTES) return { error: `${file.name} is over 8 MB` };

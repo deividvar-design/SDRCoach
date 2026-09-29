@@ -12,8 +12,8 @@ export async function GET() {
     supabase.from("targets").select("*").eq("org_id", org),
     supabase.from("assignments").select("*").eq("org_id", org),
     supabase.from("call_sessions").select("*").eq("org_id", org),
-    supabase.from("call_transcripts").select("*"),
-    supabase.from("call_scores").select("*"),
+    supabase.from("call_transcripts").select("*, call_sessions!inner(org_id)").eq("call_sessions.org_id", org),
+    supabase.from("call_scores").select("*, call_sessions!inner(org_id)").eq("call_sessions.org_id", org),
     supabase.from("knowledge_sources").select("id, name, kind, status, summary, created_at").eq("org_id", org),
   ]);
 
