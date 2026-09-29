@@ -11,6 +11,7 @@ const MIN = 60_000;
  *  - live longer than the agent's maximum → finalize (the recording exists)
  *  - scoring for too long (worker died) → back to ended and finalize
  *  - ended but never scored → finalize
+ *  - collected with a review requested but never scored → finalize
  * Safe to run often; finalizeCall is idempotent.
  */
 export async function sweepStaleSessions(db: SupabaseClient<Database>, opts: { userId?: string; now?: number } = {}) {
@@ -29,11 +30,13 @@ export async function sweepStaleSessions(db: SupabaseClient<Database>, opts: { u
   const { data: stuckScoring } = await scope(db.from("call_sessions").select("id").eq("status", "scoring").lt("ended_at", iso(10 * MIN)));
   if (stuckScoring?.length) await db.from("call_sessions").update({ status: "ended" }).in("id", stuckScoring.map((r) => r.id));
 
-  const [{ data: live }, { data: ended }] = await Promise.all([
+  const [{ data: live }, { data: ended }, { data: unscored }] = await Promise.all([
     scope(db.from("call_sessions").select("id").eq("status", "live").lt("started_at", iso(20 * MIN))),
     scope(db.from("call_sessions").select("id").eq("status", "ended").lt("ended_at", iso(5 * MIN))),
+    // review requested, transcript in, score never ran
+    scope(db.from("call_sessions").select("id").eq("status", "collected").not("review_requested_at", "is", null).lt("review_requested_at", iso(2 * MIN))),
   ]);
-  for (const row of [...(live ?? []), ...(ended ?? []), ...(stuckScoring ?? [])]) {
+  for (const row of [...(live ?? []), ...(ended ?? []), ...(stuckScoring ?? []), ...(unscored ?? [])]) {
     try {
       await finalizeCall(row.id);
       results.finalized += 1;

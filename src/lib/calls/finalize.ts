@@ -99,7 +99,11 @@ export async function finalizeCall(sessionId: string) {
       return;
     }
 
-    if (!wantsScore) {
+    // The rep may have asked for the review while we were collecting. Re-read before deciding.
+    const { data: fresh } = await db.from("call_sessions").select("review_requested_at").eq("id", sessionId).maybeSingle();
+    const scoreNow = wantsScore || fresh?.review_requested_at != null;
+
+    if (!scoreNow) {
       await db
         .from("call_sessions")
         .update({

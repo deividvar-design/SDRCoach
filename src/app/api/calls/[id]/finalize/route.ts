@@ -14,10 +14,12 @@ export async function POST(_request: Request, { params }: RouteContext<"/api/cal
   const viewer = await requireViewer();
   const db = createAdminClient();
 
-  const { data: session } = await db.from("call_sessions").select("id, status, user_id, org_id").eq("id", id).maybeSingle();
+  const { data: session } = await db.from("call_sessions").select("id, status, user_id, org_id, review_requested_at").eq("id", id).maybeSingle();
   if (!session) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (session.user_id !== viewer.userId && session.org_id !== viewer.org.id) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (session.status !== "ended") return NextResponse.json({ ok: true, status: session.status });
+  // Retry when the transcript never arrived, or when a review was requested but the score never ran.
+  const stuck = session.status === "ended" || (session.status === "collected" && session.review_requested_at !== null);
+  if (!stuck) return NextResponse.json({ ok: true, status: session.status });
 
   after(async () => {
     try {
