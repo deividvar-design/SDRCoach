@@ -184,7 +184,7 @@ export default async function DashboardPage() {
           <span className="text-muted-foreground text-xs">Ranked by average score, last 7 days</span>
         </div>
         {!board.length ? (
-          <p className="text-muted-foreground px-5 py-8 text-center text-sm">Nobody has a scored call this week. First one takes the top spot.</p>
+          <p className="text-muted-foreground px-5 py-8 text-center text-sm">Nobody has called this week. First one takes the top spot.</p>
         ) : (
           <ol className="divide-y">
             {board.slice(0, 8).map((r, i) => (
@@ -194,8 +194,8 @@ export default async function DashboardPage() {
                   {isManager || viewer.org.reps_see_team ? <Link href={`/team/${r.user_id}`} className="hover:underline">{r.name}</Link> : r.name}
                   {r.user_id === viewer.userId && <span className="text-muted-foreground font-normal"> (you)</span>}
                 </span>
-                <span className="text-muted-foreground hidden font-mono text-xs tabular sm:inline">{r.calls} calls · {r.booked} booked</span>
-                <ScorePill value={r.avg} />
+                <span className="text-muted-foreground hidden font-mono text-xs tabular sm:inline">{r.calls} {r.calls === 1 ? "call" : "calls"} · {r.booked} booked</span>
+                {r.avg == null ? <span className="text-muted-foreground text-xs">no review yet</span> : <ScorePill value={r.avg} />}
               </li>
             ))}
           </ol>

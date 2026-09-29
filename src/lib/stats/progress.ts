@@ -69,7 +69,7 @@ export interface LeaderRow {
   best: number | null;
 }
 
-/** Weekly leaderboard: ranked by average score with a minimum of one scored call. */
+/** Weekly leaderboard: everyone who made a call this week, ranked by average score. Unscored reps sit at the bottom. */
 export function leaderboard(sessions: SessionLite[], names: Map<string, string>, sinceDays = 7, now = new Date()): LeaderRow[] {
   const since = now.getTime() - sinceDays * 86_400_000;
   const byUser = new Map<string, SessionLite[]>();
@@ -89,7 +89,6 @@ export function leaderboard(sessions: SessionLite[], names: Map<string, string>,
         best: personalBest(list),
       };
     })
-    .filter((r) => r.avg != null)
-    .sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0) || b.calls - a.calls);
+    .sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1) || b.calls - a.calls);
 }
 
