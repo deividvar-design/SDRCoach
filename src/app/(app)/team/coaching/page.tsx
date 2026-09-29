@@ -119,7 +119,7 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
         <>
           {focus.length > 0 && (
             <section className="bg-card paper-grain rounded-2xl border p-6 md:p-8">
-              <div className="text-muted-foreground mb-4 font-mono text-[11px] tracking-[0.14em] uppercase">This week's focus</div>
+              <div className="text-muted-foreground mb-4 font-mono text-[11px] tracking-[0.14em] uppercase">Focus · {RANGES[range]}</div>
               <ol className="grid gap-5 md:grid-cols-3">
                 {focus.map((f, i) => (
                   <li key={f.title} className="flex gap-3">

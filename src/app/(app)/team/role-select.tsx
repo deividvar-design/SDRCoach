@@ -9,7 +9,7 @@ export function RoleSelect({ membershipId, role }: { membershipId: string; role:
   const [pending, start] = useTransition();
   const form = useRef<HTMLFormElement>(null);
   return (
-    <form ref={form} action={changeRole.bind(null, membershipId)}>
+    <form ref={form} onSubmit={(e) => e.preventDefault()}>
       <Select
         name="role"
         defaultValue={role}
@@ -17,8 +17,9 @@ export function RoleSelect({ membershipId, role }: { membershipId: string; role:
         aria-label="Role"
         className="h-8 w-28 text-xs"
         onChange={() => start(async () => {
-          await changeRole(membershipId, new FormData(form.current!));
-          toast.success("Role updated");
+          const result = await changeRole(membershipId, new FormData(form.current!));
+          if ("error" in result) toast.error(result.error);
+          else toast.success("Role updated");
         })}
       >
         <option value="rep">Rep</option>

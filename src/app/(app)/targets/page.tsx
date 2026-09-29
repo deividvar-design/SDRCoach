@@ -15,7 +15,7 @@ export const metadata = { title: "Targets" };
 
 export default async function TargetsPage({ searchParams }: PageProps<"/targets">) {
   const { kind } = await searchParams;
-  const filter = kind === "practice" ? "practice" : kind === "real" ? "real" : "all";
+  const filter = kind === "practice" ? "practice" : kind === "real" ? "real" : kind === "archived" ? "archived" : "all";
   const viewer = await requireViewer();
   const isManager = canManage(viewer.membership.role);
   const supabase = await createClient();
@@ -23,11 +23,11 @@ export default async function TargetsPage({ searchParams }: PageProps<"/targets"
     .from("targets")
     .select("*")
     .eq("org_id", viewer.org.id)
-    .eq("is_archived", false)
+    .eq("is_archived", filter === "archived")
     .order("kind", { ascending: false })
     .order("created_at", { ascending: false });
 
-  const targets = (all ?? []).filter((t) => filter === "all" || t.kind === filter);
+  const targets = (all ?? []).filter((t) => filter === "all" || filter === "archived" || t.kind === filter);
   const counts = { all: all?.length ?? 0, real: all?.filter((t) => t.kind === "real").length ?? 0, practice: all?.filter((t) => t.kind === "practice").length ?? 0 };
 
   return (

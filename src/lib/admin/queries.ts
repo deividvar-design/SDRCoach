@@ -17,24 +17,36 @@ export interface OrgRow {
   lastCallAt: string | null;
 }
 
+/** PostgREST returns at most 1,000 rows per request; walk the pages. */
+async function fetchAll<T>(page: (from: number, to: number) => PromiseLike<{ data: T[] | null }>, size = 1000, max = 50_000): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; from < max; from += size) {
+    const { data } = await page(from, from + size - 1);
+    if (!data?.length) break;
+    out.push(...data);
+    if (data.length < size) break;
+  }
+  return out;
+}
+
 export async function loadOverview() {
   const db = createAdminClient();
   const since30 = iso(30 * DAY);
-  const [{ data: orgs }, { data: memberships }, { data: sessions }, { data: usage }] = await Promise.all([
-    db.from("organizations").select("*").order("created_at", { ascending: false }).limit(500),
-    db.from("memberships").select("org_id, user_id, role"),
-    db.from("call_sessions").select("id, org_id, status, started_at, created_at").gte("created_at", since30),
-    db.from("usage_events").select("*").gte("created_at", since30),
+  const [{ data: orgs }, memberships, sessions, usage] = await Promise.all([
+    db.from("organizations").select("*").order("created_at", { ascending: false }).limit(1000),
+    fetchAll((a, b) => db.from("memberships").select("org_id, user_id, role").range(a, b)),
+    fetchAll((a, b) => db.from("call_sessions").select("id, org_id, status, started_at, created_at").gte("created_at", since30).range(a, b)),
+    fetchAll((a, b) => db.from("usage_events").select("*").gte("created_at", since30).range(a, b)),
   ]);
 
   const allOrgs = orgs ?? [];
-  const sess = sessions ?? [];
-  const use = (usage ?? []) as UsageEvent[];
+  const sess = sessions;
+  const use = usage as UsageEvent[];
 
   // Owner emails (one auth lookup per org; fine at this scale).
   const owners = new Map<string, string>();
   await Promise.all(
-    (memberships ?? [])
+    memberships
       .filter((m) => m.role === "owner")
       .map(async (m) => {
         const { data } = await db.auth.admin.getUserById(m.user_id);
@@ -43,15 +55,15 @@ export async function loadOverview() {
   );
 
   const connectedAll = new Map<string, number>();
-  const { data: connectedRows } = await db.from("call_sessions").select("org_id").not("started_at", "is", null);
-  for (const r of connectedRows ?? []) connectedAll.set(r.org_id, (connectedAll.get(r.org_id) ?? 0) + 1);
+  const connectedRows = await fetchAll((a, b) => db.from("call_sessions").select("org_id").not("started_at", "is", null).neq("status", "failed").range(a, b));
+  for (const r of connectedRows) connectedAll.set(r.org_id, (connectedAll.get(r.org_id) ?? 0) + 1);
 
   const rows: OrgRow[] = allOrgs.map((org) => {
     const s = sess.filter((x) => x.org_id === org.id);
     const u = use.filter((x) => x.org_id === org.id);
     return {
       org,
-      members: (memberships ?? []).filter((m) => m.org_id === org.id).length,
+      members: memberships.filter((m) => m.org_id === org.id).length,
       ownerEmail: owners.get(org.id) ?? null,
       calls30d: s.length,
       connected30d: s.filter((x) => x.started_at).length,
@@ -121,7 +133,7 @@ export async function loadOrgDetail(orgId: string) {
     }),
   );
   const { count: connected } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", orgId).not("started_at", "is", null);
-  const use = (usage ?? []) as UsageEvent[];
+  const use = usage as UsageEvent[];
   const sum = (list: UsageEvent[]) => ({
     cost: list.reduce((a, b) => a + Number(b.cost_usd), 0),
     input: list.reduce((a, b) => a + b.input_tokens, 0),

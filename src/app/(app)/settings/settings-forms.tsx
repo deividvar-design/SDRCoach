@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Organization, Profile } from "@/types/database";
-import { updateOrganization, updateProfile, updateTeamVisibility, type SettingsState } from "./actions";
+import { updateOrganization, updatePassword, updateProfile, updateTeamVisibility, type SettingsState } from "./actions";
 
 function useToastOnOk(state: SettingsState) {
   useEffect(() => {
@@ -73,6 +73,29 @@ export function TeamVisibilityForm({ org }: { org: Organization }) {
       </label>
       {state.error && <p className="text-destructive text-sm">{state.error}</p>}
       <Button type="submit" disabled={pending}>{pending ? "Saving…" : "Save"}</Button>
+    </form>
+  );
+}
+
+export function PasswordForm() {
+  const [state, formAction, pending] = useActionState<SettingsState, FormData>(updatePassword, {});
+  useEffect(() => {
+    if (state.ok) toast.success("Password changed");
+  }, [state]);
+  return (
+    <form action={formAction} className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="password">New password</Label>
+          <Input id="password" name="password" type="password" autoComplete="new-password" minLength={8} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirm">Repeat it</Label>
+          <Input id="confirm" name="confirm" type="password" autoComplete="new-password" minLength={8} required />
+        </div>
+      </div>
+      {state.error && <p className="text-destructive text-sm">{state.error}</p>}
+      <Button type="submit" variant="outline" disabled={pending}>{pending ? "Saving…" : "Change password"}</Button>
     </form>
   );
 }

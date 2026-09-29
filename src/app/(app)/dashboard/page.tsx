@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { ArrowUpRight, Flame, Phone, Target as TargetIcon, Trophy, Users } from "lucide-react";
+import { cookies } from "next/headers";
+import { StatusToast } from "@/components/status-toast";
+import { SESSION_STATUS } from "@/lib/domain/session-status";
+import { ArrowUpRight, CheckCircle2, Circle, Flame, Phone, Target as TargetIcon, Trophy, Users } from "lucide-react";
 import { requireViewer } from "@/lib/auth";
 import { canManage } from "@/lib/domain/roles";
 import { LEVELS } from "@/lib/domain/levels";
@@ -14,10 +17,12 @@ import { StatTile } from "@/components/stat-tile";
 
 export const metadata = { title: "Dashboard" };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
+  const { welcome } = await searchParams;
   const viewer = await requireViewer();
   const supabase = await createClient();
   const isManager = canManage(viewer.membership.role);
+  const tz = (await cookies()).get("tz")?.value;
 
   const [{ data: rows }, { data: members }, { count: targetCount }, { data: assignments }] = await Promise.all([
     supabase
@@ -37,6 +42,26 @@ export default async function DashboardPage() {
       .limit(5),
   ]);
 
+  // First-run checklist for managers: what stands between them and a useful first week.
+  const setup = isManager
+    ? await (async () => {
+        const [{ count: realTargets }, { count: knowledge }, { count: reviewed }] = await Promise.all([
+          supabase.from("targets").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id).eq("kind", "real").eq("is_archived", false),
+          supabase.from("knowledge_sources").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id),
+          supabase.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id).eq("status", "scored"),
+        ]);
+        return [
+          { done: Boolean(viewer.org.product_description), label: "Describe what you sell", href: "/settings#company", hint: "The prospect and the coach both read it." },
+          { done: (realTargets ?? 0) > 0, label: "Add a real target", href: "/targets", hint: "Someone the team is actually going to call." },
+          { done: (members?.length ?? 0) > 1, label: "Invite a rep", href: "/team", hint: "Or make the first call yourself." },
+          { done: (rows?.length ?? 0) > 0, label: "Make a call", href: "/practice", hint: "Level 1 is the warm-up." },
+          { done: (reviewed ?? 0) > 0, label: "Get a review", href: "/sessions", hint: "Say yes on the report after a call." },
+          { done: (knowledge ?? 0) > 0, label: "Upload real call transcripts", href: "/knowledge", hint: "Optional. Makes the prospect sound like your market." },
+        ];
+      })()
+    : null;
+  const setupOpen = setup?.some((s) => !s.done) ?? false;
+
   const all = rows ?? [];
   const lite: SessionLite[] = all.map((s) => ({
     user_id: s.user_id,
@@ -53,7 +78,7 @@ export default async function DashboardPage() {
   const booked = scope.filter((s) => s.outcome === "meeting_booked").length;
   const decided = scope.filter((s) => s.outcome && s.outcome !== "incomplete").length;
   const bookRate = decided ? Math.round((booked / decided) * 100) : null;
-  const streak = streakDays(mine);
+  const streak = streakDays(mine, new Date(), tz);
   const best = personalBest(mine);
   const progress = levelProgress(mine);
   const nextLevel = suggestedLevel(mine);
@@ -63,8 +88,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      <StatusToast message={welcome === "1" ? "Your workspace is ready. Make the first call whenever you like." : null} />
       <PageHeader
-        eyebrow={new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+        eyebrow={new Date().toLocaleDateString("en-GB", { weekday: "long", month: "long", day: "numeric", timeZone: tz || "UTC" })}
         title={
           <>
             {streak >= 2 ? `Day ${streak}, ${firstName}.` : `Hey ${firstName}.`}{" "}
@@ -91,6 +117,28 @@ export default async function DashboardPage() {
         )}
       </div>
 
+      {setup && setupOpen && (
+        <section className="bg-card paper-grain rounded-2xl border p-6">
+          <div className="mb-4 flex items-baseline justify-between gap-4">
+            <h2 className="font-display text-2xl">Get set up</h2>
+            <span className="text-muted-foreground text-xs">{setup.filter((s) => s.done).length} of {setup.length} done</span>
+          </div>
+          <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {setup.map((s) => (
+              <li key={s.label}>
+                <Link href={s.href} className={`flex items-start gap-3 rounded-xl border p-3 text-sm transition-colors ${s.done ? "text-muted-foreground" : "hover:bg-accent/40"}`}>
+                  {s.done ? <CheckCircle2 className="text-success mt-0.5 size-4 shrink-0" /> : <Circle className="text-muted-foreground mt-0.5 size-4 shrink-0" />}
+                  <span>
+                    <span className={s.done ? "line-through" : "font-medium"}>{s.label}</span>
+                    <span className="text-muted-foreground block text-xs">{s.hint}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <section className="bg-card rounded-2xl border">
           <div className="flex items-center justify-between border-b px-5 py-4">
@@ -112,7 +160,7 @@ export default async function DashboardPage() {
                       <div className="text-muted-foreground text-xs">{formatDate(s.created_at)} · L{LEVELS[s.difficulty].level} {LEVELS[s.difficulty].name}</div>
                     </div>
                     {s.outcome === "meeting_booked" && <Badge variant="success">Booked</Badge>}
-                    {(s.status === "scoring" || s.status === "ended") && <Badge variant="secondary">Scoring…</Badge>}
+                    {!s.outcome && s.status !== "scored" && <Badge variant="secondary">{SESSION_STATUS[s.status].label}</Badge>}
                     <ScorePill value={s.call_scores?.overall ?? null} />
                   </Link>
                 </li>
@@ -123,8 +171,9 @@ export default async function DashboardPage() {
 
         <div className="space-y-6">
           <section className="bg-card rounded-2xl border">
-            <div className="border-b px-5 py-4">
+            <div className="flex items-center justify-between border-b px-5 py-4">
               <h2 className="font-medium">Your levels</h2>
+              <Link href={`/team/${viewer.userId}`} className="text-muted-foreground text-sm hover:underline">Your progress</Link>
             </div>
             <ul className="divide-y">
               {progress.map((p) => (

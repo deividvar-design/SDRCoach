@@ -206,11 +206,13 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
           </section>
 
           {m && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
               <StatTile label="You talked" value={`${Math.round(m.rep_talk_ratio * 100)}%`} hint={m.rep_talk_ratio > 0.6 ? "Above 60%. Ask more, tell less." : m.rep_talk_ratio < 0.4 ? "Under 40%. You can lead more." : "In the 40–60% sweet spot"} />
               <StatTile label="Longest monologue" value={m.longest_rep_monologue_secs} unit="sec" hint={m.longest_rep_monologue_secs > 35 ? "Over 35s. Buyers tune out." : "Kept it tight"} />
               <StatTile label="Questions asked" value={m.rep_questions} hint={m.rep_questions === 0 ? "None. Discovery never started." : m.rep_questions < 3 ? "A few more would help" : "Good curiosity"} />
               <StatTile label="Filler words" value={m.filler_words} hint={m.filler_words > 8 ? "Slow down between thoughts" : "Clean delivery"} />
+              <StatTile label="First objection" value={m.first_objection_secs ?? "—"} unit={m.first_objection_secs != null ? "sec" : undefined} hint={m.first_objection_secs == null ? "None raised" : m.first_objection_secs < 20 ? "Early. The opener invited it." : "Earned some room first"} />
+              <StatTile label="Interruptions" value={m.interruptions_by_rep} hint={m.interruptions_by_rep === 0 ? "Let them finish every time" : m.interruptions_by_rep > 2 ? "Talking over the buyer" : "Once or twice, watch it"} />
             </div>
           )}
 

@@ -6,7 +6,7 @@ import { BookOpen, GraduationCap, LayoutDashboard, Phone, Settings, Target, User
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/targets", label: "Targets", icon: Target },
   { href: "/sessions", label: "Calls", icon: Phone },
   { href: "/team", label: "Team", icon: Users, managerOnly: true },

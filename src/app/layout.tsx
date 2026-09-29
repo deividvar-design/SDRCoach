@@ -35,6 +35,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} ${display.variable} h-full antialiased`}>
       <head>
         <ThemeScript />
+        {/* The viewer's timezone, so streaks and dates are computed for their day, not the server's. */}
+        <script dangerouslySetInnerHTML={{ __html: 'try{document.cookie="tz="+Intl.DateTimeFormat().resolvedOptions().timeZone+";path=/;max-age=31536000;samesite=lax"}catch(e){}' }} />
       </head>
       <body className="min-h-full flex flex-col">
         {children}

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn, signUp, type AuthState } from "./actions";
 
-export function AuthForm({ mode, next, invite }: { mode: "login" | "signup"; next?: string; invite?: string }) {
+export function AuthForm({ mode, next, invite, notice }: { mode: "login" | "signup"; next?: string; invite?: string; notice?: { kind: "info" | "error"; text: string } }) {
   const action = mode === "login" ? signIn : signUp;
   const [state, formAction, pending] = useActionState<AuthState, FormData>(action, {});
 
@@ -19,6 +19,8 @@ export function AuthForm({ mode, next, invite }: { mode: "login" | "signup"; nex
           {mode === "login" ? "Sign in to keep training." : invite ? "You've been invited to join a team." : "Start your team's free trial: 10 calls, 14 days, no card."}
         </p>
       </div>
+
+      {notice && <p className={`rounded-md border p-3 text-sm ${notice.kind === "error" ? "border-destructive/40 text-destructive" : "text-muted-foreground"}`}>{notice.text}</p>}
 
       <form action={formAction} className="space-y-4">
         {next && <input type="hidden" name="next" value={next} />}

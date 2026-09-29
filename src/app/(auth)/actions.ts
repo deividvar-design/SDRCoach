@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { validateBusinessEmail } from "@/lib/email/business";
 import { safeNext } from "@/lib/safe-next";
 import { isAdminEmail } from "@/lib/auth";
+import { appUrl } from "@/lib/site";
 
 export interface AuthState {
   error?: string;
@@ -51,7 +52,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     password: parsed.data.password,
     options: {
       data: { full_name: parsed.data.full_name },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/callback${invite ? `?next=/invite/${invite}` : ""}`,
+      emailRedirectTo: `${appUrl()}/auth/callback${invite ? `?next=/invite/${invite}` : ""}`,
     },
   });
   if (error) return { error: error.message };
@@ -73,7 +74,7 @@ export async function requestPasswordReset(_prev: AuthState, formData: FormData)
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/callback?next=/reset-password`,
+    redirectTo: `${appUrl()}/auth/callback?next=/reset-password`,
   });
   // Same message whether or not the address exists, so the form cannot be used to probe accounts.
   return { message: "If that address has an account, a reset link is on its way." };

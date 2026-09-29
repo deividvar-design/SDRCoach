@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireViewer } from "@/lib/auth";
+import { OUTCOME_TEXT, SESSION_STATUS } from "@/lib/domain/session-status";
 import { canManage } from "@/lib/domain/roles";
 import { notFound } from "next/navigation";
 import { LEVELS } from "@/lib/domain/levels";
@@ -187,7 +188,7 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
                   </TableCell>
                   <TableCell><Badge variant="secondary">L{LEVELS[s.difficulty].level}</Badge></TableCell>
                   <TableCell className="font-mono text-xs">{formatDuration(s.duration_seconds)}</TableCell>
-                  <TableCell className="capitalize">{s.outcome?.replace("_", " ") ?? <span className="text-muted-foreground">{s.status}</span>}</TableCell>
+                  <TableCell>{s.outcome ? OUTCOME_TEXT[s.outcome] : <span className="text-muted-foreground">{SESSION_STATUS[s.status].label}</span>}</TableCell>
                   <TableCell className="text-right"><ScorePill value={s.call_scores?.overall ?? null} /></TableCell>
                 </TableRow>
               ))}

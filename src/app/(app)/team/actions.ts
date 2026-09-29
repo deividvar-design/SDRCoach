@@ -4,12 +4,16 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireManager } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { sendMail } from "@/lib/email/send";
+import { emailConfigured, sendMail } from "@/lib/email/send";
+import { appUrl } from "@/lib/site";
 import { templates } from "@/lib/email/templates";
 
 export interface InviteState {
   error?: string;
   link?: string;
+  /** Whether the invite email actually went out. False when email is not configured or the send failed. */
+  emailed?: boolean;
+  email?: string;
 }
 
 export async function createInvite(_prev: InviteState, formData: FormData): Promise<InviteState> {
@@ -36,12 +40,20 @@ export async function createInvite(_prev: InviteState, formData: FormData): Prom
     .single();
   if (error) return { error: error.message };
 
-  const link = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invite/${data.token}`;
+  const link = `${appUrl()}/invite/${data.token}`;
   const mail = templates.invite({ inviterName: viewer.profile.full_name ?? "Your manager", orgName: viewer.org.name, role: parsed.data.role, link });
-  await sendMail({ to: parsed.data.email, ...mail }).catch((err) => console.error("invite email failed", err));
+  let emailed = false;
+  if (emailConfigured()) {
+    emailed = await sendMail({ to: parsed.data.email, ...mail })
+      .then(() => true)
+      .catch((err) => {
+        console.error("invite email failed", err);
+        return false;
+      });
+  }
 
   revalidatePath("/team");
-  return { link };
+  return { link, emailed, email: parsed.data.email };
 }
 
 export async function revokeInvite(id: string) {
@@ -103,13 +115,17 @@ export async function deleteAssignment(id: string) {
 }
 
 /** Owners and managers can move anyone who is not the owner between rep and manager. */
-export async function changeRole(membershipId: string, formData: FormData) {
+export async function changeRole(membershipId: string, formData: FormData): Promise<{ ok: true } | { error: string }> {
   const role = z.enum(["manager", "rep"]).safeParse(formData.get("role"));
-  if (!role.success) return;
+  if (!role.success) return { error: "Pick a role." };
   const viewer = await requireManager();
   const supabase = await createClient();
   const { data: target } = await supabase.from("memberships").select("id, user_id, role").eq("id", membershipId).eq("org_id", viewer.org.id).maybeSingle();
-  if (!target || target.role === "owner" || target.user_id === viewer.userId) return;
-  await supabase.from("memberships").update({ role: role.data }).eq("id", membershipId);
+  if (!target) return { error: "Member not found." };
+  if (target.role === "owner") return { error: "The owner's role cannot be changed." };
+  if (target.user_id === viewer.userId) return { error: "You cannot change your own role." };
+  const { error } = await supabase.from("memberships").update({ role: role.data }).eq("id", membershipId);
+  if (error) return { error: error.message };
   revalidatePath("/team");
+  return { ok: true };
 }

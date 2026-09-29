@@ -1,3 +1,4 @@
+import { SESSION_STATUS } from "@/lib/domain/session-status";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -101,7 +102,7 @@ export default async function AdminOrgPage({ params }: PageProps<"/admin/orgs/[i
                   <TableCell><Link href={`/sessions/${s.id}`} className="hover:underline">{formatDate(s.created_at)}</Link></TableCell>
                   <TableCell>{s.targets?.name ?? "—"}</TableCell>
                   <TableCell><Badge variant="secondary">L{LEVELS[s.difficulty].level}</Badge></TableCell>
-                  <TableCell><Badge variant={s.status === "scored" ? "success" : s.status === "failed" ? "destructive" : "outline"}>{s.status}</Badge></TableCell>
+                  <TableCell><Badge variant={s.status === "scored" ? "success" : s.status === "failed" ? "destructive" : "outline"}>{SESSION_STATUS[s.status].label}</Badge></TableCell>
                   <TableCell className="font-mono text-xs">{formatDuration(s.duration_seconds)}</TableCell>
                   <TableCell className="capitalize">{s.outcome?.replaceAll("_", " ") ?? "—"}</TableCell>
                   <TableCell className="text-right"><ScorePill value={s.call_scores?.overall ?? null} /></TableCell>

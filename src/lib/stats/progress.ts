@@ -10,19 +10,27 @@ export interface SessionLite {
   overall: number | null;
 }
 
-function dayKey(d: Date) {
-  return `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
+const DAY_MS = 86_400_000;
+
+function keyFormatter(tz?: string) {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: tz || "UTC", year: "numeric", month: "2-digit", day: "2-digit" });
+  } catch {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "UTC", year: "numeric", month: "2-digit", day: "2-digit" });
+  }
 }
 
-/** Consecutive days (ending today or yesterday) with at least one call. */
-export function streakDays(sessions: SessionLite[], now = new Date()) {
-  const days = new Set(sessions.map((s) => dayKey(new Date(s.created_at))));
+/** Consecutive days (ending today or yesterday, in the viewer's timezone) with at least one call. */
+export function streakDays(sessions: SessionLite[], now = new Date(), tz?: string) {
+  const fmt = keyFormatter(tz);
+  const key = (d: Date) => fmt.format(d);
+  const days = new Set(sessions.map((s) => key(new Date(s.created_at))));
   let streak = 0;
-  const cursor = new Date(now);
-  if (!days.has(dayKey(cursor))) cursor.setUTCDate(cursor.getUTCDate() - 1);
-  while (days.has(dayKey(cursor))) {
+  let cursor = now.getTime();
+  if (!days.has(key(new Date(cursor)))) cursor -= DAY_MS;
+  while (days.has(key(new Date(cursor)))) {
     streak += 1;
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
+    cursor -= DAY_MS;
   }
   return streak;
 }

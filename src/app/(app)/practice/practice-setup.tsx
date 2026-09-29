@@ -49,12 +49,14 @@ export function PracticeSetup({
         </div>
 
         <div className="space-y-3">
-          <Label>How hard?</Label>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <Label id="difficulty-label">How hard?</Label>
+          <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-labelledby="difficulty-label">
             {levels.map((l) => (
               <button
                 key={l.id}
                 type="button"
+                role="radio"
+                aria-checked={difficulty === l.id}
                 onClick={() => setDifficulty(l.id)}
                 className={cn(
                   "cursor-pointer rounded-xl border p-4 text-left transition-colors",

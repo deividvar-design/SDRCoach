@@ -47,6 +47,19 @@ export async function updateTeamVisibility(_prev: SettingsState, formData: FormD
   return { ok: true };
 }
 
+export async function updatePassword(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
+  const parsed = z
+    .object({ password: z.string().min(8, "At least 8 characters"), confirm: z.string() })
+    .refine((v) => v.password === v.confirm, { message: "The two passwords do not match", path: ["confirm"] })
+    .safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  await requireViewer();
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  if (error) return { error: error.message };
+  return { ok: true };
+}
+
 export async function updateProfile(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
   const parsed = z.object({ full_name: z.string().min(2) }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
@@ -80,7 +93,7 @@ export async function deleteWorkspace(_prev: SettingsState, formData: FormData):
   if (error) return { error: error.message };
 
   await supabase.auth.signOut();
-  redirect("/?deleted=1");
+  redirect("/login?notice=deleted");
 }
 
 export async function leaveWorkspace() {

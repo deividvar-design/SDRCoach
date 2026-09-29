@@ -29,6 +29,11 @@ export function InviteForm() {
       </div>
       {state.error && <p className="text-destructive text-sm">{state.error}</p>}
       {state.link && (
+        <p className={`text-sm ${state.emailed ? "text-success" : "text-warning"}`}>
+          {state.emailed ? `Invite emailed to ${state.email}. You can also send the link yourself:` : `No email was sent${state.email ? ` to ${state.email}` : ""}. Copy the link and send it yourself:`}
+        </p>
+      )}
+      {state.link && (
         <div className="bg-accent/50 flex items-center gap-2 rounded-md border p-2 text-sm">
           <code className="min-w-0 flex-1 truncate font-mono text-xs">{state.link}</code>
           <Button

@@ -19,8 +19,9 @@ export async function extendTrial(orgId: string, _prev: AdminState, formData: Fo
   if (!parsed.success) return { error: "Enter whole numbers." };
   const admin = await requireAdmin();
   const db = createAdminClient();
-  const { data: org } = await db.from("organizations").select("trial_ends_at, trial_call_limit").eq("id", orgId).single();
+  const { data: org } = await db.from("organizations").select("trial_ends_at, trial_call_limit, plan, stripe_subscription_id").eq("id", orgId).single();
   if (!org) return { error: "Workspace not found." };
+  if (org.stripe_subscription_id || (org.plan !== "trial" && org.plan !== "canceled")) return { error: "This workspace is on a paid plan. Extending a trial would lock it out; adjust the plan instead." };
   const base = Math.max(Date.now(), new Date(org.trial_ends_at).getTime());
   const patch = {
     trial_ends_at: new Date(base + parsed.data.days * 86_400_000).toISOString(),

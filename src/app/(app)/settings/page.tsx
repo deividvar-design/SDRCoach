@@ -1,7 +1,7 @@
 import { requireViewer } from "@/lib/auth";
 import { canManage } from "@/lib/domain/roles";
 import { PageHeader } from "@/components/shell/page-header";
-import { OrganizationForm, ProfileForm, TeamVisibilityForm } from "./settings-forms";
+import { OrganizationForm, PasswordForm, ProfileForm, TeamVisibilityForm } from "./settings-forms";
 import { DangerZone } from "./danger-zone";
 import { Button } from "@/components/ui/button";
 import { leaveWorkspace } from "./actions";
@@ -9,17 +9,33 @@ import { openBillingPortal } from "../upgrade/actions";
 import { formatDate } from "@/lib/utils";
 import { PLANS } from "@/lib/billing/plans";
 import Link from "next/link";
+import { StatusToast } from "@/components/status-toast";
 
 export const metadata = { title: "Settings" };
 
-export default async function SettingsPage() {
+const ERRORS: Record<string, string> = {
+  already_subscribed: "This workspace already has an active subscription. Use Manage billing to change it.",
+  stripe: "Billing could not be reached. Try again in a minute.",
+  billing_unavailable: "Billing is not set up on this deployment yet.",
+};
+
+export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
+  const { checkout, error } = await searchParams;
   const viewer = await requireViewer();
+  const notice = checkout === "success" ? "You're on a paid plan. Thanks for backing the team." : null;
+  const problem = typeof error === "string" ? (ERRORS[error] ?? "Something went wrong.") : null;
   return (
     <div className="space-y-8">
+      <StatusToast message={notice} />
+      <StatusToast message={problem} kind="error" />
       <PageHeader title="Settings" />
       <section className="bg-card rounded-xl border p-6">
         <h2 className="mb-4 font-medium">Profile</h2>
         <ProfileForm profile={viewer.profile} />
+        <div className="mt-6 border-t pt-6">
+          <h3 className="mb-3 text-sm font-medium">Password</h3>
+          <PasswordForm />
+        </div>
       </section>
       {canManage(viewer.membership.role) && (
         <section className="bg-card rounded-xl border p-6">
