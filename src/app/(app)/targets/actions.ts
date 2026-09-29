@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { VOICE_IDS } from "@/lib/domain/voices";
 import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -25,6 +26,7 @@ const targetSchema = z.object({
   company_size: z.string().optional(),
   persona_notes: z.string().optional(),
   kind: z.enum(["real", "practice"]).default("real"),
+  voice_id: z.string().optional(),
 });
 
 export async function createTarget(_prev: TargetState, formData: FormData): Promise<TargetState> {
@@ -40,6 +42,7 @@ export async function createTarget(_prev: TargetState, formData: FormData): Prom
     industry: parsed.data.industry || null,
     company_size: parsed.data.company_size || null,
     persona_notes: parsed.data.persona_notes || null,
+    voice_id: parsed.data.voice_id && VOICE_IDS.includes(parsed.data.voice_id) ? parsed.data.voice_id : null,
     pain_points: lines(formData.get("pain_points")),
     objections: lines(formData.get("objections")),
   });
@@ -63,6 +66,7 @@ export async function updateTarget(id: string, _prev: TargetState, formData: For
       industry: parsed.data.industry || null,
       company_size: parsed.data.company_size || null,
       persona_notes: parsed.data.persona_notes || null,
+      voice_id: parsed.data.voice_id && VOICE_IDS.includes(parsed.data.voice_id) ? parsed.data.voice_id : null,
       pain_points: lines(formData.get("pain_points")),
       objections: lines(formData.get("objections")),
     })

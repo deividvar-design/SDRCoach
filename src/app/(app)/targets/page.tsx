@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
 import { Badge } from "@/components/ui/badge";
+import { voiceById } from "@/lib/domain/voices";
 import { Button } from "@/components/ui/button";
 import { TargetDialog } from "./target-dialog";
 
@@ -70,6 +71,7 @@ export default async function TargetsPage({ searchParams }: PageProps<"/targets"
                   </div>
                 </div>
                 <Badge variant={t.kind === "practice" ? "outline" : "secondary"}>{t.kind}</Badge>
+                {voiceById(t.voice_id) && <span className="text-muted-foreground text-xs">{voiceById(t.voice_id)!.name}</span>}
               </div>
               {t.persona_notes && <p className="text-muted-foreground line-clamp-3 text-sm">{t.persona_notes}</p>}
               <div className="text-muted-foreground mt-auto flex gap-3 pt-2 font-mono text-[11px] uppercase">

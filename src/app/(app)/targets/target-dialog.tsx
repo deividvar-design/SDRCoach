@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { VoiceSelect } from "./voice-select";
 import { Textarea } from "@/components/ui/textarea";
 import { createTarget, type TargetState } from "./actions";
 
@@ -64,6 +65,7 @@ export function TargetDialog() {
               <option value="practice">Practice persona</option>
             </Select>
           </div>
+          <VoiceSelect />
           <div className="space-y-2">
             <Label htmlFor="persona_notes">Persona notes</Label>
             <Textarea id="persona_notes" name="persona_notes" placeholder="Direct, numbers-driven, currently uses a legacy tool, hates being pitched features…" />

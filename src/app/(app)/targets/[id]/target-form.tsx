@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { VoiceSelect } from "../voice-select";
 import { Textarea } from "@/components/ui/textarea";
 import type { Target } from "@/types/database";
 import { updateTarget, type TargetState } from "../actions";
@@ -32,6 +33,7 @@ export function TargetEditForm({ target }: { target: Target }) {
             <option value="practice">Practice persona</option>
           </Select>
         </div>
+        <VoiceSelect defaultValue={target.voice_id} />
       </div>
       <div className="space-y-2"><Label htmlFor="persona_notes">Persona notes</Label><Textarea id="persona_notes" name="persona_notes" defaultValue={target.persona_notes ?? ""} className="min-h-28" /></div>
       <div className="grid gap-4 sm:grid-cols-2">
