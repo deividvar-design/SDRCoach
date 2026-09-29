@@ -13,7 +13,7 @@ B2B SaaS: SDRs practise cold calls against an AI prospect (ElevenLabs voice), ge
 ## Conventions
 - Server Components fetch data; mutations are Server Actions in a sibling `actions.ts` using `useActionState`
 - `requireViewer()` / `requireManager()` in `src/lib/auth.ts` gate every app page. RLS is the real boundary; server checks are UX
-- Roles: `owner` > `manager` > `rep`. Reps see only their own calls. Managers see the org
+- Roles: `owner` > `manager` > `rep`. Managers see the org. Reps see their own calls, plus everyone's when the workspace setting `reps_see_team` is on (default)
 - Difficulty levels are defined once in `src/lib/domain/levels.ts`
 - Read `docs/ARCHITECTURE.md` before touching the call or scoring pipeline
 

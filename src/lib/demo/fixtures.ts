@@ -17,6 +17,7 @@ export const ORG: Organization = {
   slug: "brightline",
   plan: "team",
   seat_limit: 10,
+  reps_see_team: true,
   company_description: "Brightline sells fleet telematics to mid-market logistics companies.",
   product_description: "A dashboard and driver app that cut fuel spend and idle time; typically $40–80 per vehicle per month.",
   ideal_customer_profile: "VP Ops or fleet managers at 100–1,000 vehicle fleets in freight, last-mile and field services.",

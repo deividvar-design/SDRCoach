@@ -101,3 +101,15 @@ export async function deleteAssignment(id: string) {
   revalidatePath("/team");
   revalidatePath("/dashboard");
 }
+
+/** Owners and managers can move anyone who is not the owner between rep and manager. */
+export async function changeRole(membershipId: string, formData: FormData) {
+  const role = z.enum(["manager", "rep"]).safeParse(formData.get("role"));
+  if (!role.success) return;
+  const viewer = await requireManager();
+  const supabase = await createClient();
+  const { data: target } = await supabase.from("memberships").select("id, user_id, role").eq("id", membershipId).eq("org_id", viewer.org.id).maybeSingle();
+  if (!target || target.role === "owner" || target.user_id === viewer.userId) return;
+  await supabase.from("memberships").update({ role: role.data }).eq("id", membershipId);
+  revalidatePath("/team");
+}

@@ -68,6 +68,7 @@ export type Organization = {
   company_description: string | null;
   product_description: string | null;
   ideal_customer_profile: string | null;
+  reps_see_team: boolean;
   trial_call_limit: number;
   trial_ends_at: string;
   trial_domain: string | null;
@@ -242,7 +243,7 @@ export type Database = {
     Tables: {
       organizations: Table<
         Organization,
-        Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
+        Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;

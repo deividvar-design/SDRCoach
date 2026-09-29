@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScorePill } from "@/components/score-pill";
 import { InviteForm } from "./invite-form";
 import { CopyLink } from "./copy-link";
+import { RoleSelect } from "./role-select";
 import { AssignForm } from "./assign-form";
 import { deleteAssignment, revokeInvite } from "./actions";
 import { LEVELS } from "@/lib/domain/levels";
@@ -150,7 +151,13 @@ export default async function TeamPage() {
                       <Link href={`/team/${m.user_id}`} className="font-medium hover:underline">{m.profiles?.full_name ?? "—"}</Link>
                     </div>
                   </TableCell>
-                  <TableCell><Badge variant={m.role === "rep" ? "secondary" : "outline"}>{ROLE_LABEL[m.role]}</Badge></TableCell>
+                  <TableCell>
+                    {m.role === "owner" || m.user_id === viewer.userId ? (
+                      <Badge variant={m.role === "rep" ? "secondary" : "outline"}>{ROLE_LABEL[m.role]}</Badge>
+                    ) : (
+                      <RoleSelect membershipId={m.id} role={m.role} />
+                    )}
+                  </TableCell>
                   <TableCell className="tabular-nums">{st?.calls ?? 0}</TableCell>
                   <TableCell className="tabular-nums">{st?.booked ?? 0}</TableCell>
                   <TableCell className="text-right"><ScorePill value={avg} /></TableCell>

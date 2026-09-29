@@ -191,7 +191,7 @@ export default async function DashboardPage() {
               <li key={r.user_id} className={`flex items-center gap-4 px-5 py-3 text-sm ${r.user_id === viewer.userId ? "bg-accent/40" : ""}`}>
                 <span className="text-muted-foreground w-5 font-mono text-xs tabular">{i + 1}</span>
                 <span className="min-w-0 flex-1 truncate font-medium">
-                  {r.name}
+                  {isManager || viewer.org.reps_see_team ? <Link href={`/team/${r.user_id}`} className="hover:underline">{r.name}</Link> : r.name}
                   {r.user_id === viewer.userId && <span className="text-muted-foreground font-normal"> (you)</span>}
                 </span>
                 <span className="text-muted-foreground hidden font-mono text-xs tabular sm:inline">{r.calls} calls · {r.booked} booked</span>

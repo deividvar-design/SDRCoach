@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { requireManager } from "@/lib/auth";
+import { requireViewer } from "@/lib/auth";
+import { canManage } from "@/lib/domain/roles";
+import { notFound } from "next/navigation";
 import { LEVELS } from "@/lib/domain/levels";
 import { ROLE_LABEL } from "@/lib/domain/roles";
 import { RUBRIC, RUBRIC_KEYS, type RubricKey } from "@/lib/scoring/rubric";
@@ -22,7 +23,9 @@ export const metadata = { title: "Rep" };
 
 export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
   const { userId } = await params;
-  const viewer = await requireManager();
+  const viewer = await requireViewer();
+  const isManager = canManage(viewer.membership.role);
+  if (!isManager && !viewer.org.reps_see_team && userId !== viewer.userId) notFound();
   const supabase = await createClient();
 
   const [{ data: membership }, { data: sessions }, { data: assignments }] = await Promise.all([

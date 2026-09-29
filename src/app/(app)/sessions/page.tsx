@@ -14,10 +14,13 @@ import { ScorePill } from "@/components/score-pill";
 
 export const metadata = { title: "Calls" };
 
-export default async function SessionsPage() {
+export default async function SessionsPage({ searchParams }: PageProps<"/sessions">) {
+  const { scope } = await searchParams;
   const viewer = await requireViewer();
   const supabase = await createClient();
   const isManager = canManage(viewer.membership.role);
+  const canSeeTeam = isManager || viewer.org.reps_see_team;
+  const showTeam = canSeeTeam && (isManager ? scope !== "mine" : scope === "team");
 
   let query = supabase
     .from("call_sessions")
@@ -25,20 +28,28 @@ export default async function SessionsPage() {
     .eq("org_id", viewer.org.id)
     .order("created_at", { ascending: false })
     .limit(100);
-  if (!isManager) query = query.eq("user_id", viewer.userId);
+  if (!showTeam) query = query.eq("user_id", viewer.userId);
   const { data: sessions } = await query;
 
   return (
     <div className="space-y-8">
       <PageHeader
         title="Calls"
-        description={isManager ? "Every practice call across your team." : "Your practice history."}
+        description={showTeam ? "Every practice call across your team." : "Your practice history."}
         actions={
-          <Button asChild>
-            <Link href="/practice">
-              <Phone /> Start a call
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {canSeeTeam && (
+              <div className="flex gap-1 rounded-full border p-1">
+                <Link href="/sessions?scope=mine" className={`rounded-full px-3 py-1 text-xs ${!showTeam ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}>Mine</Link>
+                <Link href="/sessions?scope=team" className={`rounded-full px-3 py-1 text-xs ${showTeam ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}>Team</Link>
+              </div>
+            )}
+            <Button asChild>
+              <Link href="/practice">
+                <Phone /> Start a call
+              </Link>
+            </Button>
+          </div>
         }
       />
 
@@ -50,7 +61,7 @@ export default async function SessionsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
-                {isManager && <TableHead>Rep</TableHead>}
+                {showTeam && <TableHead>Rep</TableHead>}
                 <TableHead>Target</TableHead>
                 <TableHead>Level</TableHead>
                 <TableHead>Length</TableHead>
@@ -66,7 +77,7 @@ export default async function SessionsPage() {
                     <TableCell>
                       <Link href={`/sessions/${s.id}`} className="hover:underline">{formatDate(s.created_at)}</Link>
                     </TableCell>
-                    {isManager && <TableCell>{s.profiles?.full_name ?? "—"}</TableCell>}
+                    {showTeam && <TableCell>{s.profiles?.full_name ?? "—"}</TableCell>}
                     <TableCell>
                       <div>{s.targets?.name ?? "Deleted target"}</div>
                       <div className="text-muted-foreground text-xs">{s.targets?.company}</div>

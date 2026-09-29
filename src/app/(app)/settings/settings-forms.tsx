@@ -51,6 +51,13 @@ export function OrganizationForm({ org }: { org: Organization }) {
         <Label htmlFor="ideal_customer_profile">Ideal customer profile</Label>
         <Textarea id="ideal_customer_profile" name="ideal_customer_profile" defaultValue={org.ideal_customer_profile ?? ""} placeholder="Company size, industries, the titles you call, the trigger events you look for." />
       </div>
+      <label className="flex items-start gap-3 rounded-md border p-3 text-sm">
+        <input type="checkbox" name="reps_see_team" defaultChecked={org.reps_see_team} className="mt-0.5" />
+        <span>
+          <span className="font-medium">Reps can see each other's calls and scores</span>
+          <span className="text-muted-foreground block text-xs">Turns the dashboard leaderboard into a full team view: every rep can open a teammate's page and reports. Managers always can.</span>
+        </span>
+      </label>
       {state.error && <p className="text-destructive text-sm">{state.error}</p>}
       <Button type="submit" disabled={pending}>{pending ? "Saving…" : "Save"}</Button>
     </form>

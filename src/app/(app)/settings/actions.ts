@@ -18,6 +18,7 @@ export async function updateOrganization(_prev: SettingsState, formData: FormDat
       company_description: z.string().optional(),
       product_description: z.string().optional(),
       ideal_customer_profile: z.string().optional(),
+      reps_see_team: z.string().optional(),
     })
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
@@ -31,6 +32,7 @@ export async function updateOrganization(_prev: SettingsState, formData: FormDat
       company_description: parsed.data.company_description || null,
       product_description: parsed.data.product_description || null,
       ideal_customer_profile: parsed.data.ideal_customer_profile || null,
+      reps_see_team: parsed.data.reps_see_team === "on",
     })
     .eq("id", viewer.org.id);
   if (error) return { error: error.message };
