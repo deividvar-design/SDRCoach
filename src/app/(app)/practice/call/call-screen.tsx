@@ -83,6 +83,8 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
   const [trialBlocked, setTrialBlocked] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [turns, setTurns] = useState<LiveTurn[]>([]);
+  const [micLevel, setMicLevel] = useState(0);
+  const [silentMic, setSilentMic] = useState(false);
   const sessionIdRef = useRef<string | null>(null);
   const endedRef = useRef(false);
   const startedRef = useRef<Promise<unknown> | null>(null);
@@ -137,6 +139,27 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
     const start = Date.now();
     const id = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 500);
     return () => clearInterval(id);
+  }, [stage]);
+
+  // Mic meter. If the SDK hears nothing from the rep for the first eight seconds, say so: a muted headset or the wrong
+  // input device looks exactly like a prospect who ignores you.
+  useEffect(() => {
+    if (stage !== "live") return;
+    let peak = 0;
+    const start = Date.now();
+    const id = setInterval(() => {
+      const v = conversation.isMuted ? 0 : conversation.getInputVolume();
+      peak = Math.max(peak, v);
+      setMicLevel(v);
+      if (!conversation.isMuted && Date.now() - start > 8000) setSilentMic(peak < 0.03);
+    }, 120);
+    return () => {
+      clearInterval(id);
+      // Reset on the way out of the live stage, not on the way in.
+      setMicLevel(0);
+      setSilentMic(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
 
   // Keep transcript scrolled
@@ -286,6 +309,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
                 <Button size="icon-lg" variant="outline" onClick={() => conversation.setMuted(!conversation.isMuted)} aria-label={conversation.isMuted ? "Unmute" : "Mute"}>
                   {conversation.isMuted ? <MicOff /> : <Mic />}
                 </Button>
+                <MicMeter level={micLevel} muted={conversation.isMuted} />
                 <Button size="icon-lg" variant="destructive" onClick={hangUp} aria-label="Hang up">
                   <PhoneOff />
                 </Button>
@@ -296,6 +320,12 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
               </Button>
             )}
           </div>
+
+          {stage === "live" && silentMic && !conversation.isMuted && (
+            <p className="text-destructive mt-6 max-w-sm text-sm text-balance" role="status">
+              The prospect can't hear you. Check the mic icon in your browser's address bar for which microphone is in use, and that your headset isn't muted.
+            </p>
+          )}
 
           {stage === "idle" && (
             <p className="text-muted-foreground mt-8 max-w-sm text-xs text-balance">
@@ -333,6 +363,18 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
           </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+/** Eight bars that follow the rep's input level, so "is it hearing me" has a visible answer. */
+function MicMeter({ level, muted }: { level: number; muted: boolean }) {
+  const lit = muted ? 0 : Math.min(8, Math.round(Math.sqrt(Math.min(1, level * 4)) * 8));
+  return (
+    <div className="flex h-11 items-end gap-0.5" aria-label={muted ? "Microphone muted" : `Microphone level ${Math.round((lit / 8) * 100)}%`} title="Your mic">
+      {Array.from({ length: 8 }, (_, i) => (
+        <span key={i} className={cn("w-1 rounded-sm transition-colors duration-100", i < lit ? "bg-signal" : "bg-border")} style={{ height: `${8 + i * 3}px` }} />
+      ))}
     </div>
   );
 }
