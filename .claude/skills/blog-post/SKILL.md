@@ -75,4 +75,4 @@ Plain, specific, a little dry. Write like a sales manager who has run a floor, n
 1. In `content/queue.md`, change the row's status from `planned` to `drafted` and add the slug.
 2. In `src/lib/site.ts`, set `contentUpdated` to today.
 3. In `public/llms.txt`, add the post under "## Recent posts" (create the heading if missing) as `- [Title](/blog/<slug>): one line`.
-4. Commit with a message of the form `Blog: <title>` on a branch named `content/<slug>` cut from `origin/claude/cooking-session-t8mv78`, push it, and open a pull request against `claude/cooking-session-t8mv78` with the description and the first paragraph in the body. Do not merge it.
+4. Commit with a message of the form `Blog: <title>` on a branch named `content/<slug>` cut from `origin/claude/cooking-session-t8mv78` and push it. If you have GitHub API tools, open a pull request against `claude/cooking-session-t8mv78` with the description and the first paragraph in the body; otherwise give the compare link `https://github.com/deividvar-design/SDRCoach/compare/claude/cooking-session-t8mv78...content/<slug>?expand=1`. Never merge it yourself.
