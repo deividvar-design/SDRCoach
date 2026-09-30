@@ -61,7 +61,9 @@ export async function startCheckout(formData: FormData) {
     url = session.url;
   } catch (err) {
     console.error("stripe checkout failed", err);
-    redirect("/upgrade?error=stripe");
+    // Surface Stripe's own reason to the manager: it is almost always a configuration problem they can act on.
+    const reason = err instanceof Error ? err.message.slice(0, 160) : "";
+    redirect(`/upgrade?error=stripe&reason=${encodeURIComponent(reason)}`);
   }
 
   if (!url) redirect("/upgrade?error=no_session");

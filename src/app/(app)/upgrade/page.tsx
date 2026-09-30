@@ -11,7 +11,7 @@ import { stripeConfigured } from "@/lib/billing/stripe";
 export const metadata = { title: "Upgrade" };
 
 export default async function UpgradePage({ searchParams }: PageProps<"/upgrade">) {
-  const { error } = await searchParams;
+  const { error, reason } = await searchParams;
   const viewer = await requireViewer();
   const supabase = await createClient();
   const [trial, { count }] = await Promise.all([
@@ -35,7 +35,12 @@ export default async function UpgradePage({ searchParams }: PageProps<"/upgrade"
             : "You're on a paid plan. Contact us to change seats or plans."
         }
       />
-      {typeof error === "string" && <p className="text-destructive text-sm">{error === "billing_unavailable" ? "Checkout is not configured on this deployment yet." : error === "invalid" ? "Check the seat count and try again." : "Something went wrong starting checkout. Try again."}</p>}
+      {typeof error === "string" && (
+        <p className="text-destructive text-sm">
+          {error === "billing_unavailable" ? "Checkout is not configured on this deployment yet." : error === "invalid" ? "Check the seat count and try again." : error === "price_missing" ? "The plan prices are not configured on this deployment yet." : "Something went wrong starting checkout. Try again."}
+          {typeof reason === "string" && reason && <span className="text-muted-foreground block text-xs">Stripe said: {reason}</span>}
+        </p>
+      )}
       {subscribed ? (
         <div className="bg-card flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-6">
           <div>
