@@ -82,6 +82,8 @@ for (const p of PLANS) {
   const product = await stripe.products.create({
     name: p.name,
     description: `${p.calls} practice calls per seat per month`,
+    // Stripe Tax needs a category: SaaS for business use.
+    tax_code: "txcd_10103001",
     metadata: { plan: p.id },
   });
   const monthly = await stripe.prices.create(priceParams(product.id, p, "monthly"));
