@@ -9,8 +9,7 @@ import { leaveWorkspace } from "./actions";
 import { openBillingPortal } from "../upgrade/actions";
 
 import { INTERVALS, PLANS } from "@/lib/billing/plans";
-import { loadTrialStatus } from "@/lib/billing/usage";
-import { createClient } from "@/lib/supabase/server";
+import { loadAllowance } from "@/lib/billing/allowance";
 import Link from "next/link";
 import { StatusToast } from "@/components/status-toast";
 import { SubscribedDialog } from "./subscribed-dialog";
@@ -27,7 +26,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   const { checkout, error } = await searchParams;
   const viewer = await requireViewer();
   const fmtDate = await dateFormatter();
-  const usage = await periodUsage(viewer.org);
+  const usage = await periodUsage(viewer.org, viewer.userId);
   const problem = typeof error === "string" ? (ERRORS[error] ?? "Something went wrong.") : null;
   const paidPlan = PLANS.find((p) => p.id === viewer.org.plan && p.prices);
   const subscribed = paidPlan
@@ -102,19 +101,9 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
 }
 
 /** What the workspace has used in the current period, against what the plan includes. */
-async function periodUsage(org: Awaited<ReturnType<typeof requireViewer>>["org"]): Promise<{ label: string }> {
-  if (org.plan === "trial" || org.plan === "canceled") {
-    const t = await loadTrialStatus(org);
-    return { label: `${t.callsUsed} of ${org.trial_call_limit} trial calls used.` };
-  }
-  const plan = PLANS.find((p) => p.id === org.plan);
-  const end = org.current_period_end ? new Date(org.current_period_end) : null;
-  if (!plan?.callsPerSeat || !end) return { label: "" };
-  const months = org.billing_interval ? INTERVALS[org.billing_interval].months : 1;
-  const start = new Date(end);
-  start.setUTCMonth(start.getUTCMonth() - months);
-  const supabase = await createClient();
-  const { count } = await supabase.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null).neq("status", "failed").gte("started_at", start.toISOString());
-  const included = plan.callsPerSeat * org.seat_limit * months;
-  return { label: `${count ?? 0} of ${included} included calls used this period.` };
+async function periodUsage(org: Awaited<ReturnType<typeof requireViewer>>["org"], userId: string): Promise<{ label: string }> {
+  const a = await loadAllowance(org, { userId, isManager: true });
+  if (!a) return { label: "" };
+  if (a.kind === "trial") return { label: `${a.used} of ${a.included} trial calls used.` };
+  return { label: `${a.used} of ${a.included} included calls used this period${a.over > 0 ? `, ${a.over} over` : ""}.` };
 }

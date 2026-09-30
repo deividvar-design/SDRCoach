@@ -9,6 +9,9 @@ import { FeedbackLink } from "@/components/shell/feedback-dialog";
 import { TrialBanner } from "@/components/billing/trial-banner";
 import { ReviewWatcher } from "@/components/calls/review-watcher";
 import { loadTrialStatus } from "@/lib/billing/usage";
+import { loadAllowance } from "@/lib/billing/allowance";
+import { DialsLeft } from "@/components/billing/dials-left";
+import { dateFormatter } from "@/lib/tz";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { robots: { index: false, follow: false } };
@@ -17,8 +20,10 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const viewer = await requireViewer();
   const isManager = canManage(viewer.membership.role);
   const supabase = await createClient();
-  const [trial, { data: pendingRows }] = await Promise.all([
+  const [trial, allowance, formatDate, { data: pendingRows }] = await Promise.all([
     loadTrialStatus(viewer.org),
+    loadAllowance(viewer.org, { userId: viewer.userId, isManager }),
+    dateFormatter(),
     supabase.from("call_sessions").select("id").eq("user_id", viewer.userId).not("review_requested_at", "is", null).in("status", ["ended", "scoring"]).limit(10),
   ]);
   const isAdmin = isAdminEmail(viewer.email);
@@ -32,6 +37,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <div className="text-muted-foreground mb-4 truncate px-3 text-xs">{viewer.org.name}</div>
         <SidebarNav isManager={isManager} />
         <div className="mt-auto flex flex-col gap-1">
+          <DialsLeft allowance={allowance} isManager={isManager} formatDate={formatDate} />
           <FeedbackLink />
           <UserMenu
             name={viewer.profile.full_name ?? viewer.email}
