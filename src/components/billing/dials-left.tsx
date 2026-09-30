@@ -23,7 +23,7 @@ export function DialsLeft({ allowance, isManager, formatDate }: { allowance: All
     <>
       <div className="text-muted-foreground flex items-baseline justify-between text-xs">
         <span>{title}</span>
-        {sub && <span className="truncate pl-2">{sub}</span>}
+        {sub && <span className="truncate pl-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">{sub}</span>}
       </div>
       <div className="mt-1 flex items-baseline gap-1.5">
         <span className={cn("tabular text-xl leading-none font-medium", low && "text-signal")}>{left}</span>
@@ -34,12 +34,13 @@ export function DialsLeft({ allowance, isManager, formatDate }: { allowance: All
     </>
   );
 
-  const className = "block rounded-md px-3 py-2";
+  const className = "group block rounded-md px-3 py-2";
+  const hint = sub ? `${title}: ${left} of ${included}, ${sub}` : undefined;
   return isManager ? (
-    <Link href={kind === "trial" ? "/upgrade" : "/settings"} className={cn(className, "hover:bg-accent/60 transition-colors")} title={kind === "trial" ? "See plans" : "Plan and billing"}>
+    <Link href={kind === "trial" ? "/upgrade" : "/settings"} className={cn(className, "hover:bg-accent/60 transition-colors")} title={hint}>
       {body}
     </Link>
   ) : (
-    <div className={className}>{body}</div>
+    <div className={className} title={hint}>{body}</div>
   );
 }
