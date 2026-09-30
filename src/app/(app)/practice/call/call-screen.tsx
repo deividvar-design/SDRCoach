@@ -249,15 +249,6 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
             <Badge variant="secondary">L{level.level} {level.name}</Badge>
             {target.kind === "practice" && <Badge variant="outline">Practice persona</Badge>}
           </div>
-          <div className="absolute top-5 right-5 font-mono text-sm tabular">
-            {stage === "live" && (
-              <span className="flex items-center gap-2">
-                <span className="bg-signal size-2 rounded-full live-pulse" />
-                <span className="text-signal font-medium">LIVE</span>
-                <span>{formatDuration(elapsed)}</span>
-              </span>
-            )}
-          </div>
 
           <div className="relative mb-6 grid place-items-center">
             {(stage === "dialing" || prospectSpeaking) && (
@@ -275,6 +266,19 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
           <p className="text-muted-foreground mt-1">
             {target.title}, {target.company}
           </p>
+          {(stage === "live" || stage === "ending") && (
+            <div className="bg-background/80 mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-sm tabular" aria-live="off">
+              {stage === "live" ? (
+                <>
+                  <span className="bg-signal size-2 rounded-full live-pulse" />
+                  <span className="text-signal font-medium">LIVE</span>
+                </>
+              ) : (
+                <span className="text-muted-foreground">Ended</span>
+              )}
+              <span>{formatDuration(elapsed)}</span>
+            </div>
+          )}
 
           <p className="text-muted-foreground mt-6 h-5 text-sm">
             {stage === "idle" && (voiceConfigured ? "Ready when you are." : "Voice service is not configured yet.")}
