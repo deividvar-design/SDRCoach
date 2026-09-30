@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { dateFormatter } from "@/lib/tz";
 import { cookies } from "next/headers";
 import { StatusToast } from "@/components/status-toast";
 import { SESSION_STATUS } from "@/lib/domain/session-status";
@@ -7,7 +8,7 @@ import { requireViewer } from "@/lib/auth";
 import { canManage } from "@/lib/domain/roles";
 import { LEVELS } from "@/lib/domain/levels";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate } from "@/lib/utils";
+
 import { average, leaderboard, levelProgress, personalBest, streakDays, suggestedLevel, type SessionLite } from "@/lib/stats/progress";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ export const metadata = { title: "Dashboard" };
 export default async function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
   const { welcome } = await searchParams;
   const viewer = await requireViewer();
+  const fmtDate = await dateFormatter();
   const supabase = await createClient();
   const isManager = canManage(viewer.membership.role);
   const tz = (await cookies()).get("tz")?.value;
@@ -153,7 +155,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                         {s.targets?.name ?? "Deleted target"}
                         {isManager && s.profiles?.full_name ? <span className="text-muted-foreground font-normal">, {s.profiles.full_name}</span> : null}
                       </div>
-                      <div className="text-muted-foreground text-xs">{formatDate(s.created_at)}, L{LEVELS[s.difficulty].level} {LEVELS[s.difficulty].name}</div>
+                      <div className="text-muted-foreground text-xs">{fmtDate(s.created_at)}, L{LEVELS[s.difficulty].level} {LEVELS[s.difficulty].name}</div>
                     </div>
                     {s.outcome === "meeting_booked" && <Badge variant="success">Booked</Badge>}
                     {!s.outcome && s.status !== "scored" && <Badge variant="secondary">{SESSION_STATUS[s.status].label}</Badge>}
@@ -207,7 +209,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                   <li key={n.id} className="px-5 py-3 text-sm">
                     <Link href={`/sessions/${n.session_id}`} className="block">
                       <p className="clamp-fade">{n.body}</p>
-                      <div className="text-muted-foreground mt-1 text-xs">{n.profiles?.full_name ?? "Manager"}, on your {n.call_sessions?.targets?.name ?? "call"} call, {formatDate(n.created_at)}</div>
+                      <div className="text-muted-foreground mt-1 text-xs">{n.profiles?.full_name ?? "Manager"}, on your {n.call_sessions?.targets?.name ?? "call"} call, {fmtDate(n.created_at)}</div>
                     </Link>
                   </li>
                 ))}

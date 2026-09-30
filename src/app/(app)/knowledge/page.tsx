@@ -1,7 +1,8 @@
 import { BookOpen } from "lucide-react";
+import { dateFormatter } from "@/lib/tz";
 import { requireManager } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate } from "@/lib/utils";
+
 import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ const STATUS_LABEL = { pending: "Queued", processing: "Reading…", ready: "Read
 
 export default async function KnowledgePage() {
   const viewer = await requireManager();
+  const fmtDate = await dateFormatter();
   const supabase = await createClient();
   const { data: sources } = await supabase
     .from("knowledge_sources")
@@ -52,7 +54,7 @@ export default async function KnowledgePage() {
                   <Badge variant="outline">{KIND_LABEL[s.kind]}</Badge>
                   <Badge variant={STATUS_VARIANT[s.status]}>{STATUS_LABEL[s.status]}</Badge>
                 </div>
-                <div className="text-muted-foreground text-xs">Added {formatDate(s.created_at)}</div>
+                <div className="text-muted-foreground text-xs">Added {fmtDate(s.created_at)}</div>
                 {s.summary && <p className="text-muted-foreground text-sm">{s.summary}</p>}
                 {s.status === "failed" && s.error && <p className="text-destructive text-xs">{s.error}</p>}
               </div>

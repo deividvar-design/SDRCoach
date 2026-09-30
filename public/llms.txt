@@ -5,7 +5,7 @@
 ## Pages
 
 - [Homepage](/): what it does, how it works, the three levels
-- [For sales managers](/for-managers): ramp, visibility, assignments, momentum
+- [For sales managers](/for-managers): ramp, visibility, team stats, momentum
 - [For sales enablement](/for-enablement): grounding in real transcripts, one rubric, measurement
 - [Pricing](/pricing): per-seat plans and the free trial
 - [Trust and security](/trust): data handling, retention, deletion

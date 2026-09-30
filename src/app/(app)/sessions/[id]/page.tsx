@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { dateFormatter } from "@/lib/tz";
 import { notFound } from "next/navigation";
 import { Phone, RotateCcw } from "lucide-react";
 import { requireViewer } from "@/lib/auth";
 import { LEVELS, LEVEL_LIST } from "@/lib/domain/levels";
 import { canManage } from "@/lib/domain/roles";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate, formatDuration } from "@/lib/utils";
+import {formatDuration} from "@/lib/utils";
 import { moodById } from "@/lib/domain/moods";
 import { PageHeader } from "@/components/shell/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +36,7 @@ const OUTCOME_LABEL: Record<CallOutcome, { label: string; variant: "success" | "
 export default async function SessionPage({ params, searchParams }: PageProps<"/sessions/[id]">) {
   const [{ id }, { fresh }] = await Promise.all([params, searchParams]);
   const viewer = await requireViewer();
+  const fmtDate = await dateFormatter();
   const supabase = await createClient();
   const { data: session } = await supabase
     .from("call_sessions")
@@ -49,7 +51,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
     supabase.from("call_comments").select("id, body, created_at, author_id, profiles!call_comments_author_id_fkey(full_name)").eq("session_id", id).order("created_at"),
   ]);
   const comments = (commentRows ?? []).map((c) => ({ id: c.id, body: c.body, created_at: c.created_at, author_id: c.author_id, author: c.profiles?.full_name ?? "Teammate" }));
-  const commentDates = Object.fromEntries(comments.map((c) => [c.id, formatDate(c.created_at)]));
+  const commentDates = Object.fromEntries(comments.map((c) => [c.id, fmtDate(c.created_at)]));
 
   const level = LEVELS[session.difficulty];
   const isOwn = session.user_id === viewer.userId;
@@ -72,7 +74,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
     <div className="space-y-8">
       <ScorePoller active={collecting || reviewing} sessionId={session.id} doneMessage={reviewing ? "Your review is ready" : null} />
       <PageHeader
-        eyebrow={`${formatDate(session.created_at)}, ${formatDuration(session.duration_seconds)}, L${level.level} ${level.name}${moodById(session.mood) ? `, ${moodById(session.mood)!.label.toLowerCase()}` : ""}${session.gatekeeper ? ", via gatekeeper" : ""}${!isOwn && session.profiles?.full_name ? `, ${session.profiles.full_name}` : ""}`}
+        eyebrow={`${fmtDate(session.created_at)}, ${formatDuration(session.duration_seconds)}, L${level.level} ${level.name}${moodById(session.mood) ? `, ${moodById(session.mood)!.label.toLowerCase()}` : ""}${session.gatekeeper ? ", via gatekeeper" : ""}${!isOwn && session.profiles?.full_name ? `, ${session.profiles.full_name}` : ""}`}
         title={session.targets ? `${session.targets.name}, ${session.targets.company}` : "Call"}
         description={session.targets?.title}
         actions={

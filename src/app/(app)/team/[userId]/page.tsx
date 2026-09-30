@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { dateFormatter } from "@/lib/tz";
 import { ArrowLeft } from "lucide-react";
 import { requireViewer } from "@/lib/auth";
 import { OUTCOME_TEXT, SESSION_STATUS } from "@/lib/domain/session-status";
@@ -9,7 +10,7 @@ import { ROLE_LABEL } from "@/lib/domain/roles";
 import { RUBRIC, RUBRIC_KEYS, type RubricKey } from "@/lib/scoring/rubric";
 import { average, levelProgress, personalBest, streakDays, type SessionLite } from "@/lib/stats/progress";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate, formatDuration, initials } from "@/lib/utils";
+import {formatDuration, initials} from "@/lib/utils";
 import { PageHeader } from "@/components/shell/page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ export const metadata = { title: "Rep" };
 export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
   const { userId } = await params;
   const viewer = await requireViewer();
+  const fmtDate = await dateFormatter();
   const isManager = canManage(viewer.membership.role);
   if (!isManager && !viewer.org.reps_see_team && userId !== viewer.userId) notFound();
   const supabase = await createClient();
@@ -59,7 +61,7 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
   const trend = [...scored]
     .reverse()
     .slice(-20)
-    .map((s) => ({ id: s.id, label: `${formatDate(s.created_at)}, ${s.targets?.name ?? ""}`, value: s.call_scores!.overall }));
+    .map((s) => ({ id: s.id, label: `${fmtDate(s.created_at)}, ${s.targets?.name ?? ""}`, value: s.call_scores!.overall }));
 
   const progress = levelProgress(lite);
 
@@ -166,7 +168,7 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
               {all.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell>
-                    <Link href={`/sessions/${s.id}`} className="hover:underline">{formatDate(s.created_at)}</Link>
+                    <Link href={`/sessions/${s.id}`} className="hover:underline">{fmtDate(s.created_at)}</Link>
                   </TableCell>
                   <TableCell>
                     {s.targets?.name ?? "Deleted target"} <span className="text-muted-foreground text-xs">{s.targets?.company}</span>

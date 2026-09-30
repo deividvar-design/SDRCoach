@@ -5,7 +5,7 @@ A rep picks a **target** (a prospect persona their team actually calls), a **lev
 
 ## Tenancy and roles
 - `organizations` → `memberships` (`owner` | `manager` | `rep`). One org per user for now; the model allows more.
-- Reps: own calls, own assignments, all org targets.
+- Reps: own calls, all live org targets.
 - Managers/owners: everything in the org, plus team, invites, knowledge, org settings.
 - Row-level security in Postgres is the security boundary. `requireViewer()`/`requireManager()` exist for UX and redirects.
 

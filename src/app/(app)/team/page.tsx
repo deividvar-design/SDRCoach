@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { dateFormatter } from "@/lib/tz";
 import { requireManager } from "@/lib/auth";
 import { ROLE_LABEL } from "@/lib/domain/roles";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate, initials } from "@/lib/utils";
+import { fetchAll } from "@/lib/supabase/paginate";
+import {initials} from "@/lib/utils";
 import { PageHeader } from "@/components/shell/page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,12 +21,13 @@ export const metadata = { title: "Team" };
 
 export default async function TeamPage() {
   const viewer = await requireManager();
+  const fmtDate = await dateFormatter();
   const supabase = await createClient();
 
-  const [{ data: members }, { data: invites }, { data: sessions }] = await Promise.all([
+  const [{ data: members }, { data: invites }, sessions] = await Promise.all([
     supabase.from("memberships").select("*, profiles!memberships_user_id_fkey(full_name, avatar_url, email)").eq("org_id", viewer.org.id).order("created_at"),
     supabase.from("invites").select("*").eq("org_id", viewer.org.id).is("accepted_at", null).order("created_at", { ascending: false }),
-    supabase.from("call_sessions").select("user_id, outcome, status, created_at, call_scores(overall)").eq("org_id", viewer.org.id),
+    fetchAll((a, b) => supabase.from("call_sessions").select("user_id, outcome, status, created_at, call_scores(overall)").eq("org_id", viewer.org.id).order("created_at").range(a, b)),
   ]);
 
   const statsByUser = new Map<string, { calls: number; booked: number; scores: number[] }>();
@@ -58,7 +61,7 @@ export default async function TeamPage() {
               <li key={i.id} className="flex items-center justify-between gap-3 py-3 text-sm">
                 <div>
                   <span>{i.email}</span> <Badge variant="secondary" className="ml-2">{ROLE_LABEL[i.role]}</Badge>
-                  <div className="text-muted-foreground text-xs">Expires {formatDate(i.expires_at)}</div>
+                  <div className="text-muted-foreground text-xs">Expires {fmtDate(i.expires_at)}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <CopyLink link={`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invite/${i.token}`} />

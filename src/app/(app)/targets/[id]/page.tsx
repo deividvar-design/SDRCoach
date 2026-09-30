@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { dateFormatter } from "@/lib/tz";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Phone } from "lucide-react";
 import { requireViewer } from "@/lib/auth";
 import { canManage } from "@/lib/domain/roles";
 import { LEVELS } from "@/lib/domain/levels";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate } from "@/lib/utils";
+
 import { PageHeader } from "@/components/shell/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export const metadata = { title: "Target" };
 export default async function TargetPage({ params }: PageProps<"/targets/[id]">) {
   const { id } = await params;
   const viewer = await requireViewer();
+  const fmtDate = await dateFormatter();
   const supabase = await createClient();
   const [{ data: target }, { data: calls }] = await Promise.all([
     supabase.from("targets").select("*").eq("id", id).eq("org_id", viewer.org.id).maybeSingle(),
@@ -77,7 +79,7 @@ export default async function TargetPage({ params }: PageProps<"/targets/[id]">)
                   <Link href={`/sessions/${c.id}`} className="hover:bg-accent/40 flex items-center gap-3 px-5 py-3 text-sm">
                     <div className="min-w-0 flex-1">
                       <div className="truncate">{c.profiles?.full_name ?? "Rep"}</div>
-                      <div className="text-muted-foreground text-xs">{formatDate(c.created_at)}, L{LEVELS[c.difficulty].level}</div>
+                      <div className="text-muted-foreground text-xs">{fmtDate(c.created_at)}, L{LEVELS[c.difficulty].level}</div>
                     </div>
                     {c.outcome === "meeting_booked" && <Badge variant="success">Booked</Badge>}
                     <ScorePill value={c.call_scores?.overall ?? null} />

@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { dateFormatter } from "@/lib/tz";
 import { Phone } from "lucide-react";
 import { requireViewer } from "@/lib/auth";
 import { canManage } from "@/lib/domain/roles";
 import { LEVELS, LEVEL_LIST } from "@/lib/domain/levels";
 import { OUTCOME_TEXT, SESSION_STATUS } from "@/lib/domain/session-status";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate, formatDuration } from "@/lib/utils";
+import {formatDuration} from "@/lib/utils";
 import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ export default async function SessionsPage({ searchParams }: PageProps<"/session
   const before = one(sp.before);
 
   const viewer = await requireViewer();
+  const fmtDate = await dateFormatter();
   const supabase = await createClient();
   const isManager = canManage(viewer.membership.role);
   const canSeeTeam = isManager || viewer.org.reps_see_team;
@@ -122,7 +124,7 @@ export default async function SessionsPage({ searchParams }: PageProps<"/session
                   return (
                     <TableRow key={s.id}>
                       <TableCell>
-                        <Link href={`/sessions/${s.id}`} className="hover:underline">{formatDate(s.created_at)}</Link>
+                        <Link href={`/sessions/${s.id}`} className="hover:underline">{fmtDate(s.created_at)}</Link>
                       </TableCell>
                       {showTeam && <TableCell>{s.profiles?.full_name ?? "—"}</TableCell>}
                       <TableCell>

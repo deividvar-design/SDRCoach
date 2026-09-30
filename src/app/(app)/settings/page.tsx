@@ -1,4 +1,5 @@
 import { requireViewer } from "@/lib/auth";
+import { dateFormatter } from "@/lib/tz";
 import { canManage } from "@/lib/domain/roles";
 import { PageHeader } from "@/components/shell/page-header";
 import { OrganizationForm, PasswordForm, ProfileForm, TeamVisibilityForm } from "./settings-forms";
@@ -6,8 +7,10 @@ import { DangerZone } from "./danger-zone";
 import { Button } from "@/components/ui/button";
 import { leaveWorkspace } from "./actions";
 import { openBillingPortal } from "../upgrade/actions";
-import { formatDate } from "@/lib/utils";
+
 import { PLANS } from "@/lib/billing/plans";
+import { loadTrialStatus } from "@/lib/billing/usage";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { StatusToast } from "@/components/status-toast";
 
@@ -22,6 +25,8 @@ const ERRORS: Record<string, string> = {
 export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
   const { checkout, error } = await searchParams;
   const viewer = await requireViewer();
+  const fmtDate = await dateFormatter();
+  const usage = await periodUsage(viewer.org);
   const notice = checkout === "success" ? "You're on a paid plan. Thanks for backing the team." : null;
   const problem = typeof error === "string" ? (ERRORS[error] ?? "Something went wrong.") : null;
   return (
@@ -42,13 +47,14 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
           <h2 className="mb-1 font-medium">Plan</h2>
           <p className="text-muted-foreground mb-4 text-sm">
             {viewer.org.plan === "trial" ? (
-              <>Free trial with {viewer.org.seat_limit} seats.</>
+              <>Free trial with {viewer.org.seat_limit} {viewer.org.seat_limit === 1 ? "seat" : "seats"}. {usage.label}</>
             ) : (
               <>
                 <span className="text-foreground">{PLANS.find((p) => p.id === viewer.org.plan)?.name ?? viewer.org.plan}</span> plan, {viewer.org.seat_limit} seats
                 {viewer.org.billing_interval ? `, billed ${viewer.org.billing_interval === "year" ? "yearly" : "monthly"}` : ""}
-                {viewer.org.current_period_end ? `, ${viewer.org.cancel_at_period_end ? "ends" : "renews"} ${formatDate(viewer.org.current_period_end)}` : ""}
+                {viewer.org.current_period_end ? `, ${viewer.org.cancel_at_period_end ? "ends" : "renews"} ${fmtDate(viewer.org.current_period_end)}` : ""}
                 {viewer.org.subscription_status === "past_due" && <span className="text-destructive">, payment failed, please update your card</span>}
+                . {usage.label}
               </>
             )}
           </p>
@@ -88,4 +94,22 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
       )}
     </div>
   );
+}
+
+/** What the workspace has used in the current period, against what the plan includes. */
+async function periodUsage(org: Awaited<ReturnType<typeof requireViewer>>["org"]): Promise<{ label: string }> {
+  if (org.plan === "trial" || org.plan === "canceled") {
+    const t = await loadTrialStatus(org);
+    return { label: `${t.callsUsed} of ${org.trial_call_limit} trial calls used.` };
+  }
+  const plan = PLANS.find((p) => p.id === org.plan);
+  const end = org.current_period_end ? new Date(org.current_period_end) : null;
+  if (!plan?.callsPerSeat || !end) return { label: "" };
+  const start = new Date(end);
+  if (org.billing_interval === "year") start.setUTCFullYear(start.getUTCFullYear() - 1);
+  else start.setUTCMonth(start.getUTCMonth() - 1);
+  const supabase = await createClient();
+  const { count } = await supabase.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null).neq("status", "failed").gte("started_at", start.toISOString());
+  const included = plan.callsPerSeat * org.seat_limit * (org.billing_interval === "year" ? 12 : 1);
+  return { label: `${count ?? 0} of ${included} included calls used this period.` };
 }

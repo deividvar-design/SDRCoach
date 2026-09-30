@@ -12,12 +12,14 @@ export function formatDuration(seconds: number | null | undefined) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-export function formatDate(value: string | Date) {
+/** Server code should format through dateFormatter() in src/lib/tz.ts so the viewer's timezone is used. */
+export function formatDate(value: string | Date, timeZone?: string) {
   const d = typeof value === "string" ? new Date(value) : value;
-  return d.toLocaleDateString(undefined, {
+  return d.toLocaleDateString("en-GB", {
     month: "short",
     day: "numeric",
     year: "numeric",
+    ...(timeZone ? { timeZone } : {}),
   });
 }
 

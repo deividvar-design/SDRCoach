@@ -26,7 +26,7 @@ export const PLANS: Plan[] = [
     callsPerSeat: 40,
     overagePerCall: 1.5,
     minSeats: 2,
-    features: ["Live AI prospects at all three levels", "Scored report after every call", "Six practice personas plus your own targets", "Streaks, personal bests, team leaderboard", "Email support"],
+    features: ["Live AI prospects at all three levels", "Scored report after every call", "Recordings, transcripts and replay", "Six practice personas plus your own targets", "Coaching view: skills by rep, top objections", "Streaks, personal bests, team leaderboard", "Email support"],
     cta: "Start free trial",
   },
   {
@@ -38,7 +38,7 @@ export const PLANS: Plan[] = [
     callsPerSeat: 100,
     overagePerCall: 1.2,
     minSeats: 3,
-    features: ["Everything in Starter", "Ground prospects in your real call transcripts", "Per-rep drill-down and trend reports", "Assignments with due dates", "Call recordings and replay", "Priority support"],
+    features: ["Everything in Starter", "100 calls per seat a month instead of 40", "Lower overage rate", "More room for call transcripts and scripts that ground your prospects", "Priority support"],
     cta: "Start free trial",
     highlight: true,
   },

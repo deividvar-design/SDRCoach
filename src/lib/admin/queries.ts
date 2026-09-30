@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { fetchAll } from "@/lib/supabase/paginate";
 import { trialStatus } from "@/lib/billing/trial";
 import type { Feedback, Organization, UsageEvent } from "@/types/database";
 
@@ -15,18 +16,6 @@ export interface OrgRow {
   cost30d: number;
   trial: ReturnType<typeof trialStatus>;
   lastCallAt: string | null;
-}
-
-/** PostgREST returns at most 1,000 rows per request; walk the pages. */
-async function fetchAll<T>(page: (from: number, to: number) => PromiseLike<{ data: T[] | null }>, size = 1000, max = 50_000): Promise<T[]> {
-  const out: T[] = [];
-  for (let from = 0; from < max; from += size) {
-    const { data } = await page(from, from + size - 1);
-    if (!data?.length) break;
-    out.push(...data);
-    if (data.length < size) break;
-  }
-  return out;
 }
 
 export async function loadOverview() {

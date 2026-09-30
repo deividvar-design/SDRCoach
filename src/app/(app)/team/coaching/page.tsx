@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireManager } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/supabase/paginate";
 import { OBJECTIONS, RUBRIC, RUBRIC_KEYS, type ObjectionKind, type RubricKey } from "@/lib/scoring/rubric";
 import { PageHeader } from "@/components/shell/page-header";
 import { ScorePill, scoreStep } from "@/components/score-pill";
@@ -40,16 +41,18 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
   const range: Range = typeof rawRange === "string" && rawRange in RANGES ? (rawRange as Range) : "30";
   const supabase = await createClient();
 
-  let query = supabase
-    .from("call_sessions")
-    .select("id, user_id, created_at, profiles(full_name), call_scores(overall, dimensions, objections)")
-    .eq("org_id", viewer.org.id)
-    .eq("status", "scored")
-    .order("created_at", { ascending: false });
-  if (range !== "all") query = query.gte("created_at", sinceIso(Number(range)));
-  const { data } = await query;
+  const data = await fetchAll<Row>((a, b) => {
+    let query = supabase
+      .from("call_sessions")
+      .select("id, user_id, created_at, profiles(full_name), call_scores(overall, dimensions, objections)")
+      .eq("org_id", viewer.org.id)
+      .eq("status", "scored")
+      .order("created_at", { ascending: false });
+    if (range !== "all") query = query.gte("created_at", sinceIso(Number(range)));
+    return query.range(a, b) as unknown as PromiseLike<{ data: Row[] | null }>;
+  });
 
-  const calls = ((data ?? []) as Row[])
+  const calls = data
     .map((r) => ({ ...r, score: Array.isArray(r.call_scores) ? r.call_scores[0] : r.call_scores }))
     .filter((r) => r.score);
 
