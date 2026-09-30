@@ -15,7 +15,7 @@ export default async function UpgradePage({ searchParams }: PageProps<"/upgrade"
   const viewer = await requireViewer();
   const supabase = await createClient();
   const [trial, { count }] = await Promise.all([
-    loadTrialStatus(supabase, viewer.org),
+    loadTrialStatus(viewer.org),
     supabase.from("memberships").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id),
   ]);
   const memberCount = count ?? 1;

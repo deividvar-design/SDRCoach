@@ -37,7 +37,8 @@ export async function sendLifecycle(orgId: string, kind: LifecycleKind, opts: { 
 
   const db = createAdminClient();
   const { data: logRow, error: logErr } = await db.from("email_log").insert({ org_id: orgId, kind, user_id: opts.userId ?? null }).select("id").single();
-  if (logErr || !logRow) return { sent: false, reason: "already sent" };
+  if (logErr?.code === "23505") return { sent: false, reason: "already sent" };
+  if (logErr || !logRow) throw new Error(logErr?.message ?? "email log insert failed");
   const undo = () => db.from("email_log").delete().eq("id", logRow.id);
 
   const [{ data: org }, owner] = await Promise.all([db.from("organizations").select("name, plan, seat_limit").eq("id", orgId).single(), opts.to ? Promise.resolve(opts.to) : orgOwner(orgId)]);

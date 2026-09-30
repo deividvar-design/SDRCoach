@@ -1,5 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
-import { callContext } from "@/lib/sentry";
+import { reportError } from "@/lib/sentry";
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
@@ -43,10 +42,12 @@ export async function sweepStaleSessions(
 
   const [{ data: stuckLive }, { data: stuckScoring }] = await Promise.all([
     scope(db.from("call_sessions").select("id").eq("status", "live").lt("started_at", iso(20 * MIN))),
-    scope(db.from("call_sessions").select("id").eq("status", "scoring").lt("ended_at", iso(10 * MIN))),
+    scope(db.from("call_sessions").select("id").eq("status", "scoring").lt("scoring_started_at", iso(10 * MIN))),
   ]);
   const moved = [...(stuckLive ?? []), ...(stuckScoring ?? [])].map((r) => r.id);
-  if (moved.length) await db.from("call_sessions").update({ status: "ended", ended_at: new Date(now).toISOString() }).in("id", moved);
+  // Stuck live calls get an ended_at now; a stuck scoring claim keeps its original hang-up time.
+  if (stuckLive?.length) await db.from("call_sessions").update({ status: "ended", ended_at: new Date(now).toISOString() }).in("id", stuckLive.map((r) => r.id));
+  if (stuckScoring?.length) await db.from("call_sessions").update({ status: "ended" }).in("id", stuckScoring.map((r) => r.id));
 
   const [{ data: ended }, { data: unscored }] = await Promise.all([
     scope(db.from("call_sessions").select("id").eq("status", "ended").lt("ended_at", iso(5 * MIN)).lt("finalize_attempts", 5).limit(limit)),
@@ -63,8 +64,7 @@ export async function sweepStaleSessions(
       await finalizeCall(id);
       results.finalized += 1;
     } catch (err) {
-      console.error("sweep finalize failed", id, err);
-      Sentry.captureException(err, callContext(id, { where: "sweep" }));
+      reportError(err, { where: "sweep", sessionId: id });
     }
   }
   return results;

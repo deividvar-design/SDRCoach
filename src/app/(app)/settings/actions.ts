@@ -14,10 +14,10 @@ export interface SettingsState {
 export async function updateOrganization(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
   const parsed = z
     .object({
-      name: z.string().min(2),
-      company_description: z.string().optional(),
-      product_description: z.string().optional(),
-      ideal_customer_profile: z.string().optional(),
+      name: z.string().min(2).max(120),
+      company_description: z.string().max(2000, "Keep it under 2,000 characters").optional(),
+      product_description: z.string().max(2000, "Keep it under 2,000 characters").optional(),
+      ideal_customer_profile: z.string().max(2000, "Keep it under 2,000 characters").optional(),
     })
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };

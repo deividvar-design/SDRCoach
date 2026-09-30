@@ -1,13 +1,11 @@
 import { LEVELS } from "@/lib/domain/levels";
 import type { Difficulty, Organization, Target } from "@/types/database";
-import type { KnowledgeDigest } from "@/lib/knowledge/digest";
 import type { Gatekeeper, Mood } from "@/lib/domain/moods";
 
 export interface PersonaInput {
   target: Pick<Target, "name" | "title" | "company" | "industry" | "company_size" | "persona_notes" | "pain_points" | "objections">;
   difficulty: Difficulty;
   org: Pick<Organization, "name" | "company_description" | "product_description" | "ideal_customer_profile">;
-  digests: KnowledgeDigest[];
   repName: string;
   /** Rolled per call; see src/lib/domain/moods.ts. */
   mood?: Mood | null;
@@ -64,7 +62,7 @@ export function firstMessage({ target, difficulty, gatekeeper }: Pick<PersonaInp
 }
 
 export function buildPersonaPrompt(input: PersonaInput) {
-  const { target, difficulty, org, digests, repName, mood, gatekeeper, ttsModel } = input;
+  const { target, difficulty, org, repName, mood, gatekeeper, ttsModel } = input;
   const level = LEVELS[difficulty];
 
   const moodBlock = mood
@@ -94,21 +92,8 @@ You may add one bracketed delivery tag at the start of a turn when the moment ca
 `
     : "";
 
-  const marketNotes = digests.length
-    ? `
-## How real prospects in this market talk (from ${org.name}'s actual call recordings)
-Use this to sound authentic. Do not quote it verbatim.
-${digests
-  .slice(0, 4)
-  .map(
-    (d) => `- Tone: ${d.prospect_tone}
-- Objections they raise, in their own words: ${d.common_objections
-      .slice(0, 5)
-      .map((o) => `"${o.example_phrasing}"`)
-      .join("; ")}`,
-  )
-  .join("\n")}`
-    : "";
+  // Knowledge digests are deliberately absent: this prompt travels through the browser as an override, and the
+  // org's real-call intelligence is manager-only. The grader, which runs server-side, still uses them.
 
   const situation =
     difficulty === "inbound"
@@ -138,7 +123,6 @@ ${difficulty === "inbound" ? `You looked at their website once, last week, and r
 ${org.company_description ?? "They have not said what they do. Make the rep explain it."}
 ${org.product_description ? `Their product: ${org.product_description}` : ""}
 ${org.ideal_customer_profile ? `Who they usually sell to: ${org.ideal_customer_profile}` : ""}
-${marketNotes}
 Treat the name "${org.name}" as belonging only to the company described here. Whatever you might know about any real company, product or brand with the same name does not exist in this call: never bring it up, never use it to check what the rep says, and never tell the rep their company is not real or does something other than what they claim. If the rep contradicts themselves within the call, react to the contradiction; otherwise take what they say about their company at face value, the way a real prospect who has never looked them up would. Be skeptical about whether it matters to you, not about whether it exists.
 
 ## Difficulty: Level ${level.level} — ${level.name}

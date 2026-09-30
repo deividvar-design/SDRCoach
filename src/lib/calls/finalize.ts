@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
-import { callContext } from "@/lib/sentry";
+import { callContext, reportError } from "@/lib/sentry";
 import { moodById } from "@/lib/domain/moods";
 import "server-only";
 import { createHash } from "node:crypto";
@@ -10,6 +10,7 @@ import { scoreCall } from "@/lib/scoring/score";
 import { loadOrgDigests } from "@/lib/knowledge/digest";
 import type { CallOutcome, TranscriptTurn } from "@/types/database";
 import { trialStatus } from "@/lib/billing/trial";
+import { countTrialCalls } from "@/lib/billing/usage";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { recordAnthropicUsage, recordVoiceUsage } from "@/lib/usage/record";
 
@@ -33,10 +34,15 @@ type Db = ReturnType<typeof createAdminClient>;
  */
 export async function finalizeCall(sessionId: string) {
   const db = createAdminClient();
+  // The claim returns the row after the update, so read the status it is leaving first. It decides whether the
+  // transcript was already collected and where a hand-back should return the row.
+  const { data: before } = await db.from("call_sessions").select("status, finalize_attempts").eq("id", sessionId).maybeSingle();
+  if (!before) return;
+  if (before.finalize_attempts >= MAX_ATTEMPTS) return;
 
   const { data: claimed } = await db
     .from("call_sessions")
-    .update({ status: "scoring" })
+    .update({ status: "scoring", scoring_started_at: new Date().toISOString() })
     .eq("id", sessionId)
     .in("status", ["ended", "live", "failed", "collected"])
     .select("*, targets(name, title, company, pain_points, objections), profiles(full_name), organizations(name, company_description, product_description, ideal_customer_profile)")
@@ -54,7 +60,10 @@ export async function finalizeCall(sessionId: string) {
   }
 
   const wantsScore = claimed.review_requested_at !== null;
-  const restoreTo = claimed.status === "collected" ? "collected" : "ended";
+  // A stored transcript means collection already happened, whatever the status said: never re-fetch or re-count it.
+  const { data: stored } = await db.from("call_transcripts").select("turns").eq("session_id", sessionId).maybeSingle();
+  const alreadyCollected = before.status === "collected" || Boolean(stored?.turns?.length);
+  const restoreTo = alreadyCollected ? "collected" : "ended";
 
   try {
     // ---- Phase 1: collect. Reuse a stored transcript when a review is requested later.
@@ -64,8 +73,6 @@ export async function finalizeCall(sessionId: string) {
     let collectedReason: string | null = claimed.outcome_reason;
     let summary: string | null = claimed.prospect_summary;
     let metrics = claimed.metrics;
-
-    const { data: stored } = claimed.status === "collected" ? await db.from("call_transcripts").select("turns").eq("session_id", sessionId).maybeSingle() : { data: null };
 
     if (stored?.turns?.length) {
       turns = stored.turns;
@@ -83,9 +90,9 @@ export async function finalizeCall(sessionId: string) {
         return;
       }
 
-      // The browser sent the prospect brief as an override. If it does not match what the server issued, the
-      // call was tampered with: keep the record, never score it, never let it on the leaderboard.
-      if (claimed.prompt_hash && convo.overridePrompt !== null && hashPrompt(convo.overridePrompt) !== claimed.prompt_hash) {
+      // The browser sent the prospect brief as an override. If it is missing or does not match what the server
+      // issued, the call ran on some other prompt: keep the record, never score it, never let it on the leaderboard.
+      if (claimed.prompt_hash && (convo.overridePrompt === null || hashPrompt(convo.overridePrompt) !== claimed.prompt_hash)) {
         await db
           .from("call_sessions")
           .update({ status: "collected", outcome: "incomplete", outcome_reason: "The prospect brief was altered on this call, so it was not scored.", error: "prompt mismatch", review_requested_at: null, ended_at: endedAt })
@@ -109,7 +116,7 @@ export async function finalizeCall(sessionId: string) {
       collectedReason = typeof convo.dataCollection.outcome_reason === "string" && convo.dataCollection.outcome_reason ? convo.dataCollection.outcome_reason : null;
       summary = convo.summary;
 
-      if (claimed.status !== "collected" && claimed.status !== "failed") await afterCollect(db, claimed.org_id);
+      if (!alreadyCollected) await afterCollect(db, claimed.org_id);
     }
 
     const repSpoke = turns.some((t) => t.role === "rep");
@@ -214,8 +221,7 @@ async function completeAssignment(db: Db, assignmentId: string | null, outcome: 
 async function afterCollect(db: Db, orgId: string) {
   const { data: orgRow } = await db.from("organizations").select("plan, trial_call_limit, trial_ends_at").eq("id", orgId).single();
   if (orgRow?.plan !== "trial") return;
-  const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", orgId).not("started_at", "is", null).neq("status", "failed");
-  const t = trialStatus(orgRow, count ?? 0);
-  if (t.callsLeft <= 2 && t.callsLeft > 0) await sendLifecycle(orgId, "two_calls_left").catch(() => {});
-  if (t.callsLeft === 0) await sendLifecycle(orgId, "trial_ended", { reason: "calls" }).catch(() => {});
+  const t = trialStatus(orgRow, await countTrialCalls(db, orgId));
+  if (t.callsLeft <= 2 && t.callsLeft > 0) await sendLifecycle(orgId, "two_calls_left").catch((err) => reportError(err, { where: "trial_email", orgId }));
+  if (t.callsLeft === 0) await sendLifecycle(orgId, "trial_ended", { reason: "calls" }).catch((err) => reportError(err, { where: "trial_email", orgId }));
 }

@@ -1,5 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
-import { callContext } from "@/lib/sentry";
+import { reportError } from "@/lib/sentry";
 import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { requireViewer } from "@/lib/auth";
@@ -7,7 +6,6 @@ import { createClient } from "@/lib/supabase/server";
 import { mintConversationToken, agentId } from "@/lib/elevenlabs/client";
 import { buildPersonaPrompt, firstMessage } from "@/lib/prompts/persona";
 import { pickGatekeeper, rollGatekeeper, rollMood } from "@/lib/domain/moods";
-import { loadOrgDigests } from "@/lib/knowledge/digest";
 import { loadTrialStatus } from "@/lib/billing/usage";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sweepStaleSessions } from "@/lib/calls/sweep";
@@ -42,10 +40,7 @@ export async function POST(request: Request) {
     const swept = await sweepStaleSessions(createAdminClient(), { userId: viewer.userId, deferFinalize: true }).catch(() => null);
     if (swept?.pending.length) {
       after(async () => {
-        for (const id of swept.pending) await finalizeCall(id).catch((err) => {
-          console.error("deferred finalize failed", id, err);
-          Sentry.captureException(err, callContext(id, { where: "deferred_finalize" }));
-        });
+        for (const id of swept.pending) await finalizeCall(id).catch((err) => reportError(err, { where: "deferred_finalize", sessionId: id }));
       });
     }
   }
@@ -67,7 +62,7 @@ export async function POST(request: Request) {
   ]);
   if ((liveCount ?? 0) > 0) return NextResponse.json({ error: "You already have a call in progress. Hang up before dialing again." }, { status: 409 });
 
-  const trial = await loadTrialStatus(supabase, viewer.org);
+  const trial = await loadTrialStatus(viewer.org);
   if (trial.exhausted) {
     return NextResponse.json(
       { error: trial.reason === "calls" ? "Your team has used all its trial calls." : trial.reason === "subscription" ? "Your team's subscription has ended." : "Your team's trial has ended.", code: "trial_exhausted" },
@@ -83,12 +78,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Voice service unavailable" }, { status: 503 });
   }
 
-  const digests = await loadOrgDigests(viewer.org.id);
   const repName = viewer.profile.full_name ?? "the rep";
   // Dice, rolled once per call so the same target is never the same person twice.
   const mood = rollMood(parsed.data.difficulty);
   const gatekeeper = rollGatekeeper(parsed.data.difficulty) ? pickGatekeeper(target.voice_id) : null;
-  const prompt = buildPersonaPrompt({ target, difficulty: parsed.data.difficulty, org: viewer.org, digests, repName, mood, gatekeeper, ttsModel: process.env.ELEVENLABS_TTS_MODEL });
+  const prompt = buildPersonaPrompt({ target, difficulty: parsed.data.difficulty, org: viewer.org, repName, mood, gatekeeper, ttsModel: process.env.ELEVENLABS_TTS_MODEL });
 
   // Sessions are server-owned: reps cannot insert or update rows themselves (migration 0012).
   const { data: session, error } = await createAdminClient()

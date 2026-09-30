@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { anthropicCost, voiceCost, type TokenUsage } from "./pricing";
+import { reportError } from "@/lib/sentry";
 
 type Db = SupabaseClient<Database>;
 
@@ -18,7 +19,7 @@ export async function recordAnthropicUsage(db: Db, p: { orgId: string; sessionId
     cache_write_tokens: p.usage.cache_write_tokens ?? 0,
     cost_usd: anthropicCost(p.model, p.usage),
   });
-  if (error) console.error("usage record failed", error.message);
+  if (error) reportError(new Error(error.message), { where: "usage_record_anthropic", orgId: p.orgId, sessionId: p.sessionId });
 }
 
 export async function recordVoiceUsage(db: Db, p: { orgId: string; sessionId: string; seconds: number }) {
@@ -31,5 +32,5 @@ export async function recordVoiceUsage(db: Db, p: { orgId: string; sessionId: st
     cost_usd: voiceCost(p.seconds),
   });
   // 23505: a voice row already exists for this session (re-finalize). Never count minutes twice.
-  if (error && error.code !== "23505") console.error("usage record failed", error.message);
+  if (error && error.code !== "23505") reportError(new Error(error.message), { where: "usage_record_voice", orgId: p.orgId, sessionId: p.sessionId });
 }

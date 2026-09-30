@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { reportError } from "@/lib/sentry";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendLifecycle } from "@/lib/email/lifecycle";
@@ -39,12 +40,12 @@ export async function GET(request: Request) {
     if (ageDays >= 3 && ageDays < 10) {
       const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id);
       if ((count ?? 0) === 0) {
-        const r = await sendLifecycle(org.id, "nudge_day3").catch(() => ({ sent: false }));
+        const r = await sendLifecycle(org.id, "nudge_day3").catch((err) => (reportError(err, { where: "cron_nudge", orgId: org.id }), { sent: false }));
         if (r.sent) results.nudged += 1;
       }
     }
     if (new Date(org.trial_ends_at).getTime() <= now) {
-      const r = await sendLifecycle(org.id, "trial_ended").catch(() => ({ sent: false }));
+      const r = await sendLifecycle(org.id, "trial_ended").catch((err) => (reportError(err, { where: "cron_trial_ended", orgId: org.id }), { sent: false }));
       if (r.sent) results.ended += 1;
     }
   }
@@ -54,10 +55,10 @@ export async function GET(request: Request) {
     const weekKey = new Date(now).toISOString().slice(0, 10);
     const { data: active } = await db.from("call_sessions").select("org_id").gte("created_at", new Date(now - 7 * DAY).toISOString()).not("started_at", "is", null).limit(5000);
     for (const orgId of new Set((active ?? []).map((r) => r.org_id))) {
-      const digest = await buildWeeklyDigest(db, orgId, now).catch(() => null);
+      const digest = await buildWeeklyDigest(db, orgId, now).catch((err) => (reportError(err, { where: "cron_digest_build", orgId }), null));
       if (!digest || digest.calls === 0) continue;
       for (const manager of await orgManagers(orgId)) {
-        const r = await sendLifecycle(orgId, `weekly_digest:${weekKey}`, { userId: manager.userId, to: manager, digest }).catch(() => ({ sent: false }));
+        const r = await sendLifecycle(orgId, `weekly_digest:${weekKey}`, { userId: manager.userId, to: manager, digest }).catch((err) => (reportError(err, { where: "cron_digest_send", orgId }), { sent: false }));
         if (r.sent) results.digests += 1;
       }
     }

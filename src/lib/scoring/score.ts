@@ -75,7 +75,8 @@ function renderTranscript(turns: TranscriptTurn[], repName: string, prospectName
     .join("\n");
 }
 
-const client = new Anthropic();
+// Routes cap at 120s; a request that outlives that is killed mid-write, so fail fast and let the retry path run.
+const client = new Anthropic({ timeout: 75_000, maxRetries: 1 });
 
 export async function scoreCall(input: ScoreInput) {
   const level = LEVELS[input.difficulty];

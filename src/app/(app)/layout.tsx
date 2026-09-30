@@ -18,7 +18,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const isManager = canManage(viewer.membership.role);
   const supabase = await createClient();
   const [trial, { data: pendingRows }] = await Promise.all([
-    loadTrialStatus(supabase, viewer.org),
+    loadTrialStatus(viewer.org),
     supabase.from("call_sessions").select("id").eq("user_id", viewer.userId).not("review_requested_at", "is", null).in("status", ["ended", "scoring"]).limit(10),
   ]);
   const isAdmin = isAdminEmail(viewer.email);

@@ -1,6 +1,7 @@
 "use server";
 
 import { after } from "next/server";
+import { reportError } from "@/lib/sentry";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireManager } from "@/lib/auth";
@@ -37,7 +38,7 @@ function scheduleDigest(id: string) {
     try {
       await digestKnowledgeSource(id);
     } catch (err) {
-      console.error("digest failed", id, err);
+      reportError(err, { where: "digest", extra: { sourceId: id } });
     }
   });
 }

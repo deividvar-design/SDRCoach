@@ -1,5 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
-import { callContext } from "@/lib/sentry";
+import { reportError } from "@/lib/sentry";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -49,8 +48,7 @@ export async function POST(request: Request) {
       try {
         await finalizeCall(session.id);
       } catch (err) {
-        console.error("webhook finalize failed", session.id, err);
-        Sentry.captureException(err, callContext(session.id, { where: "elevenlabs_webhook" }));
+        reportError(err, { where: "elevenlabs_webhook", sessionId: session.id });
       }
     });
   }

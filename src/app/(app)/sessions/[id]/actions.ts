@@ -10,12 +10,13 @@ import { createClient } from "@/lib/supabase/server";
 import { elevenlabs } from "@/lib/elevenlabs/client";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { reportError } from "@/lib/sentry";
 
 /** The rep who made the call, or a manager in the same workspace. */
 async function ownSession(sessionId: string) {
   const viewer = await requireViewer();
   const db = createAdminClient();
-  const { data } = await db.from("call_sessions").select("id, status, user_id, org_id").eq("id", sessionId).maybeSingle();
+  const { data } = await db.from("call_sessions").select("id, status, user_id, org_id, finalize_attempts").eq("id", sessionId).maybeSingle();
   const allowed = data && (data.user_id === viewer.userId || (data.org_id === viewer.org.id && canManage(viewer.membership.role)));
   return { db, session: allowed ? data : null };
 }
@@ -24,13 +25,15 @@ async function ownSession(sessionId: string) {
 export async function requestReview(sessionId: string) {
   const { db, session } = await ownSession(sessionId);
   if (!session) return;
+  // The scorer gets five tries per call in total; after that the report shows what was collected and stops asking.
+  if (session.finalize_attempts >= 5) return;
   await db.from("call_sessions").update({ review_requested_at: new Date().toISOString(), review_skipped_at: null }).eq("id", sessionId);
   if (session.status === "collected" || session.status === "ended" || session.status === "failed") {
     after(async () => {
       try {
         await finalizeCall(sessionId);
       } catch (err) {
-        console.error("requested review failed", sessionId, err);
+        reportError(err, { where: "requested_review", sessionId });
       }
     });
   }
@@ -79,7 +82,7 @@ export async function deleteCall(sessionId: string) {
     try {
       await elevenlabs().conversationalAi.conversations.delete(full.elevenlabs_conversation_id);
     } catch (err) {
-      console.error("provider delete failed", sessionId, err);
+      reportError(err, { where: "provider_delete", sessionId });
     }
   }
   await db.from("call_sessions").delete().eq("id", sessionId);

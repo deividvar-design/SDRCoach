@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { reportError } from "@/lib/sentry";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -46,7 +47,7 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
     await db.from("targets").insert(
       PRACTICE_PERSONAS.map((p) => ({ ...p, pain_points: [...p.pain_points], objections: [...p.objections], org_id: orgId, created_by: user.id, kind: "practice" as const })),
     );
-    if (process.env.SDRCOACH_DEMO !== "1") after(() => sendLifecycle(orgId, "welcome").catch((err) => console.error("welcome email failed", err)));
+    if (process.env.SDRCOACH_DEMO !== "1") after(() => sendLifecycle(orgId, "welcome").catch((err) => reportError(err, { where: "welcome_email", orgId })));
   }
   if (error) {
     if (error.message.includes("trial_exists")) return { error: `A workspace for ${check.domain} already exists. Ask its owner to invite you.` };
@@ -59,9 +60,9 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
 export async function saveCompanyContext(_prev: OnboardingState, formData: FormData): Promise<OnboardingState> {
   const parsed = z
     .object({
-      company_description: z.string().min(20, "A sentence or two about what you do"),
-      product_description: z.string().min(20, "A sentence or two about what reps sell"),
-      ideal_customer_profile: z.string().min(10, "Who do you call?"),
+      company_description: z.string().min(20, "A sentence or two about what you do").max(2000, "Keep it under 2,000 characters"),
+      product_description: z.string().min(20, "A sentence or two about what reps sell").max(2000, "Keep it under 2,000 characters"),
+      ideal_customer_profile: z.string().min(10, "Who do you call?").max(2000, "Keep it under 2,000 characters"),
     })
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };

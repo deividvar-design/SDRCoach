@@ -2,6 +2,7 @@ import { NextResponse, after } from "next/server";
 import { requireViewer } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { finalizeCall } from "@/lib/calls/finalize";
+import { reportError } from "@/lib/sentry";
 
 export const maxDuration = 120;
 
@@ -33,7 +34,7 @@ export async function POST(_request: Request, { params }: RouteContext<"/api/cal
     try {
       await finalizeCall(id);
     } catch (err) {
-      console.error("finalizeCall failed", id, err);
+      reportError(err, { where: "end_finalize", sessionId: id });
     }
   });
   return NextResponse.json({ ok: true, status: "ended" });
