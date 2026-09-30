@@ -13,6 +13,7 @@ import { loadTrialStatus } from "@/lib/billing/usage";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { StatusToast } from "@/components/status-toast";
+import { SubscribedDialog } from "./subscribed-dialog";
 
 export const metadata = { title: "Settings" };
 
@@ -27,11 +28,14 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   const viewer = await requireViewer();
   const fmtDate = await dateFormatter();
   const usage = await periodUsage(viewer.org);
-  const notice = checkout === "success" ? "You're on a paid plan. Thanks for backing the team." : null;
   const problem = typeof error === "string" ? (ERRORS[error] ?? "Something went wrong.") : null;
+  const paidPlan = PLANS.find((p) => p.id === viewer.org.plan && p.prices);
+  const subscribed = paidPlan
+    ? { name: paidPlan.name, seats: viewer.org.seat_limit, callsPerSeat: paidPlan.callsPerSeat, billed: viewer.org.billing_interval ? INTERVALS[viewer.org.billing_interval].billed : null }
+    : null;
   return (
     <div className="space-y-8">
-      <StatusToast message={notice} />
+      {checkout === "success" && canManage(viewer.membership.role) && <SubscribedDialog plan={subscribed} />}
       <StatusToast message={problem} kind="error" />
       <PageHeader title="Settings" />
       <section className="bg-card rounded-xl border p-6">
