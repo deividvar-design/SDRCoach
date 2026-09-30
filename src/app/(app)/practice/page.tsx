@@ -31,17 +31,9 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
   const noContext = !viewer.org.product_description && !viewer.org.company_description;
   const isManager = canManage(viewer.membership.role);
 
-  if (!viewer.profile.recording_ack_at) {
-    return (
-      <div className="space-y-8">
-        <PageHeader title="Start a call" />
-        <RecordingNotice teamSees={viewer.org.reps_see_team} />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8">
+      {!viewer.profile.recording_ack_at && <RecordingNotice teamSees={viewer.org.reps_see_team} />}
       <PageHeader title="Start a call" description="Pick who you're calling and how hard they'll make it." />
       {noContext && (
         <div className="border-signal/40 bg-card flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
