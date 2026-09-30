@@ -135,7 +135,7 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
           <section className="bg-card rounded-2xl border">
             <div className="border-b px-6 py-4">
               <h2 className="font-medium">Skills by rep</h2>
-              <p className="text-muted-foreground text-sm">Average score per rubric dimension, lowest reps first. Darker is better; 7.0 is the bar for moving up a level.</p>
+              <p className="text-muted-foreground text-sm">Average score per rubric dimension, lowest reps first. Green starts at 7.0, the bar for moving up a level.</p>
               <div className="mt-2 flex items-center gap-1 text-xs" aria-hidden="true">
                 {[1, 2, 3, 4, 5].map((s) => <span key={s} className={`score-${s} h-3 w-6 rounded-sm`} />)}
                 <span className="text-muted-foreground ml-2">0 → 10</span>

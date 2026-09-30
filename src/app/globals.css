@@ -158,12 +158,17 @@
     0% { transform: scale(0.9); opacity: 0.6; }
     100% { transform: scale(1.6); opacity: 0; }
   }
-  /* Score ramp: one hue (the ink), five steps light to dark. Magnitude, never status. */
-  .score-1 { background: color-mix(in oklch, var(--foreground) 6%, var(--card)); color: var(--foreground); }
-  .score-2 { background: color-mix(in oklch, var(--foreground) 16%, var(--card)); color: var(--foreground); }
-  .score-3 { background: color-mix(in oklch, var(--foreground) 32%, var(--card)); color: var(--foreground); }
-  .score-4 { background: color-mix(in oklch, var(--foreground) 62%, var(--card)); color: var(--background); }
-  .score-5 { background: var(--foreground); color: var(--background); }
+  /* Score ramp: red through amber to green, five steps. Step 4 starts at the 7.0 level-up bar. Tinted fills, same-hue ink. */
+  .score-1 { background: color-mix(in oklch, oklch(0.62 0.2 27) 22%, var(--card)); color: oklch(0.42 0.17 27); }
+  .score-2 { background: color-mix(in oklch, oklch(0.7 0.17 50) 24%, var(--card)); color: oklch(0.45 0.14 50); }
+  .score-3 { background: color-mix(in oklch, oklch(0.8 0.15 85) 30%, var(--card)); color: oklch(0.45 0.11 85); }
+  .score-4 { background: color-mix(in oklch, oklch(0.75 0.15 140) 28%, var(--card)); color: oklch(0.4 0.12 145); }
+  .score-5 { background: color-mix(in oklch, oklch(0.62 0.17 150) 40%, var(--card)); color: oklch(0.32 0.12 150); }
+  .dark .score-1 { background: color-mix(in oklch, oklch(0.62 0.2 27) 30%, var(--card)); color: oklch(0.82 0.12 27); }
+  .dark .score-2 { background: color-mix(in oklch, oklch(0.7 0.17 50) 30%, var(--card)); color: oklch(0.85 0.11 50); }
+  .dark .score-3 { background: color-mix(in oklch, oklch(0.8 0.15 85) 30%, var(--card)); color: oklch(0.88 0.1 85); }
+  .dark .score-4 { background: color-mix(in oklch, oklch(0.75 0.15 140) 32%, var(--card)); color: oklch(0.86 0.11 140); }
+  .dark .score-5 { background: color-mix(in oklch, oklch(0.62 0.17 150) 45%, var(--card)); color: oklch(0.9 0.12 150); }
   .paper-grain {
     background-image: radial-gradient(color-mix(in oklch, var(--foreground) 5%, transparent) 0.5px, transparent 0.5px);
     background-size: 22px 22px;
