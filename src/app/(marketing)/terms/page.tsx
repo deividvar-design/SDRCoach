@@ -43,7 +43,7 @@ export default function TermsPage() {
       <p>We aim for 99.5% monthly availability excluding scheduled maintenance announced in advance. Support is by email; response targets depend on plan. The service depends on third-party voice and language providers and may degrade when they do.</p>
 
       <h2>9. Termination</h2>
-      <p>You can cancel at any time from the workspace settings or by email; paid periods are not refunded except where required by law. We may terminate for material breach after 14 days' notice to cure, or immediately for breaches of section 5. On termination you may export your data for 30 days, after which it is deleted.</p>
+      <p>You can cancel at any time from the workspace settings or by email. The first payment on a new subscription is refunded in full if you ask within 30 days of it, for any reason; later payments are not refunded except where required by law. We may terminate for material breach after 14 days' notice to cure, or immediately for breaches of section 5. On termination you may export your data for 30 days, after which it is deleted.</p>
 
       <h2>10. Warranties and liability</h2>
       <p>The service is provided “as is”. To the extent permitted by law, we exclude implied warranties and our total liability under these terms in any 12-month period is limited to the fees you paid in that period. Neither party is liable for indirect or consequential loss. Nothing limits liability for fraud, wilful misconduct, or where it cannot be limited by law.</p>

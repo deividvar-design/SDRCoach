@@ -56,7 +56,9 @@ export default async function UpgradePage({ searchParams }: PageProps<"/upgrade"
       ) : (
         <PlanGrid orgName={viewer.org.name} canBuy={isManager} checkoutAction={startCheckout} defaultSeats={Math.max(1, memberCount)} billingReady={stripeConfigured()} intervals={["month", "quarter", "year"]} currency={currency} />
       )}
-      <p className="text-muted-foreground text-sm">Secure card checkout by Stripe. Change seats, switch plans, update your card or cancel any time from Settings.</p>
+      <p className="text-muted-foreground text-sm">
+        Secure card checkout by Stripe. Change seats, switch plans, update your card or cancel any time from Settings. Not working for the team? Email us within 30 days of your first payment and we refund it in full.
+      </p>
     </div>
   );
 }

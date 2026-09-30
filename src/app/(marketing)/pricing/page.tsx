@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 const FAQ = [
+  { q: "Is there a money-back guarantee?", a: "Yes. If a paid plan isn't working for your team, email us within 30 days of your first payment and we refund it in full, no questions. It covers the first payment on a new subscription." },
   { q: "What counts as a call?", a: "A practice call that connects to the AI prospect. Failed dials and calls under ten seconds are not counted." },
   { q: "What happens when a rep uses their allowance?", a: "Calls keep working and are billed at the overage rate at the end of the month. Managers can cap overage per team." },
   { q: "Do unused calls roll over?", a: "No. Allowances reset monthly. Annual plans are billed up front with a 20% discount." },
