@@ -5,6 +5,7 @@ import { ROLE_LABEL } from "@/lib/domain/roles";
 import { Logo } from "@/components/logo";
 import { SidebarNav } from "@/components/shell/sidebar-nav";
 import { UserMenu } from "@/components/shell/user-menu";
+import { FeedbackLink } from "@/components/shell/feedback-dialog";
 import { TrialBanner } from "@/components/billing/trial-banner";
 import { ReviewWatcher } from "@/components/calls/review-watcher";
 import { loadTrialStatus } from "@/lib/billing/usage";
@@ -30,7 +31,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         </Link>
         <div className="text-muted-foreground mb-4 truncate px-3 text-xs">{viewer.org.name}</div>
         <SidebarNav isManager={isManager} />
-        <div className="mt-auto">
+        <div className="mt-auto flex flex-col gap-1">
+          <FeedbackLink />
           <UserMenu
             name={viewer.profile.full_name ?? viewer.email}
             email={viewer.email}

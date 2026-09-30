@@ -1,14 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronsUpDown, LogOut, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { ChevronsUpDown, LogOut, MessageSquare, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { FeedbackDialog } from "@/components/shell/feedback-dialog";
 import { initials } from "@/lib/utils";
 
 export function UserMenu({ name, email, avatarUrl, role, compact = false, isAdmin = false }: { name: string; email: string; avatarUrl: string | null; role: string; compact?: boolean; isAdmin?: boolean }) {
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger className={compact ? "cursor-pointer rounded-full outline-none" : "hover:bg-accent/60 flex w-full cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-left outline-none"} aria-label={compact ? "Account menu" : undefined}>
         <Avatar>
@@ -36,6 +40,11 @@ export function UserMenu({ name, email, avatarUrl, role, compact = false, isAdmi
           <ThemeToggle />
         </div>
         <DropdownMenuSeparator />
+        {compact && (
+          <DropdownMenuItem onSelect={() => setFeedbackOpen(true)}>
+            <MessageSquare /> Send feedback
+          </DropdownMenuItem>
+        )}
         {isAdmin && (
           <DropdownMenuItem asChild>
             <Link href="/admin"><ShieldCheck /> Admin console</Link>
@@ -50,5 +59,7 @@ export function UserMenu({ name, email, avatarUrl, role, compact = false, isAdmi
         </form>
       </DropdownMenuContent>
     </DropdownMenu>
+    {compact && <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />}
+    </>
   );
 }

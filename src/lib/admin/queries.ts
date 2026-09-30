@@ -1,7 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { trialStatus } from "@/lib/billing/trial";
-import type { Organization, UsageEvent } from "@/types/database";
+import type { Feedback, Organization, UsageEvent } from "@/types/database";
 
 const DAY = 86_400_000;
 const iso = (msAgo: number) => new Date(Date.now() - msAgo).toISOString();
@@ -152,4 +152,11 @@ export async function loadOrgDetail(orgId: string) {
     actions: actions ?? [],
     emails: emails ?? [],
   };
+}
+
+/** Latest notes from the in-app feedback box, newest first, with the workspace name. */
+export async function loadFeedback(limit = 30): Promise<(Feedback & { orgName: string | null })[]> {
+  const db = createAdminClient();
+  const { data } = await db.from("feedback").select("*, organizations(name)").order("created_at", { ascending: false }).limit(limit);
+  return (data ?? []).map(({ organizations, ...row }) => ({ ...(row as Feedback), orgName: (organizations as { name: string } | null)?.name ?? null }));
 }

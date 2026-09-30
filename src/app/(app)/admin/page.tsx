@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
-import { loadOverview } from "@/lib/admin/queries";
+import { loadFeedback, loadOverview } from "@/lib/admin/queries";
 import { formatUsd } from "@/lib/usage/pricing";
 import { formatDate } from "@/lib/utils";
 import { PageHeader } from "@/components/shell/page-header";
@@ -16,7 +16,7 @@ const PLAN_VARIANT: Record<string, "secondary" | "success" | "destructive" | "ou
 
 export default async function AdminPage() {
   await requireAdmin();
-  const { rows, totals, tokens, daily } = await loadOverview();
+  const [{ rows, totals, tokens, daily }, feedback] = await Promise.all([loadOverview(), loadFeedback()]);
   const fmtTokens = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
 
   return (
@@ -79,6 +79,30 @@ export default async function AdminPage() {
             ))}
           </TableBody>
         </Table>
+      </section>
+
+      <section className="bg-card rounded-2xl border">
+        <div className="border-b px-5 py-4">
+          <h2 className="font-medium">Feedback</h2>
+          <p className="text-muted-foreground text-xs">From the box in the sidebar. Reply by email when they said that is fine.</p>
+        </div>
+        {feedback.length === 0 ? (
+          <p className="text-muted-foreground px-5 py-8 text-center text-sm">Nothing yet.</p>
+        ) : (
+          <ul className="divide-y">
+            {feedback.map((f) => (
+              <li key={f.id} className="grid gap-2 px-5 py-4 md:grid-cols-[220px_1fr]">
+                <div className="text-xs">
+                  <div className="font-medium">{f.name ?? f.email}</div>
+                  <div className="text-muted-foreground">{f.reply_ok ? <a href={`mailto:${f.email}`} className="hover:underline">{f.email}</a> : `${f.email} (no reply)`}</div>
+                  <div className="text-muted-foreground mt-1">{f.orgName ?? "—"}{f.role ? `, ${f.role}` : ""}</div>
+                  <div className="text-muted-foreground">{formatDate(f.created_at)}{f.page ? `, on ${f.page}` : ""}</div>
+                </div>
+                <p className="text-sm whitespace-pre-wrap">{f.body}</p>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );

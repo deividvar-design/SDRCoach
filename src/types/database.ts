@@ -100,6 +100,7 @@ export type UsageEvent = {
   created_at: string;
 };
 export type AdminAction = { id: string; admin_email: string; org_id: string | null; action: string; payload: Json | null; created_at: string };
+export type Feedback = { id: string; org_id: string | null; user_id: string | null; email: string; name: string | null; role: string | null; page: string | null; user_agent: string | null; body: string; reply_ok: boolean; created_at: string };
 export type EmailLog = { id: string; org_id: string; user_id: string | null; kind: string; sent_at: string };
 
 export type Profile = {
@@ -264,6 +265,14 @@ export type Database = {
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
       admin_actions: Table<AdminAction, Insert<AdminAction, "id" | "org_id" | "payload" | "created_at">>;
       email_log: Table<EmailLog, Insert<EmailLog, "id" | "user_id" | "sent_at">>;
+      feedback: Table<
+        Feedback,
+        Insert<Feedback, "id" | "org_id" | "user_id" | "name" | "role" | "page" | "user_agent" | "reply_ok" | "created_at">,
+        [
+          { foreignKeyName: "feedback_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "organizations"; referencedColumns: ["id"] },
+          { foreignKeyName: "feedback_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      >;
       profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "email" | "recording_ack_at" | "created_at">>;
       call_comments: Table<
         CallComment,

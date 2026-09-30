@@ -23,6 +23,7 @@ const TABLES: Record<string, Row[]> = {
   admin_actions: [],
   email_log: [],
   billing_events: [],
+  feedback: [],
 };
 
 interface Relation {
@@ -43,6 +44,7 @@ const RELATIONS: Record<string, Record<string, Relation>> = {
   },
   assignments: { targets: { table: "targets", column: "target_id" }, profiles: { table: "profiles", column: "assigned_to" } },
   invites: { profiles: { table: "profiles", column: "invited_by" } },
+  feedback: { organizations: { table: "organizations", column: "org_id" } },
   targets: { profiles: { table: "profiles", column: "created_by" } },
   knowledge_sources: { profiles: { table: "profiles", column: "uploaded_by" } },
 };

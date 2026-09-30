@@ -26,6 +26,12 @@ export interface Rendered {
 }
 
 export const templates = {
+  feedback(p: { name: string; email: string; orgName: string; role: string; page: string; body: string; replyOk: boolean }): Rendered {
+    const meta = [`${p.name} <${p.email}>`, `${p.orgName}, ${p.role}`, `On ${p.page}`, p.replyOk ? "Happy to be emailed back." : "Asked not to be emailed."];
+    const html = `<p style="margin:0 0 16px;white-space:pre-wrap">${esc(p.body)}</p><p style="margin:0;font-size:13px;color:#8a857a">${meta.map(esc).join("<br>")}</p>`;
+    return { subject: `Feedback from ${p.name} at ${p.orgName}`, html: layout("Someone wrote in.", html), text: textOf([p.body, "", ...meta]) };
+  },
+
   welcome(p: { firstName: string; orgName: string }): Rendered {
     const cta = { label: "Make your first call", href: absoluteUrl("/practice") };
     const lines = [
