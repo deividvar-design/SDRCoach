@@ -11,6 +11,8 @@ export default async function CallPage({ searchParams }: PageProps<"/practice/ca
   const { target, difficulty, assignment } = await searchParams;
   const viewer = await requireViewer();
   const level = typeof difficulty === "string" && difficulty in LEVELS ? (difficulty as Difficulty) : "warm";
+  // The notice must be confirmed before any call, including deep links straight to this page.
+  if (!viewer.profile.recording_ack_at) redirect("/practice");
   if (typeof target !== "string") redirect("/practice");
 
   const supabase = await createClient();

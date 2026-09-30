@@ -107,6 +107,8 @@ export type Profile = {
   full_name: string | null;
   avatar_url: string | null;
   email: string | null;
+  /** When the rep confirmed the recording notice; null until their first call. */
+  recording_ack_at: string | null;
   created_at: string;
 }
 
@@ -262,7 +264,7 @@ export type Database = {
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
       admin_actions: Table<AdminAction, Insert<AdminAction, "id" | "org_id" | "payload" | "created_at">>;
       email_log: Table<EmailLog, Insert<EmailLog, "id" | "user_id" | "sent_at">>;
-      profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "email" | "created_at">>;
+      profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "email" | "recording_ack_at" | "created_at">>;
       call_comments: Table<
         CallComment,
         Insert<CallComment, "id" | "created_at">,

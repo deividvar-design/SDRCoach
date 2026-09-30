@@ -32,7 +32,7 @@ export const requireViewer = cache(async (): Promise<Viewer> => {
   return {
     userId: user.id,
     email: user.email ?? "",
-    profile: profile ?? { id: user.id, full_name: null, avatar_url: null, email: user.email ?? null, created_at: "" },
+    profile: profile ?? { id: user.id, full_name: null, avatar_url: null, email: user.email ?? null, recording_ack_at: null, created_at: "" },
     membership,
     org: membership.organizations,
   };

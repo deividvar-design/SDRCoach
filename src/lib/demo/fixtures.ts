@@ -35,11 +35,11 @@ export const ORG: Organization = {
 };
 
 export const PROFILES: Profile[] = [
-  { id: "u-deividas", full_name: "Deividas Varnas", avatar_url: null, email: null, created_at: daysAgo(40) },
-  { id: "u-maya", full_name: "Maya Chen", avatar_url: null, email: null, created_at: daysAgo(30) },
-  { id: "u-luka", full_name: "Luka Petrov", avatar_url: null, email: null, created_at: daysAgo(28) },
-  { id: "u-sara", full_name: "Sara Okafor", avatar_url: null, email: null, created_at: daysAgo(20) },
-  { id: "u-tomas", full_name: "Tomas Brandt", avatar_url: null, email: null, created_at: daysAgo(12) },
+  { id: "u-deividas", full_name: "Deividas Varnas", avatar_url: null, email: null, recording_ack_at: daysAgo(40), created_at: daysAgo(40) },
+  { id: "u-maya", full_name: "Maya Chen", avatar_url: null, email: null, recording_ack_at: daysAgo(30), created_at: daysAgo(30) },
+  { id: "u-luka", full_name: "Luka Petrov", avatar_url: null, email: null, recording_ack_at: daysAgo(28), created_at: daysAgo(28) },
+  { id: "u-sara", full_name: "Sara Okafor", avatar_url: null, email: null, recording_ack_at: daysAgo(20), created_at: daysAgo(20) },
+  { id: "u-tomas", full_name: "Tomas Brandt", avatar_url: null, email: null, recording_ack_at: daysAgo(12), created_at: daysAgo(12) },
 ];
 
 export const MEMBERSHIPS: Membership[] = [

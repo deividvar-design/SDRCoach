@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
 import { Button } from "@/components/ui/button";
 import { PracticeSetup } from "./practice-setup";
+import { RecordingNotice } from "./recording-notice";
 
 export const metadata = { title: "Start a call" };
 
@@ -34,6 +35,15 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
 
   const noContext = !viewer.org.product_description && !viewer.org.company_description;
   const isManager = canManage(viewer.membership.role);
+
+  if (!viewer.profile.recording_ack_at) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Start a call" />
+        <RecordingNotice teamSees={viewer.org.reps_see_team} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

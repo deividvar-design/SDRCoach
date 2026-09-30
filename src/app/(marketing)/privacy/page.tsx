@@ -30,7 +30,7 @@ export default function PrivacyPage() {
       </ul>
 
       <h2>5. Customer content: recordings, transcripts and targets</h2>
-      <p>When a rep makes a practice call, the audio and its transcript are processed to run the conversation and to score it. When a manager uploads call transcripts, they are processed to extract phrasing, objections and patterns. This content may contain personal data about reps and, in uploaded transcripts, about third parties. Your workspace owner is the controller of this content and is responsible for having a lawful basis to upload it.</p>
+      <p>When a rep makes a practice call, the audio and its transcript are processed to run the conversation and to score it. When a manager uploads call transcripts, they are processed to extract phrasing, objections and patterns. This content may contain personal data about reps and, in uploaded transcripts, about third parties. Your workspace owner is the controller of this content and is responsible for having a lawful basis to upload it. Every rep sees a notice before their first call explaining that calls are recorded, transcribed and visible to their workspace, and confirms it before dialing.</p>
       <ul>
         <li>We use this content only to provide the service to your workspace. <strong>We do not use it to train machine-learning models</strong>, and our AI subprocessors are contractually prohibited from doing so.</li>
         <li>Content is isolated per workspace and enforced at the database level.</li>
