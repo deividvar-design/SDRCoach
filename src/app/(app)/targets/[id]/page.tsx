@@ -48,8 +48,8 @@ export default async function TargetPage({ params }: PageProps<"/targets/[id]">)
           ) : (
             <div className="space-y-4 text-sm">
               <p>{target.persona_notes}</p>
-              <div><div className="text-muted-foreground mb-1 text-xs uppercase">Pain points</div><ul className="list-disc pl-5">{target.pain_points.map((p) => <li key={p}>{p}</li>)}</ul></div>
-              <div><div className="text-muted-foreground mb-1 text-xs uppercase">Objections</div><ul className="list-disc pl-5">{target.objections.map((p) => <li key={p}>{p}</li>)}</ul></div>
+              <div><div className="text-muted-foreground mb-1 text-xs">Pain points</div><ul className="list-disc pl-5">{target.pain_points.map((p) => <li key={p}>{p}</li>)}</ul></div>
+              <div><div className="text-muted-foreground mb-1 text-xs">Objections</div><ul className="list-disc pl-5">{target.objections.map((p) => <li key={p}>{p}</li>)}</ul></div>
             </div>
           )}
           {canEdit && (

@@ -30,7 +30,7 @@ export default async function AdminOrgPage({ params }: PageProps<"/admin/orgs/[i
     <div className="space-y-8">
       <Button variant="ghost" size="sm" asChild><Link href="/admin"><ArrowLeft /> Admin</Link></Button>
       <PageHeader
-        eyebrow={`${org.plan}${org.subscription_status ? `, ${org.subscription_status}` : ""}, created ${formatDate(org.created_at)}`}
+        eyebrow={`${org.plan.charAt(0).toUpperCase()}${org.plan.slice(1)}${org.subscription_status ? `, ${org.subscription_status.replace("_", " ")}` : ""}, created ${formatDate(org.created_at)}`}
         title={org.name}
         description={[org.trial_domain, org.stripe_customer_id ? `Stripe ${org.stripe_customer_id}` : "No Stripe customer", org.current_period_end ? `${org.cancel_at_period_end ? "ends" : "renews"} ${formatDate(org.current_period_end)}` : null].filter(Boolean).join(", ")}
       />

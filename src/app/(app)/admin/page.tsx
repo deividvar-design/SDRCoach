@@ -64,8 +64,8 @@ export default async function AdminPage() {
                   <div className="text-muted-foreground text-xs">{r.ownerEmail ?? r.org.trial_domain ?? "—"}</div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={PLAN_VARIANT[r.org.plan] ?? "outline"}>{r.org.plan}</Badge>
-                  {r.org.subscription_status === "past_due" && <Badge variant="destructive" className="ml-1">past due</Badge>}
+                  <Badge variant={PLAN_VARIANT[r.org.plan] ?? "outline"} className="capitalize">{r.org.plan}</Badge>
+                  {r.org.subscription_status === "past_due" && <Badge variant="destructive" className="ml-1">Past due</Badge>}
                 </TableCell>
                 <TableCell className="text-xs">
                   {r.trial.onTrial ? (r.trial.exhausted ? <span className="text-destructive">exhausted</span> : `${r.trial.callsLeft} calls, ${r.trial.daysLeft}d left`) : "—"}

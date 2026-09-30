@@ -72,14 +72,12 @@ export default async function TargetsPage({ searchParams }: PageProps<"/targets"
                     {t.title}, {t.company}
                   </div>
                 </div>
-                <Badge variant={t.kind === "practice" ? "outline" : "secondary"}>{t.kind}</Badge>
+                <Badge variant={t.kind === "practice" ? "outline" : "secondary"}>{t.kind === "practice" ? "Practice" : "Real"}</Badge>
                 {voiceById(t.voice_id) && <span className="text-muted-foreground text-xs">{voiceById(t.voice_id)!.name}</span>}
               </div>
-              {t.persona_notes && <p className="text-muted-foreground line-clamp-3 text-sm">{t.persona_notes}</p>}
-              <div className="text-muted-foreground mt-auto flex gap-3 pt-2 font-mono text-[11px] uppercase">
-                <span>{t.pain_points.length} pains</span>
-                <span>{t.objections.length} objections</span>
-                {t.industry && <span>{t.industry}</span>}
+              {t.persona_notes && <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{t.persona_notes}</p>}
+              <div className="text-muted-foreground mt-auto pt-2 text-xs">
+                {[`${t.pain_points.length} ${t.pain_points.length === 1 ? "pain point" : "pain points"}`, `${t.objections.length} ${t.objections.length === 1 ? "objection" : "objections"}`, t.industry].filter(Boolean).join(", ")}
               </div>
               <Button size="sm" asChild>
                 <Link href={`/practice?target=${t.id}`}>Call {t.name.split(" ")[0]}</Link>

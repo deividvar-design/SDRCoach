@@ -130,6 +130,13 @@
   .text-balance {
     text-wrap: balance;
   }
+  /* Cuts long copy at three lines and fades the last one out, instead of an ellipsis mid-sentence. */
+  .clamp-fade {
+    max-height: calc(3 * 1.5em);
+    overflow: hidden;
+    line-height: 1.5;
+    mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  }
   .live-pulse {
     animation: live-pulse 1.6s ease-in-out infinite;
   }

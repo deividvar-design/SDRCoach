@@ -213,7 +213,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                 {notes.map((n) => (
                   <li key={n.id} className="px-5 py-3 text-sm">
                     <Link href={`/sessions/${n.session_id}`} className="block">
-                      <p className="line-clamp-3 leading-relaxed">{n.body}</p>
+                      <p className="clamp-fade">{n.body}</p>
                       <div className="text-muted-foreground mt-1 text-xs">{n.profiles?.full_name ?? "Manager"}, on your {n.call_sessions?.targets?.name ?? "call"} call, {formatDate(n.created_at)}</div>
                     </Link>
                   </li>
