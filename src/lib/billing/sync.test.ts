@@ -33,6 +33,16 @@ describe("subscriptionToPatch", () => {
   it("flags canceled subscriptions", () => {
     expect(subscriptionToPatch(sub({ status: "canceled" }), catalog).plan).toBe("canceled");
   });
+  it("treats a scheduled cancel_at as cancelling at period end", () => {
+    const p = subscriptionToPatch(sub({ cancel_at: 1_800_000_000 }), catalog);
+    expect(p).toMatchObject({ plan: "team", subscription_status: "active", cancel_at_period_end: true });
+    expect(p.current_period_end).toBe(new Date(1_800_000_000 * 1000).toISOString());
+  });
+  it("shows an earlier cancel_at as the end date", () => {
+    const p = subscriptionToPatch(sub({ cancel_at: 1_700_000_000 }), catalog);
+    expect(p.cancel_at_period_end).toBe(true);
+    expect(p.current_period_end).toBe(new Date(1_700_000_000 * 1000).toISOString());
+  });
   it("falls back to the plan written at checkout for an unknown price", () => {
     const p = subscriptionToPatch(sub({ price: "price_mystery", metadata: { org_id: "org-1", plan: "starter" } }), catalog);
     expect(p.plan).toBe("starter");

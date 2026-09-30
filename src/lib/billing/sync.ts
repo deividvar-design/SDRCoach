@@ -25,6 +25,10 @@ export function subscriptionToPatch(sub: Stripe.Subscription, catalog: PriceCata
   const priceId = item?.price?.id ?? null;
   const known = priceId ? catalog.byPrice[priceId] : undefined;
   const customer = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+  // The portal and dashboard now schedule cancellations through `cancel_at`; older flows set the boolean.
+  const cancelAt = typeof sub.cancel_at === "number" ? sub.cancel_at : null;
+  const periodEnd = item?.current_period_end ?? null;
+  const endsAt = cancelAt !== null && (periodEnd === null || cancelAt < periodEnd) ? cancelAt : periodEnd;
 
   const patch: OrgBillingPatch = {
     stripe_customer_id: customer,
@@ -33,8 +37,8 @@ export function subscriptionToPatch(sub: Stripe.Subscription, catalog: PriceCata
     billing_interval: known?.interval ?? null,
     billing_currency: sub.currency === "eur" || sub.currency === "usd" ? sub.currency : null,
     subscription_status: sub.status,
-    current_period_end: item?.current_period_end ? new Date(item.current_period_end * 1000).toISOString() : null,
-    cancel_at_period_end: Boolean(sub.cancel_at_period_end),
+    current_period_end: endsAt ? new Date(endsAt * 1000).toISOString() : null,
+    cancel_at_period_end: Boolean(sub.cancel_at_period_end) || cancelAt !== null,
   };
 
   if (ACTIVE.has(sub.status) || GRACE.has(sub.status)) {
