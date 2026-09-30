@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScorePill } from "@/components/score-pill";
 import { TargetEditForm } from "./target-form";
+import { ArchiveButton } from "../archive-button";
 import { archiveTargetAndReturn } from "../actions";
 
 export const metadata = { title: "Target" };
@@ -23,20 +24,25 @@ export default async function TargetPage({ params }: PageProps<"/targets/[id]">)
     supabase.from("targets").select("*").eq("id", id).eq("org_id", viewer.org.id).maybeSingle(),
     supabase.from("call_sessions").select("id, created_at, difficulty, outcome, user_id, profiles(full_name), call_scores(overall)").eq("target_id", id).eq("org_id", viewer.org.id).order("created_at", { ascending: false }).limit(20),
   ]);
-  if (!target) notFound();
-  const canEdit = canManage(viewer.membership.role) || target.created_by === viewer.userId;
+  const isManager = canManage(viewer.membership.role);
+  if (!target || (target.is_archived && !isManager)) notFound();
+  const canEdit = isManager || target.created_by === viewer.userId;
 
   return (
     <div className="space-y-8">
       <Button variant="ghost" size="sm" asChild><Link href="/targets"><ArrowLeft /> Targets</Link></Button>
       <PageHeader
-        eyebrow={target.kind === "practice" ? "Practice persona" : "Real account"}
+        eyebrow={`${target.kind === "practice" ? "Practice persona" : "Real account"}${target.is_archived ? ", archived" : ""}`}
         title={target.name}
         description={`${target.title}, ${target.company}${target.industry ? `, ${target.industry}` : ""}`}
         actions={
-          <Button variant="signal" asChild>
-            <Link href={`/practice?target=${target.id}`}><Phone /> Call {target.name.split(" ")[0]}</Link>
-          </Button>
+          target.is_archived ? (
+            isManager ? <ArchiveButton id={target.id} name={target.name} archived variant="text" /> : undefined
+          ) : (
+            <Button variant="signal" asChild>
+              <Link href={`/practice?target=${target.id}`}><Phone /> Call {target.name.split(" ")[0]}</Link>
+            </Button>
+          )
         }
       />
 
@@ -52,9 +58,9 @@ export default async function TargetPage({ params }: PageProps<"/targets/[id]">)
               <div><div className="text-muted-foreground mb-1 text-xs">Objections</div><ul className="list-disc pl-5">{target.objections.map((p) => <li key={p}>{p}</li>)}</ul></div>
             </div>
           )}
-          {canEdit && (
+          {isManager && !target.is_archived && (
             <form action={archiveTargetAndReturn.bind(null, target.id)} className="mt-8 border-t pt-5">
-              <p className="text-muted-foreground mb-2 text-xs">Archiving hides the target from the list. Past calls keep their history.</p>
+              <p className="text-muted-foreground mb-2 text-xs">Archiving hides the target from reps and stops new calls against it. Past calls keep their history. You can restore it any time from the Archived tab.</p>
               <Button type="submit" variant="outline" size="sm">Archive target</Button>
             </form>
           )}

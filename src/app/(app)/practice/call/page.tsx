@@ -16,8 +16,8 @@ export default async function CallPage({ searchParams }: PageProps<"/practice/ca
   if (typeof target !== "string") redirect("/practice");
 
   const supabase = await createClient();
-  const { data: t } = await supabase.from("targets").select("id, name, title, company, industry, persona_notes, kind").eq("id", target).eq("org_id", viewer.org.id).maybeSingle();
-  if (!t) redirect("/practice");
+  const { data: t } = await supabase.from("targets").select("id, name, title, company, industry, persona_notes, kind, is_archived").eq("id", target).eq("org_id", viewer.org.id).maybeSingle();
+  if (!t || t.is_archived) redirect("/practice");
 
   return (
     <CallScreen

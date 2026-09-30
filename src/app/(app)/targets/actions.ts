@@ -81,11 +81,20 @@ export async function updateTarget(id: string, _prev: TargetState, formData: For
   return { ok: true };
 }
 
+export async function archiveTarget(id: string) {
+  const viewer = await requireManager();
+  const supabase = await createClient();
+  await supabase.from("targets").update({ is_archived: true }).eq("id", id).eq("org_id", viewer.org.id);
+  revalidatePath("/targets");
+  revalidatePath(`/targets/${id}`);
+}
+
 export async function restoreTarget(id: string) {
   const viewer = await requireManager();
   const supabase = await createClient();
   await supabase.from("targets").update({ is_archived: false }).eq("id", id).eq("org_id", viewer.org.id);
   revalidatePath("/targets");
+  revalidatePath(`/targets/${id}`);
 }
 
 export async function archiveTargetAndReturn(id: string) {
