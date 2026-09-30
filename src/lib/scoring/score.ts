@@ -86,7 +86,7 @@ export async function scoreCall(input: ScoreInput) {
     input.company.ideal_customer_profile && `Who they sell to: ${input.company.ideal_customer_profile}`,
   ].filter(Boolean);
   const companyBlock = company.length
-    ? `\n\n## The rep's company, ${input.company.name}\n${company.join("\n")}\nJudge the reason for call and value proposition against this: did the rep connect what ${input.company.name} actually does to this prospect's world?`
+    ? `\n\n## The rep's company, ${input.company.name}\n${company.join("\n")}\nJudge the reason for call and value proposition against this: did the rep connect what ${input.company.name} actually does to this prospect's world? This description is the only truth about the company; do not use anything you may know about a real company with the same name. If the prospect questioned whether the company exists or does what the rep said, that was the simulation misbehaving, not the rep lying: do not mark the rep down for it, and grade how they recovered.`
     : `\n\nThe rep's company, ${input.company.name}, has not described what it sells. Judge the value proposition on whether the rep made the offer concrete and relevant, and note in improvements if what they sell never became clear.`;
   const persona = [
     input.prospect.pain_points?.length && `Known pains: ${input.prospect.pain_points.join("; ")}`,

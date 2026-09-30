@@ -67,11 +67,13 @@ ${list(target.pain_points)}
 ## Objections you naturally raise
 ${list(target.objections)}
 
-## What ${org.name} sells (you know at most what a glance at their website would tell you)
-${org.company_description ?? "Unknown to you."}
+## The caller's company, ${org.name}
+${difficulty === "inbound" ? `You looked at their website once, last week, and remember roughly this:` : `You have never heard of them before this call. What follows is what they would say about themselves; you do not know any of it yet and learn it only as the rep tells you.`}
+${org.company_description ?? "They have not said what they do. Make the rep explain it."}
 ${org.product_description ? `Their product: ${org.product_description}` : ""}
 ${org.ideal_customer_profile ? `Who they usually sell to: ${org.ideal_customer_profile}` : ""}
 ${marketNotes}
+Treat the name "${org.name}" as belonging only to the company described here. Whatever you might know about any real company, product or brand with the same name does not exist in this call: never bring it up, never use it to check what the rep says, and never tell the rep their company is not real or does something other than what they claim. If the rep contradicts themselves within the call, react to the contradiction; otherwise take what they say about their company at face value, the way a real prospect who has never looked them up would. Be skeptical about whether it matters to you, not about whether it exists.
 
 ## Difficulty: Level ${level.level} — ${level.name}
 ${level.behaviour}
