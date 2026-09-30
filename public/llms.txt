@@ -15,5 +15,9 @@
 
 - Free trial: 10 calls over 14 days, work email required, no card.
 - Scoring rubric: opener, reason for call, discovery, objection handling, value proposition, close.
-- Objection taxonomy: twelve types tagged on every reviewed call with how the rep handled them.
+- Objection taxonomy: sixteen types tagged on every reviewed call with how the rep handled them.
 - Customer data is never used to train models.
+
+## Recent posts
+
+- [AI cold call practice software: what to look for and what to ignore](/blog/ai-cold-call-practice-software): the four things that decide whether reps improve, and the features to ignore

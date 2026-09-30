@@ -14,6 +14,8 @@ export interface PostMeta {
   tags: string[];
   readingMinutes: number;
   draft: boolean;
+  /** Optional Q&A pairs from front matter; rendered at the end of the post and emitted as FAQPage JSON-LD. */
+  faq: { q: string; a: string }[];
 }
 
 export interface Post extends PostMeta {
@@ -37,6 +39,7 @@ function read(slug: string): Post | null {
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
     readingMinutes: Math.max(1, Math.round(readingTime(content).minutes)),
     draft: Boolean(data.draft),
+    faq: Array.isArray(data.faq) ? data.faq.filter((f: unknown): f is { q: string; a: string } => !!f && typeof f === "object" && "q" in f && "a" in f).map((f) => ({ q: String(f.q), a: String(f.a) })) : [],
     content,
   };
 }

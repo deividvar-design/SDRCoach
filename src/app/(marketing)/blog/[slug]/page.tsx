@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { compileMDX } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
 import { getAllPosts, getPost, relatedPosts } from "@/lib/blog";
 import { formatDate } from "@/lib/utils";
 import { CtaBand } from "@/components/marketing/sections";
-import { JsonLd, articleLd, breadcrumbLd } from "@/components/seo/json-ld";
+import { JsonLd, articleLd, breadcrumbLd, faqLd } from "@/components/seo/json-ld";
 import { Button } from "@/components/ui/button";
 
 export const dynamicParams = false;
@@ -40,12 +41,12 @@ export default async function BlogPost({ params }: PageProps<"/blog/[slug]">) {
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) notFound();
-  const { content } = await compileMDX({ source: post.content, components });
+  const { content } = await compileMDX({ source: post.content, components, options: { mdxOptions: { remarkPlugins: [remarkGfm] } } });
   const related = relatedPosts(post.slug, post.tags);
 
   return (
     <>
-      <JsonLd data={[articleLd(post), breadcrumbLd([{ name: "Blog", path: "/blog" }, { name: post.title, path: `/blog/${post.slug}` }])]} />
+      <JsonLd data={[articleLd(post), breadcrumbLd([{ name: "Blog", path: "/blog" }, { name: post.title, path: `/blog/${post.slug}` }]), ...(post.faq.length ? [faqLd(post.faq)] : [])]} />
       <article className="mx-auto w-full max-w-3xl px-6 py-16">
         <nav aria-label="Breadcrumb" className="text-muted-foreground text-sm"><Link href="/blog" className="hover:underline">Blog</Link></nav>
         <h1 className="font-display mt-4 text-5xl text-balance">{post.title}</h1>
@@ -58,6 +59,19 @@ export default async function BlogPost({ params }: PageProps<"/blog/[slug]">) {
           <span>{post.readingMinutes} min read</span>
         </div>
         <div className="prose mt-10">{content}</div>
+        {post.faq.length > 0 && (
+          <section className="mt-12 border-t pt-8">
+            <h2 className="font-display text-2xl">Questions people ask</h2>
+            <dl className="mt-6 space-y-6">
+              {post.faq.map((f) => (
+                <div key={f.q}>
+                  <dt className="font-medium">{f.q}</dt>
+                  <dd className="text-muted-foreground mt-1 text-sm leading-relaxed">{f.a}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
         <div className="mt-10 flex flex-wrap gap-1.5">
           {post.tags.map((t) => <span key={t} className="rounded-full border px-2.5 py-0.5 text-xs">{t}</span>)}
         </div>

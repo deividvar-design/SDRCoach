@@ -61,7 +61,7 @@ export default function ForEnablementPage() {
             ["Prospect-decided outcomes", "Booked, callback, info requested, rejected or hung up, judged from the prospect's own closing words. No self-reporting."],
             ["Your targets, your levels", "Real accounts alongside six built-in personas. Three difficulty levels with distinct behavioural briefs."],
             ["Recordings and transcripts", "Every call is replayable with key moments pinned to the transcript. Delete a call and it is gone, recording included."],
-            ["Objections, tagged", "Twelve objection types tagged on every reviewed call with how the rep handled them, so 'send me an email' has a number, not a feeling."],
+            ["Objections, tagged", "Sixteen objection types tagged on every reviewed call with how the rep handled them, so 'send me an email' has a number, not a feeling."],
             ["Roles and tenancy", "Owners, managers and reps. Reps see their own calls, or the whole team's when you turn that on. Managers see everything. Enforced in the database."],
             ["No training on your data", "Your transcripts ground your prospects and nothing else. Delete a source and its digest goes with it."],
           ].map(([t, b]) => (
