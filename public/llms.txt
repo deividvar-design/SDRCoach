@@ -1,0 +1,19 @@
+# SDRCoach
+
+> AI cold-call training for SDR teams. Reps dial a realistic AI prospect built from their own targets at three levels of difficulty; every call ends with the prospect's decision and a transcript, and a scored coach's review is one click away. Managers see skills by rep, the objections the team mishandles, a team leaderboard and a Monday digest.
+
+## Pages
+
+- [Homepage](/): what it does, how it works, the three levels
+- [For sales managers](/for-managers): ramp, visibility, assignments, momentum
+- [For sales enablement](/for-enablement): grounding in real transcripts, one rubric, measurement
+- [Pricing](/pricing): per-seat plans and the free trial
+- [Trust and security](/trust): data handling, retention, deletion
+- [Blog](/blog): research-backed guides on cold calling
+
+## Facts
+
+- Free trial: 10 calls over 14 days, work email required, no card.
+- Scoring rubric: opener, reason for call, discovery, objection handling, value proposition, close.
+- Objection taxonomy: twelve types tagged on every reviewed call with how the rep handled them.
+- Customer data is never used to train models.

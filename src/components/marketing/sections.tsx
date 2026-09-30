@@ -30,15 +30,15 @@ export function ProofSection() {
         </div>
         {PROOF.placeholder && <span className="text-muted-foreground rounded-full border px-3 py-1 text-xs">Illustrative targets, not customer results</span>}
       </div>
-      <dl className="mt-10 grid gap-6 md:grid-cols-3">
+      <ul className="mt-10 grid gap-6 md:grid-cols-3">
         {PROOF.stats.map((s) => (
-          <div key={s.label} className="bg-card rounded-2xl border p-6">
-            <dd className="text-5xl font-semibold tracking-tight">{s.value}</dd>
-            <dt className="mt-2 font-medium">{s.label}</dt>
+          <li key={s.label} className="bg-card rounded-2xl border p-6">
+            <div className="text-5xl font-semibold tracking-tight">{s.value}</div>
+            <div className="mt-2 font-medium">{s.label}</div>
             <p className="text-muted-foreground mt-1 text-sm">{s.detail}</p>
-          </div>
+          </li>
         ))}
-      </dl>
+      </ul>
       {PROOF.quotes.length > 0 && (
       <div className="mt-6 grid gap-6 md:grid-cols-3">
         {PROOF.quotes.map((q) => (

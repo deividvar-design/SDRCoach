@@ -34,20 +34,20 @@ export default function HomePage() {
 
       <Section className="pt-14 md:pt-20">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="enter"><Eyebrow>AI cold-call training for SDR teams</Eyebrow></div>
-          <h1 className="font-display enter mt-4 text-5xl text-balance md:text-7xl" style={{ "--enter-delay": "70ms" } as React.CSSProperties}>{SITE.tagline}</h1>
-          <p className="text-muted-foreground enter mx-auto mt-6 max-w-2xl text-lg text-balance" style={{ "--enter-delay": "140ms" } as React.CSSProperties}>
+          <div className="enter" style={{ "--enter-delay": "60ms" } as React.CSSProperties}><Eyebrow>AI cold-call training for SDR teams</Eyebrow></div>
+          <h1 className="font-display enter mt-4 text-5xl text-balance md:text-7xl" style={{ "--enter-delay": "0ms" } as React.CSSProperties}>{SITE.tagline}</h1>
+          <p className="text-muted-foreground enter mx-auto mt-6 max-w-2xl text-lg text-balance" style={{ "--enter-delay": "110ms" } as React.CSSProperties}>
             Your reps dial an AI prospect built from your real targets, at three levels of difficulty. Every call ends with the prospect's decision, a transcript and a replay. A scored coach's review is one click away. You see who's ready for the phones, where the team struggles and what prospects push back on.
           </p>
-          <div className="enter mt-8 flex flex-wrap justify-center gap-3" style={{ "--enter-delay": "210ms" } as React.CSSProperties}>
+          <div className="enter mt-8 flex flex-wrap justify-center gap-3" style={{ "--enter-delay": "160ms" } as React.CSSProperties}>
             <Button size="lg" variant="signal" asChild>
               <Link href="/signup">Start free trial</Link>
             </Button>
             <Button size="lg" variant="outline" asChild><Link href="/pricing">See pricing</Link></Button>
           </div>
-          <p className="text-muted-foreground enter mt-4 text-sm" style={{ "--enter-delay": "260ms" } as React.CSSProperties}>{TRIAL.calls} free calls, {TRIAL.days} days, no card, work email only</p>
+          <p className="text-muted-foreground enter mt-4 text-sm" style={{ "--enter-delay": "200ms" } as React.CSSProperties}>{TRIAL.calls} free calls, {TRIAL.days} days, no card, work email only</p>
         </div>
-        <div className="enter mt-14" style={{ "--enter-delay": "380ms" } as React.CSSProperties}>
+        <div className="enter mt-14" style={{ "--enter-delay": "300ms" } as React.CSSProperties}>
           <SampleCall autoStart />
           <p className="text-muted-foreground mt-3 text-center text-xs">A scripted example of a Level 3 call, shown as text. Your prospects speak, interrupt, and sound like your market.</p>
         </div>

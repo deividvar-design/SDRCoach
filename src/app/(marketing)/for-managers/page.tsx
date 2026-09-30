@@ -3,6 +3,7 @@ import { FeatureRow } from "@/components/marketing/feature-row";
 import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/marketing/sections";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { JsonLd, faqLd } from "@/components/seo/json-ld";
 
 export const metadata: Metadata = {
   title: "For sales managers",
@@ -10,9 +11,17 @@ export const metadata: Metadata = {
   alternates: { canonical: "/for-managers" },
 };
 
+const FAQ: [string, string][] = [
+            ["Will reps game it?", "They can try. The prospect decides the outcome from its own words, the grader is calibrated so a nine is rare, the prospect brief is server-checked on every call, and you can read every transcript. Gaming it is harder than just getting better."],
+            ["How long does setup take?", "Under ten minutes. Create the workspace, describe what you sell, invite reps. Six practice personas are ready before the first invite is accepted, and the dashboard walks you through the rest."],
+            ["Does it replace live coaching?", "No. It replaces the fifty calls you had to listen to before you knew what to coach. The report tells you where to spend your twenty minutes."],
+            ["What does it cost?", "Per seat with a monthly call allowance. A new rep typically uses twenty to forty calls in their first two weeks and ten a week after that. See pricing for the numbers."],
+          ];
+
 export default function ForManagersPage() {
   return (
     <>
+      <JsonLd data={faqLd(FAQ.map(([q, a]) => ({ q, a })))} />
       <Section className="pt-14 md:pt-20">
         <div className="max-w-3xl">
           <Eyebrow>For sales managers</Eyebrow>
@@ -66,12 +75,7 @@ export default function ForManagersPage() {
         <Eyebrow>Questions managers ask</Eyebrow>
         <H2>Straight answers.</H2>
         <dl className="mt-8 grid gap-6 md:grid-cols-2">
-          {[
-            ["Will reps game it?", "They can try. The prospect decides the outcome from its own words, the grader is calibrated so a nine is rare, the prospect brief is server-checked on every call, and you can read every transcript. Gaming it is harder than just getting better."],
-            ["How long does setup take?", "Under ten minutes. Create the workspace, describe what you sell, invite reps. Six practice personas are ready before the first invite is accepted, and the dashboard walks you through the rest."],
-            ["Does it replace live coaching?", "No. It replaces the fifty calls you had to listen to before you knew what to coach. The report tells you where to spend your twenty minutes."],
-            ["What does it cost?", "Per seat with a monthly call allowance. A new rep typically uses twenty to forty calls in their first two weeks and ten a week after that. See pricing for the numbers."],
-          ].map(([q, a]) => (
+          {FAQ.map(([q, a]) => (
             <div key={q} className="rounded-2xl border p-6">
               <dt className="font-medium">{q}</dt>
               <dd className="text-muted-foreground mt-2 text-sm">{a}</dd>

@@ -2,19 +2,22 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import posthog from "posthog-js";
 import { CONSENT_EVENT, readConsent, type Consent } from "./consent";
+
+type PostHog = typeof import("posthog-js").default;
 
 const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 const HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com";
 
-
+// The analytics library is only downloaded after consent, so visitors who decline never pay for it.
+let ph: PostHog | null = null;
 let started = false;
+let loading: Promise<void> | null = null;
 
 function startAnalytics() {
-  if (started) return;
+  if (started || !KEY) return;
   started = true;
-  if (KEY) {
+  loading ??= import("posthog-js").then(({ default: posthog }) => {
     posthog.init(KEY, {
       api_host: HOST,
       capture_pageview: false,
@@ -22,16 +25,15 @@ function startAnalytics() {
       persistence: "localStorage+cookie",
       person_profiles: "identified_only",
     });
-  }
+    ph = posthog;
+  });
 }
 
 function stopAnalytics() {
   if (!started) return;
   started = false;
-  if (KEY) {
-    posthog.opt_out_capturing();
-    posthog.reset();
-  }
+  ph?.opt_out_capturing();
+  ph?.reset();
   // Drop analytics cookies so a rejected choice takes effect on this load.
   for (const c of document.cookie.split(";")) {
     const name = c.split("=")[0]?.trim() ?? "";
@@ -60,7 +62,7 @@ export function AnalyticsProvider() {
   useEffect(() => {
     if (!consented.current || !started) return;
     const url = `${location.origin}${pathname}${search.size ? `?${search}` : ""}`;
-    if (KEY) posthog.capture("$pageview", { $current_url: url });
+    loading?.then(() => ph?.capture("$pageview", { $current_url: url }));
   }, [pathname, search]);
 
   return null;
@@ -69,10 +71,10 @@ export function AnalyticsProvider() {
 /** Product event. No-op until the visitor consents. */
 export function track(event: string, props?: Record<string, unknown>) {
   if (!started) return;
-  if (KEY) posthog.capture(event, props);
+  loading?.then(() => ph?.capture(event, props));
 }
 
 export function identify(userId: string, props?: Record<string, unknown>) {
-  if (!started || !KEY) return;
-  posthog.identify(userId, props);
+  if (!started) return;
+  loading?.then(() => ph?.identify(userId, props));
 }

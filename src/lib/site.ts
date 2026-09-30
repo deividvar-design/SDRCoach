@@ -26,7 +26,15 @@ export const SITE = {
     x: "https://x.com/sdrcoach",
   },
   legalUpdated: "2026-09-26",
+  /** Bumped when marketing pages change materially; the sitemap reports it instead of "now". */
+  contentUpdated: "2026-09-30",
 } as const;
+
+/**
+ * Search engines should only ever index the real domain. While the site lives on a *.vercel.app host
+ * every page is noindex and robots.txt disallows everything; attaching the domain flips this by itself.
+ */
+export const INDEXABLE = !/\.vercel\.app$/.test(new URL(SITE.url).hostname) && !/localhost/.test(SITE.url);
 
 export function absoluteUrl(path = "/") {
   return `${SITE.url}${path.startsWith("/") ? path : `/${path}`}`;

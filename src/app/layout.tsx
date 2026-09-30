@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeScript } from "@/components/theme/theme-script";
 import { AnalyticsProvider } from "@/components/analytics/provider";
 import { CookieBanner } from "@/components/analytics/cookie-banner";
-import { SITE } from "@/lib/site";
+import { INDEXABLE, SITE } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   applicationName: SITE.name,
   openGraph: { type: "website", siteName: SITE.name, locale: "en_US", url: SITE.url },
   twitter: { card: "summary_large_image", site: "@sdrcoach" },
-  robots: { index: true, follow: true },
+  robots: INDEXABLE ? { index: true, follow: true } : { index: false, follow: false },
   alternates: { types: { "application/rss+xml": `${SITE.url}/blog/rss.xml` } },
 };
 

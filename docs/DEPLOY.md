@@ -27,7 +27,10 @@ Authentication → Email: enable "Confirm email". The signup gate relies on it.
 ## 5. Resend
 Verify the sending domain, create an API key, set `RESEND_API_KEY` and `EMAIL_FROM`. Until then emails are logged and skipped, and invite links can be copied from the Team page.
 
-## 6. Analytics
+## 6. Search indexing
+`INDEXABLE` in `src/lib/site.ts` is false while `NEXT_PUBLIC_APP_URL` is a `*.vercel.app` host: every page is `noindex` and robots.txt disallows all, so the temporary address never gets indexed. Pointing `NEXT_PUBLIC_APP_URL` at the real domain flips it on. After that: submit `https://<domain>/sitemap.xml` in Google Search Console and Bing Webmaster Tools, and bump `SITE.contentUpdated` when marketing pages change materially.
+
+## 7. Analytics
 Create a PostHog project on the EU cloud; set `NEXT_PUBLIC_POSTHOG_KEY`. Nothing loads before cookie consent.
 
 ## Checks before the first customer
