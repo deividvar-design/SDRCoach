@@ -30,7 +30,7 @@ export function RecordingNotice({ teamSees }: { teamSees: boolean }) {
         </li>
         <li className="flex gap-3">
           <span className="bg-foreground mt-2 size-1.5 shrink-0 rounded-full" />
-          <span>The prospect is an AI, not a person. Nothing you say leaves your workspace or trains a model. You can delete any call from its report.</span>
+          <span>The prospect is an AI, not a person. Nothing you say leaves your workspace or trains a model. A manager can delete a call for you if you need one gone.</span>
         </li>
       </ul>
       <div className="mt-6 flex items-start gap-3">

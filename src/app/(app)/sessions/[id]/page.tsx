@@ -77,7 +77,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
         description={session.targets?.title}
         actions={
           <>
-            {(isOwn || canManage(viewer.membership.role)) && <DeleteCallButton sessionId={session.id} />}
+            {canManage(viewer.membership.role) && <DeleteCallButton sessionId={session.id} />}
           {session.targets && isOwn ? (
             <>
               <Button variant="outline" asChild>

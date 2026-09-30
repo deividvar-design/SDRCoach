@@ -75,6 +75,9 @@ export async function deleteComment(id: string, sessionId: string) {
 
 /** Removes the call everywhere: our rows (cascade) and the recording and transcript at the voice provider. */
 export async function deleteCall(sessionId: string) {
+  const viewer = await requireViewer();
+  // Managers only: a rep deleting their own calls would erase bad ones from the board and the coaching data.
+  if (!canManage(viewer.membership.role)) return { error: "Only managers can delete calls." };
   const { db, session } = await ownSession(sessionId);
   if (!session) return { error: "Not found" };
   const { data: full } = await db.from("call_sessions").select("elevenlabs_conversation_id").eq("id", sessionId).maybeSingle();

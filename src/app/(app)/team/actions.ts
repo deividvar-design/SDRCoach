@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { SALES_EMAIL } from "@/lib/billing/plans";
 import { requireManager } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { emailConfigured, sendMail } from "@/lib/email/send";
@@ -30,6 +31,9 @@ export async function createInvite(_prev: InviteState, formData: FormData): Prom
     supabase.from("invites").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id).is("accepted_at", null).gt("expires_at", new Date().toISOString()),
   ]);
   if ((members ?? 0) + (pending ?? 0) >= viewer.org.seat_limit) {
+    if (viewer.org.plan === "trial") {
+      return { error: `Trial workspaces have ${viewer.org.seat_limit} ${viewer.org.seat_limit === 1 ? "seat" : "seats"}. Email ${SALES_EMAIL} to add reps to the trial, or pick a plan.` };
+    }
     return { error: `All ${viewer.org.seat_limit} seats are in use. Add seats under Settings → Manage billing.` };
   }
 
@@ -115,6 +119,20 @@ export async function deleteAssignment(id: string) {
 }
 
 /** Owners and managers can move anyone who is not the owner between rep and manager. */
+/** Removes a member. Owners cannot be removed, nor can you remove yourself; use Leave workspace for that. */
+export async function removeMember(membershipId: string): Promise<{ ok: true } | { error: string }> {
+  const viewer = await requireManager();
+  const supabase = await createClient();
+  const { data: target } = await supabase.from("memberships").select("id, user_id, role").eq("id", membershipId).eq("org_id", viewer.org.id).maybeSingle();
+  if (!target) return { error: "Member not found." };
+  if (target.role === "owner") return { error: "The owner cannot be removed." };
+  if (target.user_id === viewer.userId) return { error: "Use Leave workspace in Settings to remove yourself." };
+  const { error } = await supabase.from("memberships").delete().eq("id", membershipId);
+  if (error) return { error: error.message };
+  revalidatePath("/team");
+  return { ok: true };
+}
+
 export async function changeRole(membershipId: string, formData: FormData): Promise<{ ok: true } | { error: string }> {
   const role = z.enum(["manager", "rep"]).safeParse(formData.get("role"));
   if (!role.success) return { error: "Pick a role." };

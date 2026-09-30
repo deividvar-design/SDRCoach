@@ -12,6 +12,7 @@ import { ScorePill } from "@/components/score-pill";
 import { InviteForm } from "./invite-form";
 import { CopyLink } from "./copy-link";
 import { RoleSelect } from "./role-select";
+import { RemoveMemberButton } from "./remove-member";
 import { AssignForm } from "./assign-form";
 import { deleteAssignment, revokeInvite } from "./actions";
 import { LEVELS } from "@/lib/domain/levels";
@@ -134,6 +135,7 @@ export default async function TeamPage() {
               <TableHead>Calls</TableHead>
               <TableHead>Booked</TableHead>
               <TableHead className="text-right">Avg score</TableHead>
+              <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -164,6 +166,9 @@ export default async function TeamPage() {
                   <TableCell className="tabular-nums">{st?.calls ?? 0}</TableCell>
                   <TableCell className="tabular-nums">{st?.booked ?? 0}</TableCell>
                   <TableCell className="text-right"><ScorePill value={avg} /></TableCell>
+                  <TableCell>
+                    {m.role !== "owner" && m.user_id !== viewer.userId && <RemoveMemberButton membershipId={m.id} name={m.profiles?.full_name ?? m.profiles?.email ?? "this member"} />}
+                  </TableCell>
                 </TableRow>
               );
             })}
