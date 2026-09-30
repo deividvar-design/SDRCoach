@@ -34,6 +34,9 @@ Verify the sending domain, create an API key, set `RESEND_API_KEY` and `EMAIL_FR
 ## 7. Analytics
 Create a PostHog project on the EU cloud; set `NEXT_PUBLIC_POSTHOG_KEY`. Nothing loads before cookie consent.
 
+## 8. Error tracking
+Create a Sentry project (platform Next.js, EU data region). Set `NEXT_PUBLIC_SENTRY_DSN` on Production and Preview. For readable stack traces also set `SENTRY_ORG`, `SENTRY_PROJECT` and a `SENTRY_AUTH_TOKEN` with the `project:releases` scope; the build uploads source maps only when the token is present. Tracing and session replay are off by design.
+
 ## Checks before the first customer
 - `pnpm typecheck && pnpm lint && pnpm test && pnpm build` are green (CI runs them on every push).
 - Make a real call end to end on a preview deployment and confirm the report scores.

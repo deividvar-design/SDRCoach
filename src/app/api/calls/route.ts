@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+import { callContext } from "@/lib/sentry";
 import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { requireViewer } from "@/lib/auth";
@@ -39,7 +41,10 @@ export async function POST(request: Request) {
     const swept = await sweepStaleSessions(createAdminClient(), { userId: viewer.userId, deferFinalize: true }).catch(() => null);
     if (swept?.pending.length) {
       after(async () => {
-        for (const id of swept.pending) await finalizeCall(id).catch((err) => console.error("deferred finalize failed", id, err));
+        for (const id of swept.pending) await finalizeCall(id).catch((err) => {
+          console.error("deferred finalize failed", id, err);
+          Sentry.captureException(err, callContext(id, { where: "deferred_finalize" }));
+        });
       });
     }
   }

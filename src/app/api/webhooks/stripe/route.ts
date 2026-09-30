@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -48,7 +49,10 @@ export async function POST(request: Request) {
     },
     retrieveSubscription: (id) => stripe().subscriptions.retrieve(id),
     notify: async (orgId, kind) => {
-      await sendLifecycle(orgId, kind).catch((err) => console.error("lifecycle email failed", kind, err));
+      await sendLifecycle(orgId, kind).catch((err) => {
+        console.error("lifecycle email failed", kind, err);
+        Sentry.captureException(err, { tags: { org_id: orgId }, extra: { kind } });
+      });
     },
   };
 
@@ -57,6 +61,7 @@ export async function POST(request: Request) {
     return NextResponse.json(result);
   } catch (err) {
     console.error("stripe webhook failed", event.type, err);
+    Sentry.captureException(err, { tags: { event_type: event.type }, extra: { event_id: event.id } });
     // 500 makes Stripe retry; the billing_events row is already written, so remove it to allow the retry to run.
     await db.from("billing_events").delete().eq("id", event.id);
     return NextResponse.json({ error: "handler failed" }, { status: 500 });

@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+import { callContext } from "@/lib/sentry";
 import "server-only";
 import { createHash } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -158,6 +160,7 @@ export async function finalizeCall(sessionId: string) {
     } catch (err) {
       // Keep the collected call; the report offers a retry until the attempt budget runs out.
       const giveUp = attempts >= MAX_ATTEMPTS;
+      Sentry.captureException(err, callContext(sessionId, { where: "score", attempts, giveUp }));
       await db
         .from("call_sessions")
         .update({ status: "collected", error: `Scoring failed: ${err instanceof Error ? err.message : String(err)}`, ...(giveUp ? { review_requested_at: null } : {}) })

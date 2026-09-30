@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+import { callContext } from "@/lib/sentry";
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
@@ -62,6 +64,7 @@ export async function sweepStaleSessions(
       results.finalized += 1;
     } catch (err) {
       console.error("sweep finalize failed", id, err);
+      Sentry.captureException(err, callContext(id, { where: "sweep" }));
     }
   }
   return results;
