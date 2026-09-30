@@ -64,6 +64,19 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   return { message: "Check your inbox to confirm your email, then sign in." };
 }
 
+/** Google sign-in. New users land on onboarding, where the work-email rule is applied to the Google address. */
+export async function signInWithGoogle(formData: FormData) {
+  const invite = typeof formData.get("invite") === "string" ? String(formData.get("invite")) : "";
+  const next = invite ? `/invite/${invite}` : safeNext(formData.get("next"));
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${appUrl()}/auth/callback?next=${encodeURIComponent(next)}`, queryParams: { prompt: "select_account" } },
+  });
+  if (error || !data.url) redirect("/login?error=google");
+  redirect(data.url);
+}
+
 async function inviteExists(token: string) {
   if (process.env.SDRCOACH_DEMO === "1") return true;
   const { createAdminClient } = await import("@/lib/supabase/admin");

@@ -21,6 +21,11 @@ export function OnboardingForm() {
           <Label htmlFor="name">Company name</Label>
           <Input id="name" name="name" placeholder="Acme Inc." required autoFocus />
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="website">Company website</Label>
+          <Input id="website" name="website" inputMode="url" autoComplete="url" placeholder="acme.com" />
+          <p className="text-muted-foreground text-xs">We read it once to brief your AI prospects and draft your first buyer. Optional.</p>
+        </div>
         {state.error && <p className="text-destructive text-sm">{state.error}</p>}
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? "Creating…" : "Create workspace"}
