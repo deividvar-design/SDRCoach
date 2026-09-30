@@ -29,7 +29,6 @@ interface Props {
   target: TargetCard;
   difficulty: Difficulty;
   level: LevelSpec;
-  assignmentId: string | null;
   voiceConfigured: boolean;
 }
 
@@ -80,7 +79,7 @@ export function CallScreen(props: Props) {
   );
 }
 
-function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigured }: Props) {
+function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) {
   const router = useRouter();
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -216,7 +215,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
       const res = await fetch("/api/calls", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ targetId: target.id, difficulty, assignmentId }),
+        body: JSON.stringify({ targetId: target.id, difficulty }),
       });
       const data = await res.json();
       if (res.status === 402) {

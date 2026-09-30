@@ -13,16 +13,11 @@ import { RecordingNotice } from "./recording-notice";
 export const metadata = { title: "Start a call" };
 
 export default async function PracticePage({ searchParams }: PageProps<"/practice">) {
-  const { target, assignment, difficulty } = await searchParams;
+  const { target, difficulty } = await searchParams;
   const viewer = await requireViewer();
   const supabase = await createClient();
 
-  const [{ data: targets }, { data: assignmentRow }] = await Promise.all([
-    supabase.from("targets").select("id, name, title, company, industry").eq("org_id", viewer.org.id).eq("is_archived", false).order("name"),
-    typeof assignment === "string"
-      ? supabase.from("assignments").select("id, target_id, difficulty").eq("id", assignment).maybeSingle()
-      : Promise.resolve({ data: null }),
-  ]);
+  const { data: targets } = await supabase.from("targets").select("id, name, title, company, industry").eq("org_id", viewer.org.id).eq("is_archived", false).order("name");
 
   if (!targets?.length) {
     return (
@@ -67,9 +62,8 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
       <PracticeSetup
         targets={targets}
         levels={LEVEL_LIST}
-        initialTargetId={assignmentRow?.target_id ?? (typeof target === "string" ? target : targets[0]!.id)}
-        initialDifficulty={assignmentRow?.difficulty ?? (difficulty === "inbound" || difficulty === "cold" ? difficulty : "warm")}
-        assignmentId={assignmentRow?.id ?? null}
+        initialTargetId={typeof target === "string" ? target : targets[0]!.id}
+        initialDifficulty={difficulty === "inbound" || difficulty === "cold" ? difficulty : "warm"}
       />
     </div>
   );

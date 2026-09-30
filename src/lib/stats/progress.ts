@@ -72,12 +72,21 @@ export interface LeaderRow {
   user_id: string;
   name: string;
   calls: number;
+  /** Reviewed calls behind the average. */
+  reviewed: number;
+  /** Average of reviewed calls, only once there are enough of them to mean something. */
   avg: number | null;
   booked: number;
   best: number | null;
 }
 
-/** Weekly leaderboard: everyone who made a call this week, ranked by average score. Unscored reps sit at the bottom. */
+/** Reviews needed before an average is shown or ranked on. Reps choose which calls to review, so a single 8.0 is noise. */
+export const MIN_REVIEWED_FOR_AVG = 3;
+
+/**
+ * Weekly leaderboard: everyone who made a call this week, ranked by calls made (the thing a rep controls), then by
+ * average score where there are enough reviews to trust it.
+ */
 export function leaderboard(sessions: SessionLite[], names: Map<string, string>, sinceDays = 7, now = new Date()): LeaderRow[] {
   const since = now.getTime() - sinceDays * 86_400_000;
   const byUser = new Map<string, SessionLite[]>();
@@ -92,11 +101,12 @@ export function leaderboard(sessions: SessionLite[], names: Map<string, string>,
         user_id,
         name: names.get(user_id) ?? "Rep",
         calls: list.length,
-        avg: average(scores),
+        reviewed: scores.length,
+        avg: scores.length >= MIN_REVIEWED_FOR_AVG ? average(scores) : null,
         booked: list.filter((s) => s.outcome === "meeting_booked").length,
         best: personalBest(list),
       };
     })
-    .sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1) || b.calls - a.calls);
+    .sort((a, b) => b.calls - a.calls || (b.avg ?? -1) - (a.avg ?? -1) || b.booked - a.booked);
 }
 

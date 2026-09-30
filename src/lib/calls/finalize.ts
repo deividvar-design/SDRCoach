@@ -140,8 +140,6 @@ export async function finalizeCall(sessionId: string) {
       .update({ outcome: prospectDecided, outcome_reason: collectedReason, prospect_summary: summary, duration_seconds: durationSecs, ended_at: endedAt, metrics, error: null })
       .eq("id", sessionId);
 
-    await completeAssignment(db, claimed.assignment_id, prospectDecided);
-
     // The rep may have asked for the review while we were collecting. Re-read before deciding.
     const { data: fresh } = await db.from("call_sessions").select("review_requested_at").eq("id", sessionId).maybeSingle();
     const scoreNow = wantsScore || fresh?.review_requested_at != null;
@@ -197,23 +195,12 @@ export async function finalizeCall(sessionId: string) {
     });
 
     await db.from("call_sessions").update({ status: "scored", outcome, outcome_reason: outcomeReason, error: null }).eq("id", sessionId);
-    if (!prospectDecided) await completeAssignment(db, claimed.assignment_id, outcome);
   } catch (err) {
     await db
       .from("call_sessions")
       .update({ status: "failed", error: err instanceof Error ? err.message : String(err) })
       .eq("id", sessionId);
     throw err;
-  }
-}
-
-/** Marks an assignment done once enough decided calls exist, reviewed or not. */
-async function completeAssignment(db: Db, assignmentId: string | null, outcome: CallOutcome | null) {
-  if (!assignmentId || !outcome || outcome === "incomplete") return;
-  const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("assignment_id", assignmentId).in("status", ["scored", "collected", "scoring"]).not("outcome", "is", null).neq("outcome", "incomplete");
-  const { data: assignment } = await db.from("assignments").select("required_calls").eq("id", assignmentId).single();
-  if (assignment && (count ?? 0) >= assignment.required_calls) {
-    await db.from("assignments").update({ completed_at: new Date().toISOString() }).eq("id", assignmentId).is("completed_at", null);
   }
 }
 

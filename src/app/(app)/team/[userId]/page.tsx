@@ -29,7 +29,7 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
   if (!isManager && !viewer.org.reps_see_team && userId !== viewer.userId) notFound();
   const supabase = await createClient();
 
-  const [{ data: membership }, { data: sessions }, { data: assignments }] = await Promise.all([
+  const [{ data: membership }, { data: sessions }] = await Promise.all([
     supabase.from("memberships").select("role, profiles!memberships_user_id_fkey(full_name, avatar_url)").eq("org_id", viewer.org.id).eq("user_id", userId).maybeSingle(),
     supabase
       .from("call_sessions")
@@ -38,7 +38,6 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(200),
-    supabase.from("assignments").select("id, difficulty, required_calls, due_at, completed_at, targets(name)").eq("assigned_to", userId).order("created_at", { ascending: false }).limit(10),
   ]);
   if (!membership) notFound();
 
@@ -142,25 +141,6 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
               </li>
             ))}
           </ul>
-        </section>
-        <section className="bg-card rounded-2xl border">
-          <div className="border-b px-5 py-4">
-            <h2 className="font-medium">Assignments</h2>
-          </div>
-          {!assignments?.length ? (
-            <p className="text-muted-foreground px-5 py-8 text-center text-sm">None yet. Assign practice from the Team page.</p>
-          ) : (
-            <ul className="divide-y">
-              {assignments.map((a) => (
-                <li key={a.id} className="flex items-center justify-between px-5 py-3 text-sm">
-                  <span>
-                    {a.targets?.name} <span className="text-muted-foreground">· L{LEVELS[a.difficulty].level}</span>
-                  </span>
-                  <Badge variant={a.completed_at ? "success" : "secondary"}>{a.completed_at ? "Done" : `${a.required_calls} calls${a.due_at ? ` by ${formatDate(a.due_at)}` : ""}`}</Badge>
-                </li>
-              ))}
-            </ul>
-          )}
         </section>
       </div>
 

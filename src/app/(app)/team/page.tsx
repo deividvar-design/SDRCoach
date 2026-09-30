@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireManager } from "@/lib/auth";
 import { ROLE_LABEL } from "@/lib/domain/roles";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate, initials, isPast } from "@/lib/utils";
+import { formatDate, initials } from "@/lib/utils";
 import { PageHeader } from "@/components/shell/page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -13,10 +13,7 @@ import { InviteForm } from "./invite-form";
 import { CopyLink } from "./copy-link";
 import { RoleSelect } from "./role-select";
 import { RemoveMemberButton } from "./remove-member";
-import { AssignForm } from "./assign-form";
-import { deleteAssignment, revokeInvite } from "./actions";
-import { LEVELS } from "@/lib/domain/levels";
-import { Progress } from "@/components/ui/progress";
+import { revokeInvite } from "./actions";
 
 export const metadata = { title: "Team" };
 
@@ -24,23 +21,11 @@ export default async function TeamPage() {
   const viewer = await requireManager();
   const supabase = await createClient();
 
-  const [{ data: members }, { data: invites }, { data: sessions }, { data: targets }, { data: assignments }] = await Promise.all([
+  const [{ data: members }, { data: invites }, { data: sessions }] = await Promise.all([
     supabase.from("memberships").select("*, profiles!memberships_user_id_fkey(full_name, avatar_url, email)").eq("org_id", viewer.org.id).order("created_at"),
     supabase.from("invites").select("*").eq("org_id", viewer.org.id).is("accepted_at", null).order("created_at", { ascending: false }),
-    supabase.from("call_sessions").select("user_id, outcome, assignment_id, status, call_scores(overall)").eq("org_id", viewer.org.id),
-    supabase.from("targets").select("id, name, title, company").eq("org_id", viewer.org.id).eq("is_archived", false).order("name"),
-    supabase
-      .from("assignments")
-      .select("id, assigned_to, difficulty, required_calls, due_at, note, completed_at, targets(name, company), profiles!assignments_assigned_to_fkey(full_name)")
-      .eq("org_id", viewer.org.id)
-      .is("completed_at", null)
-      .order("due_at", { ascending: true, nullsFirst: false }),
+    supabase.from("call_sessions").select("user_id, outcome, status, created_at, call_scores(overall)").eq("org_id", viewer.org.id),
   ]);
-
-  const doneByAssignment = new Map<string, number>();
-  for (const s of sessions ?? []) {
-    if (s.assignment_id && (s.status === "scored" || s.status === "collected") && s.outcome !== "incomplete") doneByAssignment.set(s.assignment_id, (doneByAssignment.get(s.assignment_id) ?? 0) + 1);
-  }
 
   const statsByUser = new Map<string, { calls: number; booked: number; scores: number[] }>();
   for (const s of sessions ?? []) {
@@ -83,45 +68,6 @@ export default async function TeamPage() {
                 </div>
               </li>
             ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="bg-card rounded-xl border p-6">
-        <h2 className="mb-1 font-medium">Assign practice</h2>
-        <p className="text-muted-foreground mb-4 text-sm">Give a rep a specific target and level to work before the real outreach starts. It lands on their dashboard.</p>
-        <AssignForm
-          reps={(members ?? []).map((m) => ({ id: m.user_id, label: m.profiles?.full_name ?? "Rep" }))}
-          targets={(targets ?? []).map((t) => ({ id: t.id, label: `${t.name}, ${t.title}, ${t.company}` }))}
-        />
-        {!!assignments?.length && (
-          <ul className="mt-6 divide-y border-t">
-            {assignments.map((a) => {
-              const done = Math.min(doneByAssignment.get(a.id) ?? 0, a.required_calls);
-              const overdue = isPast(a.due_at);
-              return (
-                <li key={a.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center">
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium">
-                      {a.profiles?.full_name ?? "Rep"} <span className="text-muted-foreground font-normal">→</span> {a.targets?.name}
-                      <Badge variant="secondary" className="ml-2">L{LEVELS[a.difficulty].level} {LEVELS[a.difficulty].name}</Badge>
-                      {overdue && <Badge variant="destructive" className="ml-1">Overdue</Badge>}
-                    </div>
-                    <div className="text-muted-foreground text-xs">
-                      {a.due_at ? `Due ${formatDate(a.due_at)}` : "No due date"}
-                      {a.note ? `, ${a.note}` : ""}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 sm:w-64">
-                    <Progress value={(done / a.required_calls) * 100} className="h-1.5" />
-                    <span className="font-mono text-xs tabular whitespace-nowrap">{done}/{a.required_calls}</span>
-                  </div>
-                  <form action={deleteAssignment.bind(null, a.id)}>
-                    <Button size="sm" variant="ghost" type="submit">Remove</Button>
-                  </form>
-                </li>
-              );
-            })}
           </ul>
         )}
       </section>

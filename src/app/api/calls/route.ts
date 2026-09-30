@@ -16,7 +16,6 @@ const DAILY_CALL_CAP = Number(process.env.CALLS_PER_ORG_PER_DAY ?? 200);
 const Body = z.object({
   targetId: z.string().uuid(),
   difficulty: z.enum(["warm", "inbound", "cold"]),
-  assignmentId: z.string().uuid().nullable().optional(),
 });
 
 /** Create a call session and mint the browser's WebRTC token. */
@@ -28,11 +27,6 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: target } = await supabase.from("targets").select("*").eq("id", parsed.data.targetId).eq("org_id", viewer.org.id).maybeSingle();
   if (!target) return NextResponse.json({ error: "Target not found" }, { status: 404 });
-
-  if (parsed.data.assignmentId) {
-    const { data: assignment } = await supabase.from("assignments").select("id").eq("id", parsed.data.assignmentId).eq("assigned_to", viewer.userId).eq("org_id", viewer.org.id).maybeSingle();
-    if (!assignment) return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
-  }
 
   // Repair this rep's own abandoned sessions before the concurrency check so a failed dial never locks them out.
   // Status repairs are instant; transcript fetches and scoring run after the response.
@@ -91,7 +85,6 @@ export async function POST(request: Request) {
       org_id: viewer.org.id,
       user_id: viewer.userId,
       target_id: target.id,
-      assignment_id: parsed.data.assignmentId ?? null,
       difficulty: parsed.data.difficulty,
       elevenlabs_agent_id: agentId(),
       status: "created",

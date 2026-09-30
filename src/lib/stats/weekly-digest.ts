@@ -1,4 +1,5 @@
 import "server-only";
+import { MIN_REVIEWED_FOR_AVG } from "@/lib/stats/progress";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, ScoreDimensions, ScoreObjection } from "@/types/database";
 import { OBJECTIONS, RUBRIC, RUBRIC_KEYS, type ObjectionKind, type RubricKey } from "@/lib/scoring/rubric";
@@ -37,7 +38,8 @@ export async function buildWeeklyDigest(db: SupabaseClient<Database>, orgId: str
     if (r.call_scores?.overall != null) e.scores.push(r.call_scores.overall);
     byRep.set(r.user_id, e);
   }
-  const top = [...byRep.values()].map((e) => ({ name: e.name, avg: avg(e.scores), calls: e.calls })).filter((e): e is { name: string; avg: number; calls: number } => e.avg != null).sort((a, b) => b.avg - a.avg)[0] ?? null;
+  // Top of the board needs enough reviews to mean something; reps choose what to review.
+  const top = [...byRep.values()].filter((e) => e.scores.length >= MIN_REVIEWED_FOR_AVG).map((e) => ({ name: e.name, avg: avg(e.scores), calls: e.calls })).filter((e): e is { name: string; avg: number; calls: number } => e.avg != null).sort((a, b) => b.avg - a.avg)[0] ?? null;
 
   const dims = RUBRIC_KEYS.map((k) => ({ key: k as RubricKey, avg: avg(scored.map((r) => (r.call_scores!.dimensions as ScoreDimensions)[k].score)) })).filter((d): d is { key: RubricKey; avg: number } => d.avg != null).sort((a, b) => a.avg - b.avg);
 

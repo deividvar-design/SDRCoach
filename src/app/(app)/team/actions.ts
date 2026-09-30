@@ -68,57 +68,6 @@ export async function revokeInvite(id: string) {
 }
 
 
-export interface AssignState {
-  error?: string;
-  ok?: boolean;
-}
-
-export async function createAssignment(_prev: AssignState, formData: FormData): Promise<AssignState> {
-  const parsed = z
-    .object({
-      assigned_to: z.string().min(1, "Pick a rep"),
-      target_id: z.string().min(1, "Pick a target"),
-      difficulty: z.enum(["warm", "inbound", "cold"]),
-      required_calls: z.coerce.number().int().min(1).max(20),
-      due_at: z.string().optional(),
-      note: z.string().optional(),
-    })
-    .safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
-
-  const viewer = await requireManager();
-  const supabase = await createClient();
-  const [{ data: member }, { data: target }] = await Promise.all([
-    supabase.from("memberships").select("id").eq("org_id", viewer.org.id).eq("user_id", parsed.data.assigned_to).maybeSingle(),
-    supabase.from("targets").select("id").eq("org_id", viewer.org.id).eq("id", parsed.data.target_id).maybeSingle(),
-  ]);
-  if (!member) return { error: "That person is not in your workspace." };
-  if (!target) return { error: "That target is not in your workspace." };
-  const { error } = await supabase.from("assignments").insert({
-    org_id: viewer.org.id,
-    assigned_by: viewer.userId,
-    assigned_to: parsed.data.assigned_to,
-    target_id: parsed.data.target_id,
-    difficulty: parsed.data.difficulty,
-    required_calls: parsed.data.required_calls,
-    due_at: parsed.data.due_at ? new Date(parsed.data.due_at).toISOString() : null,
-    note: parsed.data.note || null,
-  });
-  if (error) return { error: error.message };
-  revalidatePath("/team");
-  revalidatePath("/dashboard");
-  return { ok: true };
-}
-
-export async function deleteAssignment(id: string) {
-  await requireManager();
-  const supabase = await createClient();
-  await supabase.from("assignments").delete().eq("id", id);
-  revalidatePath("/team");
-  revalidatePath("/dashboard");
-}
-
-/** Owners and managers can move anyone who is not the owner between rep and manager. */
 /** Removes a member. Owners cannot be removed, nor can you remove yourself; use Leave workspace for that. */
 export async function removeMember(membershipId: string): Promise<{ ok: true } | { error: string }> {
   const viewer = await requireManager();

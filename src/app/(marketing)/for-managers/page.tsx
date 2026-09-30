@@ -53,11 +53,11 @@ export default function ForManagersPage() {
           alt="Coaching view: skills by rep heatmap and the most frequent objections"
         />
         <FeatureRow
-          eyebrow="Assignments"
-          title="Assign the practice before the sequence starts."
-          body={<><p>Petram outreach begins Monday? Assign three Level 3 calls against the Petram persona by Friday. Progress fills as calls land. Overdue is visible.</p><p>Reps see it on their dashboard next to their streak and personal best, so it competes with nothing. Leave a note on any call and it lands there too.</p></>}
+          eyebrow="Team"
+          title="See who dialled, who booked, and who went quiet."
+          body={<><p>One table per workspace: calls, meetings booked and average score per rep, with a drill-down into every call they made. Invite reps by email, set roles, remove a seat when someone leaves.</p><p>Leave a note on any call and it lands on the rep's dashboard next to their streak and personal best.</p></>}
           image="/screens/team.png"
-          alt="Team page with the assignment tool and per-member stats"
+          alt="Team page with per-member stats"
         />
         <FeatureRow
           flip

@@ -24,7 +24,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const isManager = canManage(viewer.membership.role);
   const tz = (await cookies()).get("tz")?.value;
 
-  const [{ data: rows }, { data: members }, { count: targetCount }, { data: assignments }, { data: notes }] = await Promise.all([
+  const [{ data: rows }, { data: members }, { count: targetCount }, { data: notes }] = await Promise.all([
     supabase
       .from("call_sessions")
       .select("id, user_id, created_at, difficulty, outcome, status, targets(name, company), profiles(full_name), call_scores(overall)")
@@ -33,13 +33,6 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       .limit(500),
     supabase.from("memberships").select("user_id, profiles!memberships_user_id_fkey(full_name)").eq("org_id", viewer.org.id),
     supabase.from("targets").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id).eq("is_archived", false),
-    supabase
-      .from("assignments")
-      .select("id, difficulty, due_at, required_calls, targets(name, company)")
-      .eq("assigned_to", viewer.userId)
-      .is("completed_at", null)
-      .order("due_at", { ascending: true, nullsFirst: false })
-      .limit(5),
     supabase
       .from("call_comments")
       .select("id, body, created_at, session_id, author_id, profiles!call_comments_author_id_fkey(full_name), call_sessions!inner(user_id, targets(name))")
@@ -222,36 +215,13 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
             </section>
           )}
 
-          {!isManager && !!assignments?.length && (
-            <section className="bg-card rounded-2xl border">
-              <div className="border-b px-5 py-4">
-                <h2 className="font-medium">Assigned to you</h2>
-              </div>
-              <ul className="divide-y">
-                {assignments.map((a) => (
-                  <li key={a.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
-                    <div className="min-w-0">
-                      <div className="truncate font-medium">{a.targets?.name}</div>
-                      <div className="text-muted-foreground text-xs">
-                        L{LEVELS[a.difficulty].level}, {a.required_calls} call{a.required_calls === 1 ? "" : "s"}
-                        {a.due_at ? `, due ${formatDate(a.due_at)}` : ""}
-                      </div>
-                    </div>
-                    <Button size="sm" variant="outline" asChild>
-                      <Link href={`/practice?assignment=${a.id}`}>Go</Link>
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
         </div>
       </div>
 
       <section className="bg-card rounded-2xl border">
         <div className="flex items-center justify-between border-b px-5 py-4">
           <h2 className="font-medium">This week on the floor</h2>
-          <span className="text-muted-foreground text-xs">Ranked by average score, last 7 days</span>
+          <span className="text-muted-foreground text-xs">Ranked by calls made, last 7 days. Average after 3 reviews.</span>
         </div>
         {!board.length ? (
           <p className="text-muted-foreground px-5 py-8 text-center text-sm">Nobody has called this week. First one takes the top spot.</p>
@@ -265,7 +235,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                   {r.user_id === viewer.userId && <span className="text-muted-foreground font-normal"> (you)</span>}
                 </span>
                 <span className="text-muted-foreground hidden font-mono text-xs tabular sm:inline">{r.calls} {r.calls === 1 ? "call" : "calls"}, {r.booked} booked</span>
-                {r.avg == null ? <span className="text-muted-foreground text-xs">no review yet</span> : <ScorePill value={r.avg} />}
+                {r.avg == null ? <span className="text-muted-foreground text-xs">{r.reviewed === 0 ? "no review yet" : `${r.reviewed} of 3 reviewed`}</span> : <ScorePill value={r.avg} />}
               </li>
             ))}
           </ol>

@@ -4,7 +4,7 @@
  * order, limit, single/maybeSingle, count head, insert/update/upsert/delete, rpc, auth, storage).
  * Purely for screenshots and UI work without a database. Not a test double for RLS.
  */
-import { ASSIGNMENTS, DEMO_USER, INVITES, KNOWLEDGE, MEMBERSHIPS, ORG, PROFILES, SCORES, SESSIONS, TARGETS, TRANSCRIPTS, USAGE } from "./fixtures";
+import { DEMO_USER, INVITES, KNOWLEDGE, MEMBERSHIPS, ORG, PROFILES, SCORES, SESSIONS, TARGETS, TRANSCRIPTS, USAGE } from "./fixtures";
 
 type Row = Record<string, unknown>;
 
@@ -14,7 +14,6 @@ const TABLES: Record<string, Row[]> = {
   memberships: MEMBERSHIPS as unknown as Row[],
   invites: INVITES as unknown as Row[],
   targets: TARGETS as unknown as Row[],
-  assignments: ASSIGNMENTS as unknown as Row[],
   call_sessions: SESSIONS as unknown as Row[],
   call_transcripts: TRANSCRIPTS as unknown as Row[],
   call_scores: SCORES as unknown as Row[],
@@ -42,7 +41,6 @@ const RELATIONS: Record<string, Record<string, Relation>> = {
     call_scores: { table: "call_scores", column: "session_id", reverse: true },
     call_transcripts: { table: "call_transcripts", column: "session_id", reverse: true },
   },
-  assignments: { targets: { table: "targets", column: "target_id" }, profiles: { table: "profiles", column: "assigned_to" } },
   invites: { profiles: { table: "profiles", column: "invited_by" } },
   feedback: { organizations: { table: "organizations", column: "org_id" } },
   targets: { profiles: { table: "profiles", column: "created_by" } },

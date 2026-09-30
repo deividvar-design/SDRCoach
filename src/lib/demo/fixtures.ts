@@ -2,7 +2,7 @@
  * Fixture data for demo mode (SDRCOACH_DEMO=1). Used for screenshots, design review and local UI
  * work without a Supabase project. Never enabled in a real deployment.
  */
-import type { Assignment, CallScore, CallSession, CallTranscript, Invite, KnowledgeSource, Membership, Organization, Profile, Target, TranscriptTurn, UsageEvent } from "@/types/database";
+import type { CallScore, CallSession, CallTranscript, Invite, KnowledgeSource, Membership, Organization, Profile, Target, TranscriptTurn, UsageEvent } from "@/types/database";
 
 const daysAgo = (d: number, h = 10) => {
   const t = new Date();
@@ -102,7 +102,6 @@ export const SESSIONS: CallSession[] = SPECS.map((s) => ({
   org_id: ORG.id,
   user_id: s.user,
   target_id: s.target,
-  assignment_id: null,
   difficulty: s.difficulty,
   status: "scored",
   outcome: s.outcome,
@@ -224,10 +223,6 @@ export const TRANSCRIPTS: CallTranscript[] = SESSIONS.map((s) => ({
   created_at: s.created_at,
 }));
 
-export const ASSIGNMENTS: Assignment[] = [
-  { id: "a-1", org_id: ORG.id, assigned_to: "u-deividas", assigned_by: "u-sara", target_id: "tg-real-3", difficulty: "cold", required_calls: 3, due_at: daysAgo(-3), note: "Before the Petram outreach sequence starts.", completed_at: null, created_at: daysAgo(2) },
-  { id: "a-2", org_id: ORG.id, assigned_to: "u-deividas", assigned_by: "u-sara", target_id: "procurement-manufacturing", difficulty: "inbound", required_calls: 2, due_at: daysAgo(-7), note: null, completed_at: null, created_at: daysAgo(1) },
-];
 
 export const KNOWLEDGE: KnowledgeSource[] = [
   { id: "k-1", org_id: ORG.id, uploaded_by: "u-deividas", name: "gong-export-q3-fleet-calls.csv", kind: "call_transcript", storage_path: "org-1/k-1.csv", raw_text: "…", status: "ready", summary: "142 connected cold calls into logistics VPs and fleet managers from Q3. Teaches how prospects push back on 'we already have Samsara' and which reason-for-call lines earned thirty seconds.", extracted: null, error: null, created_at: daysAgo(6) },

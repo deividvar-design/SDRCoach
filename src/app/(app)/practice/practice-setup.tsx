@@ -22,13 +22,11 @@ export function PracticeSetup({
   levels,
   initialTargetId,
   initialDifficulty,
-  assignmentId,
 }: {
   targets: TargetOption[];
   levels: LevelSpec[];
   initialTargetId: string;
   initialDifficulty: Difficulty;
-  assignmentId: string | null;
 }) {
   const [targetId, setTargetId] = useState(initialTargetId);
   const [difficulty, setDifficulty] = useState<Difficulty>(initialDifficulty);
@@ -82,7 +80,6 @@ export function PracticeSetup({
         <form action="/practice/call" method="get">
           <input type="hidden" name="target" value={targetId} />
           <input type="hidden" name="difficulty" value={difficulty} />
-          {assignmentId && <input type="hidden" name="assignment" value={assignmentId} />}
           <Button type="submit" size="lg" className="w-full">
             <Phone /> Dial
           </Button>

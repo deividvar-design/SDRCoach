@@ -164,27 +164,11 @@ export type Target = {
   updated_at: string;
 };
 
-
-export type Assignment = {
-  id: string;
-  org_id: string;
-  assigned_to: string;
-  assigned_by: string | null;
-  target_id: string;
-  difficulty: Difficulty;
-  required_calls: number;
-  due_at: string | null;
-  note: string | null;
-  completed_at: string | null;
-  created_at: string;
-}
-
 export type CallSession = {
   id: string;
   org_id: string;
   user_id: string;
   target_id: string | null;
-  assignment_id: string | null;
   difficulty: Difficulty;
   status: SessionStatus;
   outcome: CallOutcome | null;
@@ -315,24 +299,13 @@ export type Database = {
           { foreignKeyName: "targets_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ]
       >;
-      assignments: Table<
-        Assignment,
-        Insert<Assignment, "id" | "assigned_by" | "difficulty" | "required_calls" | "due_at" | "note" | "completed_at" | "created_at">,
-        [
-          { foreignKeyName: "assignments_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "organizations"; referencedColumns: ["id"] },
-          { foreignKeyName: "assignments_assigned_to_fkey"; columns: ["assigned_to"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
-          { foreignKeyName: "assignments_assigned_by_fkey"; columns: ["assigned_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
-          { foreignKeyName: "assignments_target_id_fkey"; columns: ["target_id"]; isOneToOne: false; referencedRelation: "targets"; referencedColumns: ["id"] },
-        ]
-      >;
       call_sessions: Table<
         CallSession,
-        Insert<CallSession, "id" | "target_id" | "assignment_id" | "status" | "outcome" | "elevenlabs_conversation_id" | "elevenlabs_agent_id" | "started_at" | "ended_at" | "duration_seconds" | "audio_path" | "error" | "outcome_reason" | "metrics" | "prospect_summary" | "review_requested_at" | "review_skipped_at" | "prompt_hash" | "finalize_attempts" | "scoring_started_at" | "mood" | "gatekeeper" | "created_at">,
+        Insert<CallSession, "id" | "target_id" | "status" | "outcome" | "elevenlabs_conversation_id" | "elevenlabs_agent_id" | "started_at" | "ended_at" | "duration_seconds" | "audio_path" | "error" | "outcome_reason" | "metrics" | "prospect_summary" | "review_requested_at" | "review_skipped_at" | "prompt_hash" | "finalize_attempts" | "scoring_started_at" | "mood" | "gatekeeper" | "created_at">,
         [
           { foreignKeyName: "call_sessions_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "organizations"; referencedColumns: ["id"] },
           { foreignKeyName: "call_sessions_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
           { foreignKeyName: "call_sessions_target_id_fkey"; columns: ["target_id"]; isOneToOne: false; referencedRelation: "targets"; referencedColumns: ["id"] },
-          { foreignKeyName: "call_sessions_assignment_id_fkey"; columns: ["assignment_id"]; isOneToOne: false; referencedRelation: "assignments"; referencedColumns: ["id"] },
         ]
       >;
       call_transcripts: Table<

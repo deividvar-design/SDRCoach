@@ -8,7 +8,7 @@ import { CallScreen } from "./call-screen";
 export const metadata = { title: "Live call" };
 
 export default async function CallPage({ searchParams }: PageProps<"/practice/call">) {
-  const { target, difficulty, assignment } = await searchParams;
+  const { target, difficulty } = await searchParams;
   const viewer = await requireViewer();
   const level = typeof difficulty === "string" && difficulty in LEVELS ? (difficulty as Difficulty) : "warm";
   // The notice must be confirmed before any call, including deep links straight to this page.
@@ -24,7 +24,6 @@ export default async function CallPage({ searchParams }: PageProps<"/practice/ca
       target={t}
       difficulty={level}
       level={LEVELS[level]}
-      assignmentId={typeof assignment === "string" ? assignment : null}
       voiceConfigured={Boolean(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_AGENT_ID)}
     />
   );

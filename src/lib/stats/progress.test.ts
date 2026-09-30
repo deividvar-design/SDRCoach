@@ -43,10 +43,18 @@ describe("levelProgress / suggestedLevel", () => {
 });
 
 describe("leaderboard", () => {
-  it("ranks by average within the window and ignores old calls", () => {
+  it("ranks by calls made within the window and ignores old calls", () => {
     const names = new Map([["u1", "A"], ["u2", "B"]]);
-    const rows = leaderboard([s(0, 6), s(1, 9, "warm", "u2"), s(20, 10)], names, 7, now);
-    expect(rows.map((r) => r.name)).toEqual(["B", "A"]);
-    expect(rows[1]!.calls).toBe(1);
+    const rows = leaderboard([s(0, 6), s(1, 7), s(2, 5, "warm", "u2"), s(20, 10)], names, 7, now);
+    expect(rows.map((r) => r.name)).toEqual(["A", "B"]);
+    expect(rows[0]!.calls).toBe(2);
+  });
+
+  it("shows an average only after three reviewed calls", () => {
+    const names = new Map([["u1", "A"], ["u2", "B"]]);
+    const rows = leaderboard([s(0, 9), s(1, 8), s(2, 7), s(0, 10, "warm", "u2")], names, 7, now);
+    expect(rows[0]!.avg).toBeCloseTo(8, 1);
+    expect(rows[1]!.avg).toBeNull();
+    expect(rows[1]!.reviewed).toBe(1);
   });
 });
