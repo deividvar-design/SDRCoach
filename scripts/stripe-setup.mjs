@@ -21,8 +21,8 @@ if (!key) {
 const stripe = new Stripe(key);
 
 const PLANS = [
-  { id: "starter", name: "100 Dials Starter", monthly: 9900, annual: 7900, calls: 40 },
-  { id: "team", name: "100 Dials Team", monthly: 17900, annual: 14900, calls: 100 },
+  { id: "starter", name: "100 Dials Starter", monthly: 5900, annual: 4700, calls: 40 },
+  { id: "team", name: "100 Dials Team", monthly: 15900, annual: 12700, calls: 100 },
 ];
 
 const out = [];

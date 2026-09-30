@@ -66,7 +66,7 @@ export function PlanGrid({
               </div>
               <div className="text-muted-foreground mt-1 text-xs">
                 {p.callsPerSeat ? `${p.callsPerSeat} calls per seat per month, then $${p.overagePerCall?.toFixed(2)} a call` : "Volume pricing, custom call allowance"}
-                {`, from ${p.minSeats} seats`}
+                {p.minSeats > 1 ? `, from ${p.minSeats} seats` : ", from a single seat"}
               </div>
               <ul className="mt-6 flex-1 space-y-2.5 text-sm">
                 {p.features.map((f) => (
