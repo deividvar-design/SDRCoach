@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeScript } from "@/components/theme/theme-script";
 import { AnalyticsProvider } from "@/components/analytics/provider";
@@ -45,6 +46,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <AnalyticsProvider />
         </Suspense>
         <CookieBanner />
+        {/* Cookieless traffic measurement: pages, referrers, countries, campaigns. Runs without consent because it sets nothing on the device. */}
+        <Analytics />
       </body>
     </html>
   );

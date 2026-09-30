@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { track } from "@vercel/analytics/server";
 import { createClient } from "@/lib/supabase/server";
 import { validateBusinessEmail } from "@/lib/email/business";
 import { safeNext } from "@/lib/safe-next";
@@ -56,6 +57,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     },
   });
   if (error) return { error: error.message };
+  await track("signup", { invited: Boolean(invite) }).catch(() => {});
 
   // Email confirmation off: session exists immediately.
   if (data.session) redirect(invite ? `/invite/${invite}` : "/onboarding");

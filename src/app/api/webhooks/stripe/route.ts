@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { priceCatalog, stripe } from "@/lib/billing/stripe";
 import { handleStripeEvent, type SyncDeps } from "@/lib/billing/sync";
 import { sendLifecycle } from "@/lib/email/lifecycle";
+import { track } from "@vercel/analytics/server";
 
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
 
   try {
     const result = await handleStripeEvent(event, deps);
+    if (event.type === "checkout.session.completed") await track("subscribed", { plan: String(event.data.object.metadata?.plan ?? "") }).catch(() => {});
     return NextResponse.json(result);
   } catch (err) {
     console.error("stripe webhook failed", event.type, err);
