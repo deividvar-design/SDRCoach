@@ -85,7 +85,8 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
     }
   }
   const objectionRows = [...objections.values()].sort((a, b) => b.count - a.count);
-  const mostMissed = [...objectionRows].filter((o) => o.count >= 2).sort((a, b) => (b.missed + b.partial) / b.count - (a.missed + a.partial) / a.count)[0];
+  // "Other" is the grader saying it found no category, so it never leads the focus card.
+  const mostMissed = [...objectionRows].filter((o) => o.count >= 2 && o.kind !== "other").sort((a, b) => (b.missed + b.partial) / b.count - (a.missed + a.partial) / a.count)[0];
 
   const focus: { title: string; detail: string }[] = [];
   if (weakest[0]) focus.push({ title: `${RUBRIC[weakest[0]].label} is the weakest skill`, detail: `Team average ${teamDim[weakest[0]]!.toFixed(1)}. ${RUBRIC[weakest[0]].description}` });

@@ -53,7 +53,7 @@ export async function buildWeeklyDigest(db: SupabaseClient<Database>, orgId: str
       objections.set(kind, e);
     }
   }
-  const worst = [...objections.entries()].filter(([, v]) => v.count >= 2).sort((a, b) => a[1].clean / a[1].count - b[1].clean / b[1].count || b[1].count - a[1].count)[0] ?? null;
+  const worst = [...objections.entries()].filter(([k, v]) => v.count >= 2 && k !== "other").sort((a, b) => a[1].clean / a[1].count - b[1].clean / b[1].count || b[1].count - a[1].count)[0] ?? null;
 
   return {
     calls: rows.length,

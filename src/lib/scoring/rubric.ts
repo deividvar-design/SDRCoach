@@ -74,6 +74,10 @@ export const OBJECTIONS = {
   price: { label: "Too expensive", coaching: "Price came before value. Go back to the cost of the problem and a peer result." },
   skeptical: { label: "Doubts it works", coaching: "Offer one specific proof point for a company like theirs, then ask what would convince them." },
   how_did_you_get_my_number: { label: "How did you get my number", coaching: "Answer plainly, then return to the reason for the call. Do not apologise twice." },
+  not_a_fit: { label: "We're not a fit", coaching: "Do not argue the fit. Ask one question about how they handle the problem today; if the answer confirms no fit, thank them and end it well." },
+  switching_cost: { label: "Too hard to switch", coaching: "Agree that switching is work. Ask what the current setup costs them each month, then size the change against that, not against zero." },
+  wrong_person: { label: "Why are you calling me", coaching: "Explain in one sentence why their role, then ask who owns the outcome. A name and a reason to call them is a win." },
+  wont_share: { label: "Won't share details", coaching: "Never push for numbers on a first call. Offer a range from a peer and ask whether they are above or below it." },
   other: { label: "Other", coaching: "Acknowledge, isolate the real concern, reframe, redirect to a question." },
 } as const;
 

@@ -108,6 +108,7 @@ Calibration: 5 is an average new SDR. 7 is a solid rep who would book meetings a
 
 Tag every objection or pushback the prospect raised with the closest category and judge how the rep handled it:
 ${OBJECTION_KEYS.map((k) => `- ${k}: ${OBJECTIONS[k].label}`).join("\n")}
+Boundaries: no_time is this minute ("I've got a minute"), bad_timing is this quarter ("call me after the launch"). not_a_fit is "this doesn't apply to a company like ours"; not_interested is a flat brush-off with no reason. switching_cost is about the effort or risk of changing, price is about money. wrong_person covers "why me" and "talk to procurement". wont_share is a refusal to give numbers or details. Use other only when nothing above is close.
 
 The outcome is decided by the prospect, not the rep. Infer it strictly from the prospect's final words.
 
