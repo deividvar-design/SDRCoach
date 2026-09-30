@@ -154,8 +154,8 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {repRows.map(([userId, r]) => (
-                    <TableRow key={userId}>
+                  {repRows.map(([userId, r], i) => (
+                    <TableRow key={userId} className="heat-in" style={{ "--i": i } as React.CSSProperties}>
                       <TableCell className="font-medium"><Link href={`/team/${userId}`} className="hover:underline">{r.name}</Link></TableCell>
                       <TableCell className="text-right tabular">{r.calls}</TableCell>
                       {RUBRIC_KEYS.map((k) => {

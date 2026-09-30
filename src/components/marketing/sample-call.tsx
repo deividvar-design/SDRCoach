@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
  * Plays a scripted Level 3 call: turns appear on their timestamps, the prospect "speaks", and the
  * score lands at the end. When `audioSrc` is set the transcript follows the audio clock instead.
  */
-export function SampleCall() {
+export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
   const { prospect, turns, endsAt, result, audioSrc } = SAMPLE_CALL;
   const [playing, setPlaying] = useState(false);
   const [clock, setClock] = useState(0);
@@ -43,7 +43,37 @@ export function SampleCall() {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [clock]);
 
+  // The hero picks up by itself: once the card is in view, after the entrance settles, unless motion is reduced.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const autoFired = useRef(false);
+  const interacted = useRef(false);
+  useEffect(() => {
+    if (!autoStart || !cardRef.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const el = cardRef.current;
+    let timer = 0;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting || autoFired.current) return;
+        autoFired.current = true;
+        timer = window.setTimeout(() => {
+          if (interacted.current) return;
+          setPlaying(true);
+          audio.current?.play().catch(() => {});
+        }, 1200);
+        io.disconnect();
+      },
+      { threshold: 0.6 },
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, [autoStart]);
+
   function start() {
+    interacted.current = true;
     if (done) {
       setDone(false);
       setClock(0);
@@ -52,10 +82,12 @@ export function SampleCall() {
     audio.current?.play().catch(() => {});
   }
   function pause() {
+    interacted.current = true;
     setPlaying(false);
     audio.current?.pause();
   }
   function reset() {
+    interacted.current = true;
     pause();
     setClock(0);
     setDone(false);
@@ -68,7 +100,7 @@ export function SampleCall() {
   const started = clock > 0 || playing;
 
   return (
-    <div className="bg-card overflow-hidden rounded-2xl border shadow-xl">
+    <div ref={cardRef} className="bg-card overflow-hidden rounded-2xl border shadow-xl">
       {audioSrc && <audio ref={audio} src={audioSrc} preload="none" />}
       <div className="grid md:grid-cols-[300px_1fr]">
         <div className="paper-grain flex flex-col items-center justify-center border-b p-8 text-center md:border-r md:border-b-0">
