@@ -19,6 +19,8 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export type TranscriptTurn = {
   role: "rep" | "prospect";
+  /** Set when the agent spoke as the gatekeeper rather than the prospect. */
+  speaker?: "gatekeeper";
   text: string;
   t_start_ms?: number;
   t_end_ms?: number;
@@ -200,6 +202,10 @@ export type CallSession = {
   review_skipped_at: string | null;
   prompt_hash: string | null;
   finalize_attempts: number;
+  /** Mood id from src/lib/domain/moods.ts, rolled per call. */
+  mood: string | null;
+  /** Whether an assistant or receptionist answered before the prospect. */
+  gatekeeper: boolean;
   created_at: string;
 };
 
@@ -319,7 +325,7 @@ export type Database = {
       >;
       call_sessions: Table<
         CallSession,
-        Insert<CallSession, "id" | "target_id" | "assignment_id" | "status" | "outcome" | "elevenlabs_conversation_id" | "elevenlabs_agent_id" | "started_at" | "ended_at" | "duration_seconds" | "audio_path" | "error" | "outcome_reason" | "metrics" | "prospect_summary" | "review_requested_at" | "review_skipped_at" | "prompt_hash" | "finalize_attempts" | "created_at">,
+        Insert<CallSession, "id" | "target_id" | "assignment_id" | "status" | "outcome" | "elevenlabs_conversation_id" | "elevenlabs_agent_id" | "started_at" | "ended_at" | "duration_seconds" | "audio_path" | "error" | "outcome_reason" | "metrics" | "prospect_summary" | "review_requested_at" | "review_skipped_at" | "prompt_hash" | "finalize_attempts" | "mood" | "gatekeeper" | "created_at">,
         [
           { foreignKeyName: "call_sessions_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "organizations"; referencedColumns: ["id"] },
           { foreignKeyName: "call_sessions_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },

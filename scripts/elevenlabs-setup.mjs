@@ -47,7 +47,15 @@ const res = await client.conversationalAi.agents.create({
         },
       },
     },
-    tts: { modelId: "eleven_flash_v2", voiceId: "EXAVITQu4vr4xnSDxMaL" },
+    tts: {
+      modelId: process.env.ELEVENLABS_TTS_MODEL ?? "eleven_flash_v2",
+      voiceId: "EXAVITQu4vr4xnSDxMaL",
+      // Voices the prospect may switch to mid-call (the gatekeeper). Must match GATEKEEPER_VOICES in src/lib/domain/moods.ts.
+      supportedVoices: [
+        { label: "Receptionist", voiceId: "21m00Tcm4TlvDq8ikWAM", description: "A receptionist or assistant, woman" },
+        { label: "Assistant", voiceId: "TxGEqnHWrfWFTfGW9XjX", description: "A receptionist or assistant, man" },
+      ],
+    },
     // Seconds of rep silence before the prospect speaks again. Twelve felt like talking to a wall; six is a person going "hello?".
     turn: { turnTimeout: 6, silenceEndCallTimeout: 25 },
     conversation: { maxDurationSeconds: 900 },

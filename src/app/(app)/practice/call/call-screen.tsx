@@ -11,6 +11,9 @@ import type { Difficulty } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { track } from "@/components/analytics/provider";
+import { startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
+import type { Ambience } from "@/lib/domain/moods";
+import { stripVoiceTags } from "@/lib/elevenlabs/tags";
 
 interface TargetCard {
   id: string;
@@ -34,6 +37,7 @@ type Stage = "idle" | "dialing" | "live" | "ending" | "error";
 
 interface LiveTurn {
   role: "rep" | "prospect";
+  speaker?: "gatekeeper";
   text: string;
 }
 
@@ -85,10 +89,18 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
   const [turns, setTurns] = useState<LiveTurn[]>([]);
   const [micLevel, setMicLevel] = useState(0);
   const [silentMic, setSilentMic] = useState(false);
+  const [gatekeeperName, setGatekeeperName] = useState<string | null>(null);
   const sessionIdRef = useRef<string | null>(null);
   const endedRef = useRef(false);
   const startedRef = useRef<Promise<unknown> | null>(null);
   const micRef = useRef<MediaStream | null>(null);
+  const ambienceRef = useRef<AmbienceHandle | null>(null);
+  const pendingAmbienceRef = useRef<Ambience>("quiet");
+  const gatekeeperRef = useRef<{ name: string; voiceLabel: string } | null>(null);
+  const stopAmbience = () => {
+    ambienceRef.current?.stop();
+    ambienceRef.current = null;
+  };
   const releaseMic = () => {
     micRef.current?.getTracks().forEach((t) => t.stop());
     micRef.current = null;
@@ -106,6 +118,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
   const conversation = useConversation({
     onConnect: ({ conversationId }) => {
       setStage("live");
+      ambienceRef.current = startAmbience(pendingAmbienceRef.current);
       if (sessionIdRef.current) {
         startedRef.current = fetch(`/api/calls/${sessionIdRef.current}/start`, {
           method: "POST",
@@ -115,11 +128,17 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
       }
     },
     onMessage: ({ message, role }) => {
-      setTurns((prev) => [...prev, { role: role === "agent" ? "prospect" : "rep", text: message }]);
+      const gk = gatekeeperRef.current;
+      const text = stripVoiceTags(message);
+      if (!text) return;
+      // A voice-tagged agent line is the gatekeeper speaking.
+      const spoke = role === "agent" && gk && new RegExp(`<${gk.voiceLabel}>`).test(message) ? "gatekeeper" : undefined;
+      setTurns((prev) => [...prev, { role: role === "agent" ? "prospect" : "rep", ...(spoke ? { speaker: spoke } : {}), text }]);
     },
     onDisconnect: () => {
       track("call_ended", { difficulty });
       releaseMic();
+      stopAmbience();
       setStage((s) => (s === "live" || s === "dialing" ? "ending" : s));
       endOnServer().then(() => {
         if (sessionIdRef.current) router.push(`/sessions/${sessionIdRef.current}?fresh=1`);
@@ -129,6 +148,7 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
       setError(message);
       setStage("error");
       releaseMic();
+      stopAmbience();
       endOnServer();
     },
   });
@@ -205,7 +225,10 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
       }
       if (!res.ok) throw new Error(data.error ?? "Could not start the call");
       sessionIdRef.current = data.sessionId;
-      track("call_started", { difficulty, target_kind: target.kind });
+      pendingAmbienceRef.current = data.ambience ?? "quiet";
+      gatekeeperRef.current = data.gatekeeper ?? null;
+      setGatekeeperName(data.gatekeeper?.name ?? null);
+      track("call_started", { difficulty, target_kind: target.kind, gatekeeper: Boolean(data.gatekeeper) });
 
       // Let it ring once so it feels like a real dial.
       await new Promise((r) => setTimeout(r, 2200));
@@ -357,8 +380,8 @@ function CallScreenInner({ target, difficulty, level, assignmentId, voiceConfigu
                 <p className="text-muted-foreground text-sm">Words appear here as you both speak.</p>
               ) : (
                 turns.map((t, i) => (
-                  <div key={i} className={cn("text-sm", t.role === "rep" ? "text-foreground" : "text-muted-foreground")}>
-                    <span className="mr-2 text-[11px]">{t.role === "rep" ? "You" : target.name.split(" ")[0]}</span>
+                  <div key={i} className={cn("text-sm", t.role === "rep" ? "text-foreground" : "text-muted-foreground")} data-speaker={t.speaker}>
+                    <span className="mr-2 text-[11px]">{t.role === "rep" ? "You" : t.speaker === "gatekeeper" ? gatekeeperName ?? "Gatekeeper" : target.name.split(" ")[0]}</span>
                     {t.text}
                   </div>
                 ))

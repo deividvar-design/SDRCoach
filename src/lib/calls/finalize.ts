@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/nextjs";
 import { callContext } from "@/lib/sentry";
+import { moodById } from "@/lib/domain/moods";
 import "server-only";
 import { createHash } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -92,13 +93,13 @@ export async function finalizeCall(sessionId: string) {
         return;
       }
 
-      turns = convo.turns.map((t) => ({ role: t.role, text: t.text, t_start_ms: t.t_start_ms, interrupted: t.interrupted }));
+      turns = convo.turns.map((t) => ({ role: t.role, ...(t.speaker ? { speaker: t.speaker } : {}), text: t.text, t_start_ms: t.t_start_ms, interrupted: t.interrupted }));
       durationSecs = convo.durationSecs || Math.max(0, Math.round((new Date(endedAt).getTime() - new Date(claimed.started_at ?? claimed.created_at).getTime()) / 1000));
 
       await db.from("call_transcripts").upsert({
         session_id: sessionId,
         turns,
-        full_text: turns.map((t) => `${t.role === "rep" ? "Rep" : "Prospect"}: ${t.text}`).join("\n"),
+        full_text: turns.map((t) => `${t.role === "rep" ? "Rep" : t.speaker === "gatekeeper" ? "Gatekeeper" : "Prospect"}: ${t.text}`).join("\n"),
       });
 
       metrics = computeMetrics(convo.turns, durationSecs);
@@ -156,6 +157,8 @@ export async function finalizeCall(sessionId: string) {
         repName: claimed.profiles?.full_name ?? "Rep",
         orgPlaybook: digests,
         durationSecs,
+        mood: moodById(claimed.mood),
+        gatekeeper: claimed.gatekeeper,
       });
     } catch (err) {
       // Keep the collected call; the report offers a retry until the attempt budget runs out.

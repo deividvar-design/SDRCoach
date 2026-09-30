@@ -23,7 +23,8 @@ Statement descriptor: `100DIALS` (Settings → Business → Public details). The
 
 ## 4. ElevenLabs
 1. `pnpm elevenlabs:setup` once; put the printed id in `ELEVENLABS_AGENT_ID`.
-2. Optional: Conversational AI → Settings → Post-call webhook → `https://<domain>/api/webhooks/elevenlabs`; secret into `ELEVENLABS_WEBHOOK_SECRET`.
+2. After pulling changes that touch the agent (turn timeout, gatekeeper voices, TTS model): `pnpm elevenlabs:update`. Re-runnable.
+3. Optional: Conversational AI → Settings → Post-call webhook → `https://<domain>/api/webhooks/elevenlabs`; secret into `ELEVENLABS_WEBHOOK_SECRET`.
 
 ## 5. Resend
 Verify the sending domain, create an API key, set `RESEND_API_KEY` and `EMAIL_FROM`. Until then emails are logged and skipped, and invite links can be copied from the Team page.

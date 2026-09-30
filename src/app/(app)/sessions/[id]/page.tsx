@@ -6,6 +6,7 @@ import { LEVELS, LEVEL_LIST } from "@/lib/domain/levels";
 import { canManage } from "@/lib/domain/roles";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatDuration } from "@/lib/utils";
+import { moodById } from "@/lib/domain/moods";
 import { PageHeader } from "@/components/shell/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,7 +72,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
     <div className="space-y-8">
       <ScorePoller active={collecting || reviewing} sessionId={session.id} doneMessage={reviewing ? "Your review is ready" : null} />
       <PageHeader
-        eyebrow={`${formatDate(session.created_at)}, ${formatDuration(session.duration_seconds)}, L${level.level} ${level.name}${!isOwn && session.profiles?.full_name ? `, ${session.profiles.full_name}` : ""}`}
+        eyebrow={`${formatDate(session.created_at)}, ${formatDuration(session.duration_seconds)}, L${level.level} ${level.name}${moodById(session.mood) ? `, ${moodById(session.mood)!.label.toLowerCase()}` : ""}${session.gatekeeper ? ", via gatekeeper" : ""}${!isOwn && session.profiles?.full_name ? `, ${session.profiles.full_name}` : ""}`}
         title={session.targets ? `${session.targets.name}, ${session.targets.company}` : "Call"}
         description={session.targets?.title}
         actions={
@@ -147,7 +148,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
               {transcript?.turns.map((t, i) => (
                 <div key={i} className={`max-w-3xl ${t.role === "rep" ? "" : "pl-5"}`}>
                   <div className="text-muted-foreground mb-1 flex items-center gap-2 text-[11px]">
-                    <span>{t.role === "rep" ? (isOwn ? "You" : session.profiles?.full_name ?? "Rep") : session.targets?.name.split(" ")[0] ?? "Prospect"}</span>
+                    <span>{t.role === "rep" ? (isOwn ? "You" : session.profiles?.full_name ?? "Rep") : t.speaker === "gatekeeper" ? "Gatekeeper" : session.targets?.name.split(" ")[0] ?? "Prospect"}</span>
                     {typeof t.t_start_ms === "number" && <span className="tabular">{formatDuration(Math.floor(t.t_start_ms / 1000))}</span>}
                   </div>
                   <p className={`text-sm leading-relaxed ${t.role === "prospect" ? "text-muted-foreground" : ""}`}>{t.text}</p>
@@ -272,7 +273,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
                 return (
                   <div key={i} className={`max-w-3xl ${t.role === "rep" ? "" : "pl-5"}`}>
                     <div className="text-muted-foreground mb-1 flex items-center gap-2 text-[11px]">
-                      <span>{t.role === "rep" ? (isOwn ? "You" : session.profiles?.full_name ?? "Rep") : session.targets?.name.split(" ")[0] ?? "Prospect"}</span>
+                      <span>{t.role === "rep" ? (isOwn ? "You" : session.profiles?.full_name ?? "Rep") : t.speaker === "gatekeeper" ? "Gatekeeper" : session.targets?.name.split(" ")[0] ?? "Prospect"}</span>
                       {typeof t.t_start_ms === "number" && <span className="tabular">{formatDuration(Math.floor(t.t_start_ms / 1000))}</span>}
                       {moment && <Badge variant={moment.kind === "good" ? "success" : "warning"}>{moment.label}</Badge>}
                     </div>

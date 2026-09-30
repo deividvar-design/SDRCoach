@@ -6,6 +6,7 @@ import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { mintConversationToken, agentId } from "@/lib/elevenlabs/client";
 import { buildPersonaPrompt, firstMessage } from "@/lib/prompts/persona";
+import { pickGatekeeper, rollGatekeeper, rollMood } from "@/lib/domain/moods";
 import { loadOrgDigests } from "@/lib/knowledge/digest";
 import { loadTrialStatus } from "@/lib/billing/usage";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -84,7 +85,10 @@ export async function POST(request: Request) {
 
   const digests = await loadOrgDigests(viewer.org.id);
   const repName = viewer.profile.full_name ?? "the rep";
-  const prompt = buildPersonaPrompt({ target, difficulty: parsed.data.difficulty, org: viewer.org, digests, repName });
+  // Dice, rolled once per call so the same target is never the same person twice.
+  const mood = rollMood(parsed.data.difficulty);
+  const gatekeeper = rollGatekeeper(parsed.data.difficulty) ? pickGatekeeper(target.voice_id) : null;
+  const prompt = buildPersonaPrompt({ target, difficulty: parsed.data.difficulty, org: viewer.org, digests, repName, mood, gatekeeper, ttsModel: process.env.ELEVENLABS_TTS_MODEL });
 
   // Sessions are server-owned: reps cannot insert or update rows themselves (migration 0012).
   const { data: session, error } = await createAdminClient()
@@ -98,6 +102,8 @@ export async function POST(request: Request) {
       elevenlabs_agent_id: agentId(),
       status: "created",
       prompt_hash: hashPrompt(prompt),
+      mood: mood.id,
+      gatekeeper: Boolean(gatekeeper),
     })
     .select("id")
     .single();
@@ -109,9 +115,11 @@ export async function POST(request: Request) {
     token,
     overrides: {
       prompt,
-      firstMessage: firstMessage({ target, difficulty: parsed.data.difficulty }),
+      firstMessage: firstMessage({ target, difficulty: parsed.data.difficulty, gatekeeper }),
       voiceId: target.voice_id,
     },
     prospect: { name: target.name, title: target.title, company: target.company },
+    ambience: mood.ambience,
+    gatekeeper: gatekeeper ? { name: gatekeeper.name, voiceLabel: gatekeeper.voiceLabel } : null,
   });
 }

@@ -1,6 +1,7 @@
 import { LEVELS } from "@/lib/domain/levels";
 import type { Difficulty, Organization, Target } from "@/types/database";
 import type { KnowledgeDigest } from "@/lib/knowledge/digest";
+import type { Gatekeeper, Mood } from "@/lib/domain/moods";
 
 export interface PersonaInput {
   target: Pick<Target, "name" | "title" | "company" | "industry" | "company_size" | "persona_notes" | "pain_points" | "objections">;
@@ -8,7 +9,18 @@ export interface PersonaInput {
   org: Pick<Organization, "name" | "company_description" | "product_description" | "ideal_customer_profile">;
   digests: KnowledgeDigest[];
   repName: string;
+  /** Rolled per call; see src/lib/domain/moods.ts. */
+  mood?: Mood | null;
+  /** When set, an assistant or receptionist answers first and the rep has to get through. */
+  gatekeeper?: Gatekeeper | null;
+  /** The agent's TTS model. The v3 conversational model understands delivery tags; older models read them aloud. */
+  ttsModel?: string;
 }
+
+const first = (name: string) => name.split(" ")[0] ?? name;
+
+/** Whether the TTS model understands bracketed delivery tags like [sighs]. */
+export const supportsDeliveryTags = (model: string | undefined) => (model ?? "").startsWith("eleven_v3");
 
 function list(items: string[]) {
   return items.length ? items.map((i) => `- ${i}`).join("\n") : "- (none given; improvise realistically)";
@@ -34,8 +46,12 @@ function beats(difficulty: Difficulty) {
 }
 
 /** First line the prospect says when they pick up. Varies by level so reps can't script it. */
-export function firstMessage({ target, difficulty }: Pick<PersonaInput, "target" | "difficulty">) {
+export function firstMessage({ target, difficulty, gatekeeper }: Pick<PersonaInput, "target" | "difficulty" | "gatekeeper">) {
   const last = target.name.split(" ").pop() ?? target.name;
+  if (gatekeeper) {
+    const line = Math.random() < 0.5 ? `${target.company}, ${gatekeeper.name} speaking.` : `Good morning, ${target.company}.`;
+    return `<${gatekeeper.voiceLabel}>${line}</${gatekeeper.voiceLabel}>`;
+  }
   switch (difficulty) {
     case "warm":
       return `Hi, this is ${target.name.split(" ")[0]}.`;
@@ -48,8 +64,35 @@ export function firstMessage({ target, difficulty }: Pick<PersonaInput, "target"
 }
 
 export function buildPersonaPrompt(input: PersonaInput) {
-  const { target, difficulty, org, digests, repName } = input;
+  const { target, difficulty, org, digests, repName, mood, gatekeeper, ttsModel } = input;
   const level = LEVELS[difficulty];
+
+  const moodBlock = mood
+    ? `
+## Right now
+${mood.prompt}
+`
+    : "";
+
+  const gatekeeperBlock = gatekeeper
+    ? `
+## Before you: the gatekeeper
+The call does not reach you directly. It is answered by ${gatekeeper.name}, ${gatekeeper.role === "assistant" ? `your assistant` : `the receptionist at ${target.company}`}. You play ${gatekeeper.name} first, then yourself.
+
+Every line ${gatekeeper.name} says must be wrapped in the voice tag <${gatekeeper.voiceLabel}>like this</${gatekeeper.voiceLabel}>, so it is spoken in their voice. Your own lines as ${target.name} carry no tag.
+
+As ${gatekeeper.name}: polite, brisk, protective of ${first(target.name)}'s time. Ask who is calling and what it is regarding. Put the call through only when the rep has given a name, a company, and a plain one-sentence reason that sounds like ${first(target.name)} would want to hear it. Pitching you, being vague ("it's a personal matter", "I just need two minutes"), name-dropping, or getting pushy gets a "${first(target.name)} isn't available, can I take a message?" Offer that at most twice; the second time, take the message, say goodbye, and use the end_call tool. If the rep asks for a good time to call back, give one. You do not know ${first(target.name)}'s diary in detail and you never discuss their business.
+
+When you do put them through, say something like <${gatekeeper.voiceLabel}>One moment, I'll put you through.</${gatekeeper.voiceLabel}> and then, in the same turn, answer as ${target.name} with a short pick-up such as "${first(target.name)}." From then on you are ${target.name} and ${gatekeeper.name} is gone. ${target.name} knows only what ${gatekeeper.name} would have passed on: the caller's name and company, nothing else.
+`
+    : "";
+
+  const deliveryBlock = supportsDeliveryTags(ttsModel)
+    ? `
+## Delivery
+You may add one bracketed delivery tag at the start of a turn when the moment calls for it: [sighs], [exhales], [laughs], [clears throat], [hesitant], [impatient]. Use one in at most every third or fourth turn, never more than one per turn, and never narrate anything else in brackets.
+`
+    : "";
 
   const marketNotes = digests.length
     ? `
@@ -76,7 +119,7 @@ ${digests
   return `You are ${target.name}, ${target.title} at ${target.company}${target.industry ? ` (${target.industry}${target.company_size ? `, ${target.company_size}` : ""})` : ""}. You are on the phone. ${situation}
 
 This is a live voice roleplay used to train sales reps. Stay in character for the entire call. Never mention that you are an AI, a simulation, or a training tool. Never coach, grade, or comment on the rep's technique during the call. If asked whether you are a robot, react the way a real person would.
-
+${moodBlock}${gatekeeperBlock}
 ## Who you are
 ${target.persona_notes ?? "A busy professional who did not expect this call."}
 
@@ -120,7 +163,7 @@ Reward good cold-calling; punish bad cold-calling. Specifically:
 - Talk like a person on the phone, not like a well-briefed analyst. Plain words, no jargon you would not use with a colleague, no tidy summaries of what the rep just said.
 - Do not narrate actions or use stage directions. Speak only.
 - Speak English.
-
+${deliveryBlock}
 ## Ending the call
 You decide how the call ends. When you would realistically hang up (they lost you, or you agreed on a next step and said goodbye), say a natural closing line and then use the end_call tool. Before ending, make your decision explicit in your own words, for example "Alright, send me a calendar invite for Thursday at ten" or "I'm going to pass, good luck". Possible outcomes: you agreed to a meeting, you asked them to call back later, you asked for information by email, you said no, or you simply hung up on them.`;
 }

@@ -22,8 +22,12 @@ export async function mintConversationToken() {
   return res.token;
 }
 
+import { stripVoiceTags } from "@/lib/elevenlabs/tags";
+export { stripVoiceTags };
+
 export interface FetchedTurn {
   role: "rep" | "prospect";
+  speaker?: "gatekeeper";
   text: string;
   t_start_ms: number;
   interrupted: boolean;
@@ -52,14 +56,23 @@ export async function fetchConversation(conversationId: string, { attempts = 20,
   }
   if (!last) throw new Error("conversation fetch failed");
 
-  const turns: FetchedTurn[] = last.transcript
-    .filter((t) => (t.message ?? "").trim().length > 0)
-    .map((t) => ({
-      role: t.role === "agent" ? "prospect" : "rep",
-      text: (t.message ?? "").trim(),
-      t_start_ms: Math.round(t.timeInCallSecs * 1000),
-      interrupted: Boolean(t.interrupted),
-    }));
+  // A multi-voice turn (gatekeeper then prospect in one breath) arrives as parts with voice labels; split it so the
+  // transcript, metrics and grader see who actually spoke.
+  const turns: FetchedTurn[] = last.transcript.flatMap((t) => {
+    const startMs = Math.round(t.timeInCallSecs * 1000);
+    const parts = t.role === "agent" && t.multivoiceMessage?.parts?.length ? t.multivoiceMessage.parts : null;
+    if (parts) {
+      return parts
+        .map((p) => ({ text: stripVoiceTags(p.text), label: p.voiceLabel, at: typeof p.timeInCallSecs === "number" ? Math.round(p.timeInCallSecs * 1000) : startMs }))
+        .filter((p) => p.text.length > 0)
+        .map((p) => ({ role: "prospect" as const, ...(p.label ? { speaker: "gatekeeper" as const } : {}), text: p.text, t_start_ms: p.at, interrupted: Boolean(t.interrupted) }));
+    }
+    const raw = t.message ?? "";
+    const text = stripVoiceTags(raw);
+    if (!text) return [];
+    const tagged = t.role === "agent" && /<[A-Za-z]+>/.test(raw);
+    return [{ role: t.role === "agent" ? ("prospect" as const) : ("rep" as const), ...(tagged ? { speaker: "gatekeeper" as const } : {}), text, t_start_ms: startMs, interrupted: Boolean(t.interrupted) }];
+  });
 
   const dataCollection: Record<string, unknown> = {};
   for (const [key, r] of Object.entries(last.analysis?.dataCollectionResults ?? {})) dataCollection[key] = r.value;
