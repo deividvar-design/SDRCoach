@@ -9,6 +9,7 @@ export interface OrgBillingPatch {
   stripe_subscription_id?: string | null;
   stripe_price_id?: string | null;
   billing_interval?: "month" | "quarter" | "year" | null;
+  billing_currency?: "usd" | "eur" | null;
   subscription_status?: string | null;
   current_period_end?: string | null;
   cancel_at_period_end?: boolean;
@@ -30,6 +31,7 @@ export function subscriptionToPatch(sub: Stripe.Subscription, catalog: PriceCata
     stripe_subscription_id: sub.id,
     stripe_price_id: priceId,
     billing_interval: known?.interval ?? null,
+    billing_currency: sub.currency === "eur" || sub.currency === "usd" ? sub.currency : null,
     subscription_status: sub.status,
     current_period_end: item?.current_period_end ? new Date(item.current_period_end * 1000).toISOString() : null,
     cancel_at_period_end: Boolean(sub.cancel_at_period_end),

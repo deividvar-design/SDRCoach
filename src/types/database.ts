@@ -79,6 +79,7 @@ export type Organization = {
   stripe_subscription_id: string | null;
   stripe_price_id: string | null;
   billing_interval: "month" | "quarter" | "year" | null;
+  billing_currency: "usd" | "eur" | null;
   subscription_status: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
@@ -251,7 +252,7 @@ export type Database = {
     Tables: {
       organizations: Table<
         Organization,
-        Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
+        Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;

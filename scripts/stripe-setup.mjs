@@ -20,10 +20,44 @@ if (!key) {
 }
 const stripe = new Stripe(key);
 
+// Amounts in cents per seat per month; the script multiplies by the interval. Keep in sync with src/lib/billing/plans.ts.
 const PLANS = [
-  { id: "starter", name: "100 Dials Starter", monthly: 5900, quarterly: 5300, annual: 4700, calls: 40 },
-  { id: "team", name: "100 Dials Team", monthly: 15900, quarterly: 14300, annual: 12700, calls: 100 },
+  { id: "starter", name: "100 Dials Starter", calls: 40, usd: { monthly: 5900, quarterly: 5300, annual: 4700 }, eur: { monthly: 5500, quarterly: 4900, annual: 4400 } },
+  { id: "team", name: "100 Dials Team", calls: 100, usd: { monthly: 15900, quarterly: 14300, annual: 12700 }, eur: { monthly: 14900, quarterly: 13400, annual: 11900 } },
 ];
+const MONTHS = { monthly: 1, quarterly: 3, annual: 12 };
+const RECURRING = { monthly: { interval: "month" }, quarterly: { interval: "month", interval_count: 3 }, annual: { interval: "year" } };
+const INTERVAL_KEY = { monthly: "month", quarterly: "quarter", annual: "year" };
+
+/** One multi-currency price: USD default, EUR as a currency option. Checkout picks with its `currency` param. */
+function priceParams(product, p, period) {
+  return {
+    product,
+    currency: "usd",
+    unit_amount: p.usd[period] * MONTHS[period],
+    currency_options: { eur: { unit_amount: p.eur[period] * MONTHS[period] } },
+    recurring: RECURRING[period],
+    nickname: `${p.id} ${period}`,
+    metadata: { plan: p.id, interval: INTERVAL_KEY[period] },
+  };
+}
+
+// `--eur`: add the euro amount to the prices already in the environment (STRIPE_PRICE_*), then stop.
+if (process.argv.includes("--eur")) {
+  for (const p of PLANS) {
+    for (const period of ["monthly", "quarterly", "annual"]) {
+      const id = process.env[`STRIPE_PRICE_${p.id.toUpperCase()}_${period.toUpperCase()}`];
+      if (!id) {
+        console.warn(`STRIPE_PRICE_${p.id.toUpperCase()}_${period.toUpperCase()} is not set; skipping`);
+        continue;
+      }
+      await stripe.prices.update(id, { currency_options: { eur: { unit_amount: p.eur[period] * MONTHS[period] } } });
+      console.log(`${id}: eur ${(p.eur[period] * MONTHS[period]) / 100} added`);
+    }
+  }
+  console.log("\nDone. Nothing to change in Vercel; the same price ids now carry both currencies.");
+  process.exit(0);
+}
 
 // `--quarterly-only`: products already exist (created by an earlier run); add the quarterly price to each and stop.
 if (process.argv.includes("--quarterly-only")) {
@@ -35,7 +69,7 @@ if (process.argv.includes("--quarterly-only")) {
       console.error(`No active product with metadata.plan=${p.id}. Run without --quarterly-only to create everything.`);
       process.exit(1);
     }
-    const quarterly = await stripe.prices.create({ product: product.id, unit_amount: p.quarterly * 3, currency: "usd", recurring: { interval: "month", interval_count: 3 }, nickname: `${p.id} quarterly`, metadata: { plan: p.id, interval: "quarter" } });
+    const quarterly = await stripe.prices.create(priceParams(product.id, p, "quarterly"));
     lines.push(`STRIPE_PRICE_${p.id.toUpperCase()}_QUARTERLY=${quarterly.id}`);
   }
   console.log(`\nAdd to your environment:\n${lines.join("\n")}\n\nThen in Billing → Customer portal, edit the default configuration and add the quarterly prices to the products customers may switch between.`);
@@ -50,9 +84,9 @@ for (const p of PLANS) {
     description: `${p.calls} practice calls per seat per month`,
     metadata: { plan: p.id },
   });
-  const monthly = await stripe.prices.create({ product: product.id, unit_amount: p.monthly, currency: "usd", recurring: { interval: "month" }, nickname: `${p.id} monthly`, metadata: { plan: p.id, interval: "month" } });
-  const quarterly = await stripe.prices.create({ product: product.id, unit_amount: p.quarterly * 3, currency: "usd", recurring: { interval: "month", interval_count: 3 }, nickname: `${p.id} quarterly`, metadata: { plan: p.id, interval: "quarter" } });
-  const annual = await stripe.prices.create({ product: product.id, unit_amount: p.annual * 12, currency: "usd", recurring: { interval: "year" }, nickname: `${p.id} annual`, metadata: { plan: p.id, interval: "year" } });
+  const monthly = await stripe.prices.create(priceParams(product.id, p, "monthly"));
+  const quarterly = await stripe.prices.create(priceParams(product.id, p, "quarterly"));
+  const annual = await stripe.prices.create(priceParams(product.id, p, "annual"));
   out.push(`STRIPE_PRICE_${p.id.toUpperCase()}_MONTHLY=${monthly.id}`, `STRIPE_PRICE_${p.id.toUpperCase()}_QUARTERLY=${quarterly.id}`, `STRIPE_PRICE_${p.id.toUpperCase()}_ANNUAL=${annual.id}`);
   portalProducts.push({ product: product.id, prices: [monthly.id, quarterly.id, annual.id] });
 }

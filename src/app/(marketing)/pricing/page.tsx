@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PlanGrid } from "@/components/billing/plan-grid";
 import { TRIAL } from "@/lib/billing/plans";
+import { viewerCurrency } from "@/lib/billing/currency-server";
 import { CtaBand } from "@/components/marketing/sections";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
 
@@ -14,12 +15,14 @@ const FAQ = [
   { q: "What counts as a call?", a: "A practice call that connects to the AI prospect. Failed dials and calls under ten seconds are not counted." },
   { q: "What happens when a rep uses their allowance?", a: "Calls keep working and are billed at the overage rate at the end of the month. Managers can cap overage per team." },
   { q: "Do unused calls roll over?", a: "No. Allowances reset monthly. Annual plans are billed up front with a 20% discount." },
+  { q: "Which currency will we be charged in?", a: "Euros or US dollars, your choice at checkout. European companies see euro prices by default. Prices exclude VAT; EU companies with a VAT number are reverse-charged." },
   { q: "Can we use our own call recordings?", a: "Yes, on Team and above. Upload transcripts from Gong, Chorus or your dialer and prospects start sounding like your market within minutes." },
   { q: "Is our data used to train models?", a: "No. Your transcripts and recordings are used only to ground your own team's prospects and grading." },
   { q: "Why work email only?", a: "100 Dials is built for teams. The trial creates a workspace for your company domain, so one person can start and invite the rest." },
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const currency = await viewerCurrency();
   return (
     <>
       <JsonLd data={faqLd(FAQ)} />
@@ -32,7 +35,7 @@ export default function PricingPage() {
           </p>
         </section>
 
-        <PlanGrid marketing />
+        <PlanGrid marketing currency={currency} />
 
         <section className="mx-auto mt-20 max-w-3xl">
           <h2 className="font-display text-3xl">Questions</h2>

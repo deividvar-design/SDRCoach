@@ -52,6 +52,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
               <>
                 <span className="text-foreground">{PLANS.find((p) => p.id === viewer.org.plan)?.name ?? viewer.org.plan}</span> plan, {viewer.org.seat_limit} seats
                 {viewer.org.billing_interval ? `, ${INTERVALS[viewer.org.billing_interval].billed.toLowerCase()}` : ""}
+                {viewer.org.billing_currency ? ` in ${viewer.org.billing_currency.toUpperCase()}` : ""}
                 {viewer.org.current_period_end ? `, ${viewer.org.cancel_at_period_end ? "ends" : "renews"} ${fmtDate(viewer.org.current_period_end)}` : ""}
                 {viewer.org.subscription_status === "past_due" && <span className="text-destructive">, payment failed, please update your card</span>}
                 . {usage.label}

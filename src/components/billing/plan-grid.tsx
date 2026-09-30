@@ -5,7 +5,15 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { INTERVALS, PLANS, SALES_EMAIL, TRIAL, pricePerSeat, type BillingInterval } from "@/lib/billing/plans";
+import { CURRENCIES, formatMoney, type Currency } from "@/lib/billing/currency";
 import { Button } from "@/components/ui/button";
+
+/** Remembered for a year so the pricing page, the upgrade page and checkout agree. */
+function rememberCurrency(c: Currency) {
+  try {
+    document.cookie = `currency=${c};path=/;max-age=31536000;samesite=lax`;
+  } catch {}
+}
 
 export function PlanGrid({
   orgName,
@@ -15,6 +23,7 @@ export function PlanGrid({
   defaultSeats = 3,
   billingReady = false,
   intervals = ["month", "year"],
+  currency: initialCurrency = "usd",
 }: {
   orgName?: string;
   canBuy?: boolean;
@@ -25,14 +34,21 @@ export function PlanGrid({
   billingReady?: boolean;
   /** Billing intervals to offer. The public page shows monthly and annual; the app adds quarterly. */
   intervals?: BillingInterval[];
+  /** Currency to show first, decided server-side from the visitor's country or their earlier choice. */
+  currency?: Currency;
 }) {
   const [interval, setInterval] = useState<BillingInterval>("year");
+  const [currency, setCurrencyState] = useState<Currency>(initialCurrency);
   const [seats, setSeats] = useState(defaultSeats);
   const meta = INTERVALS[interval];
+  const setCurrency = (c: Currency) => {
+    setCurrencyState(c);
+    rememberCurrency(c);
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-center">
+      <div className="flex flex-wrap items-center justify-center gap-3">
         <div className="bg-muted inline-flex rounded-full p-1 text-sm" role="radiogroup" aria-label="Billing interval">
           {intervals.map((i) => (
             <button
@@ -48,11 +64,25 @@ export function PlanGrid({
             </button>
           ))}
         </div>
+        <div className="bg-muted inline-flex rounded-full p-1 text-sm" role="radiogroup" aria-label="Currency">
+          {CURRENCIES.map((c) => (
+            <button
+              key={c}
+              type="button"
+              role="radio"
+              aria-checked={currency === c}
+              onClick={() => setCurrency(c)}
+              className={cn("cursor-pointer rounded-full px-3 py-1.5 font-mono transition-colors", currency === c ? "bg-background shadow-sm font-medium" : "text-muted-foreground hover:text-foreground")}
+            >
+              {c.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
         {PLANS.map((p) => {
-          const price = pricePerSeat(p, interval);
+          const price = pricePerSeat(p, interval, currency);
           const subject = encodeURIComponent(`100 Dials ${p.name}${orgName ? ` for ${orgName}` : ""}`);
           const href = p.id === "enterprise" || !marketing ? `mailto:${SALES_EMAIL}?subject=${subject}` : "/signup";
           return (
@@ -65,13 +95,13 @@ export function PlanGrid({
                   <span className="font-mono text-4xl font-medium">Custom</span>
                 ) : (
                   <>
-                    <span className="font-mono text-4xl font-medium tabular">${price}</span>
+                    <span className="font-mono text-4xl font-medium tabular">{formatMoney(price, currency)}</span>
                     <span className="text-muted-foreground text-sm">/ seat / month</span>
                   </>
                 )}
               </div>
               <div className="text-muted-foreground mt-1 text-xs">
-                {p.callsPerSeat ? `${p.callsPerSeat} calls per seat per month, then $${p.overagePerCall?.toFixed(2)} a call` : "Volume pricing, custom call allowance"}
+                {p.callsPerSeat && p.overagePerCall ? `${p.callsPerSeat} calls per seat per month, then ${formatMoney(p.overagePerCall[currency], currency)} a call` : "Volume pricing, custom call allowance"}
                 {p.minSeats > 1 ? `, from ${p.minSeats} seats` : ", from a single seat"}
               </div>
               <ul className="mt-6 flex-1 space-y-2.5 text-sm">
@@ -86,6 +116,7 @@ export function PlanGrid({
                 <form action={checkoutAction} className="mt-6 space-y-3">
                   <input type="hidden" name="plan" value={p.id} />
                   <input type="hidden" name="interval" value={interval} />
+                  <input type="hidden" name="currency" value={currency} />
                   <label className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Seats</span>
                     <input
@@ -101,7 +132,7 @@ export function PlanGrid({
                   {price != null && (
                     <div className="text-muted-foreground flex justify-between text-xs">
                       <span>{meta.billed}</span>
-                      <span className="font-mono tabular">${(price * Math.max(seats, p.minSeats) * meta.months).toLocaleString()} / {interval === "year" ? "year" : interval === "quarter" ? "quarter" : "month"}</span>
+                      <span className="font-mono tabular">{formatMoney(price * Math.max(seats, p.minSeats) * meta.months, currency)} / {interval === "year" ? "year" : interval === "quarter" ? "quarter" : "month"}</span>
                     </div>
                   )}
                   <Button type="submit" className="w-full" variant={p.highlight ? "default" : "outline"} disabled={!billingReady}>
@@ -120,7 +151,7 @@ export function PlanGrid({
 
       {marketing && (
         <p className="text-muted-foreground text-center text-sm">
-          Every plan starts with a free trial: {TRIAL.calls} calls, {TRIAL.days} days, no card. Work email required.
+          Every plan starts with a free trial: {TRIAL.calls} calls, {TRIAL.days} days, no card. Work email required. Prices exclude VAT.
         </p>
       )}
     </div>

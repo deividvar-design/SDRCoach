@@ -7,6 +7,7 @@ import { PlanGrid } from "@/components/billing/plan-grid";
 import { openBillingPortal, startCheckout } from "./actions";
 import { Button } from "@/components/ui/button";
 import { stripeConfigured } from "@/lib/billing/stripe";
+import { viewerCurrency } from "@/lib/billing/currency-server";
 
 export const metadata = { title: "Upgrade" };
 
@@ -19,6 +20,7 @@ export default async function UpgradePage({ searchParams }: PageProps<"/upgrade"
     supabase.from("memberships").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id),
   ]);
   const memberCount = count ?? 1;
+  const currency = await viewerCurrency();
   const isManager = canManage(viewer.membership.role);
   const subscribed = Boolean(viewer.org.stripe_subscription_id) && viewer.org.plan !== "canceled";
 
@@ -50,7 +52,7 @@ export default async function UpgradePage({ searchParams }: PageProps<"/upgrade"
           <form action={openBillingPortal}><Button type="submit">Manage billing</Button></form>
         </div>
       ) : (
-        <PlanGrid orgName={viewer.org.name} canBuy={isManager} checkoutAction={startCheckout} defaultSeats={Math.max(1, memberCount)} billingReady={stripeConfigured()} intervals={["month", "quarter", "year"]} />
+        <PlanGrid orgName={viewer.org.name} canBuy={isManager} checkoutAction={startCheckout} defaultSeats={Math.max(1, memberCount)} billingReady={stripeConfigured()} intervals={["month", "quarter", "year"]} currency={currency} />
       )}
       <p className="text-muted-foreground text-sm">Secure card checkout by Stripe. Change seats, switch plans, update your card or cancel any time from Settings.</p>
     </div>

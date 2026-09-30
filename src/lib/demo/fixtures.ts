@@ -28,6 +28,7 @@ export const ORG: Organization = {
   stripe_subscription_id: "sub_demo",
   stripe_price_id: "price_demo_team_month",
   billing_interval: "month",
+  billing_currency: "usd",
   subscription_status: "active",
   current_period_end: daysAgo(-21),
   cancel_at_period_end: false,

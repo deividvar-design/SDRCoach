@@ -11,6 +11,7 @@ import { PLANS } from "@/lib/billing/plans";
 const Body = z.object({
   plan: z.enum(["starter", "team"]),
   interval: z.enum(["month", "quarter", "year"]),
+  currency: z.enum(["usd", "eur"]).default("usd"),
   seats: z.coerce.number().int().min(1).max(500),
 });
 
@@ -49,6 +50,8 @@ export async function startCheckout(formData: FormData) {
       customer_update: { name: "auto", address: "auto" },
       client_reference_id: viewer.org.id,
       line_items: [{ price, quantity: parsed.data.seats }],
+      // Prices carry both currencies; this picks which one the buyer is charged in.
+      currency: parsed.data.currency,
       success_url: `${SITE.url}/settings?checkout=success`,
       cancel_url: `${SITE.url}/upgrade?checkout=canceled`,
       allow_promotion_codes: true,
