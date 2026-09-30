@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { dateFormatter } from "@/lib/tz";
+import { daysAgoIso } from "@/lib/utils";
 import { requireManager } from "@/lib/auth";
 import { ROLE_LABEL } from "@/lib/domain/roles";
 import { createClient } from "@/lib/supabase/server";
@@ -41,7 +42,7 @@ export default async function TeamPage() {
     statsByUser.set(s.user_id, entry);
   }
 
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const thirtyDaysAgo = daysAgoIso(30);
   const activeSeats = (members ?? []).filter((m) => (statsByUser.get(m.user_id)?.lastCallAt ?? "") >= thirtyDaysAgo).length;
 
   return (

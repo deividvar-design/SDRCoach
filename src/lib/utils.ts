@@ -41,3 +41,8 @@ export function isPast(iso: string | null | undefined) {
 export function dateInputValue(daysFromNow: number) {
   return new Date(Date.now() + daysFromNow * 86_400_000).toISOString().slice(0, 10);
 }
+
+/** ISO timestamp for `days` ago. Keeps clock reads out of component bodies. */
+export function daysAgoIso(days: number) {
+  return new Date(Date.now() - days * 86_400_000).toISOString();
+}

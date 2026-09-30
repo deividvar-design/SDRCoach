@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { dateFormatter } from "@/lib/tz";
+import { daysAgoIso } from "@/lib/utils";
 import { cookies } from "next/headers";
 import { StatusToast } from "@/components/status-toast";
 import { SESSION_STATUS } from "@/lib/domain/session-status";
@@ -85,7 +86,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const progress = levelProgress(mine);
   const nextLevel = suggestedLevel(mine);
   const names = new Map((members ?? []).map((m) => [m.user_id, m.profiles?.full_name ?? "Rep"]));
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const thirtyDaysAgo = daysAgoIso(30);
   const activeSeats = new Set((rows ?? []).filter((r) => r.created_at >= thirtyDaysAgo).map((r) => r.user_id)).size;
   const board = leaderboard(lite, names);
   const firstName = viewer.profile.full_name?.split(" ")[0] ?? "there";
