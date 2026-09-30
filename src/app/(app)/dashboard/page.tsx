@@ -85,6 +85,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const progress = levelProgress(mine);
   const nextLevel = suggestedLevel(mine);
   const names = new Map((members ?? []).map((m) => [m.user_id, m.profiles?.full_name ?? "Rep"]));
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const activeSeats = new Set((rows ?? []).filter((r) => r.created_at >= thirtyDaysAgo).map((r) => r.user_id)).size;
   const board = leaderboard(lite, names);
   const firstName = viewer.profile.full_name?.split(" ")[0] ?? "there";
 
@@ -109,7 +111,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
         <StatTile label={isManager ? "Team average" : "Average score"} value={avg == null ? "—" : avg.toFixed(1)} unit="/ 10" icon={TargetIcon} hint={`${scope.length} call${scope.length === 1 ? "" : "s"}`} />
         <StatTile label="Meetings booked" value={bookRate == null ? "—" : `${bookRate}%`} icon={Trophy} hint={decided ? `${booked} of ${decided} decided calls` : "The prospect decides"} />
         {isManager ? (
-          <StatTile label="Team" value={members?.length ?? 0} unit={`/ ${viewer.org.seat_limit} seats`} icon={Users} hint={`${targetCount ?? 0} active targets`} />
+          <StatTile label="Team" value={members?.length ?? 0} unit={`/ ${viewer.org.seat_limit} seats`} icon={Users} hint={`${activeSeats} dialled in the last 30 days, ${targetCount ?? 0} live targets`} />
         ) : (
           <StatTile label="Personal best" value={best == null ? "—" : best.toFixed(1)} unit="/ 10" icon={ArrowUpRight} hint={best == null ? "Set one today" : "Beat it"} />
         )}

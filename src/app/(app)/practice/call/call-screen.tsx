@@ -206,7 +206,10 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
     setStage("dialing");
     let stopRing: (() => void) | null = null;
     try {
-      micRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // The SDK acquires its own microphone track. Pre-flight only when permission is not already granted, so a
+      // rep who chose "allow this time" in Chrome is asked once per call, not twice.
+      const granted = await navigator.permissions?.query({ name: "microphone" as PermissionName }).then((p) => p.state === "granted").catch(() => false);
+      if (!granted) micRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
       // So the "review is ready" notice can reach a backgrounded tab. Browsers only ever ask once.
       if (typeof Notification !== "undefined" && Notification.permission === "default") Notification.requestPermission().catch(() => {});
       const ctx = new AudioContext();

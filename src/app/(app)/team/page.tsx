@@ -30,21 +30,25 @@ export default async function TeamPage() {
     fetchAll((a, b) => supabase.from("call_sessions").select("user_id, outcome, status, created_at, call_scores(overall)").eq("org_id", viewer.org.id).order("created_at").range(a, b)),
   ]);
 
-  const statsByUser = new Map<string, { calls: number; booked: number; scores: number[] }>();
+  const statsByUser = new Map<string, { calls: number; booked: number; scores: number[]; lastCallAt: string | null }>();
   for (const s of sessions ?? []) {
-    const entry = statsByUser.get(s.user_id) ?? { calls: 0, booked: 0, scores: [] };
+    const entry = statsByUser.get(s.user_id) ?? { calls: 0, booked: 0, scores: [], lastCallAt: null };
     entry.calls += 1;
+    if (!entry.lastCallAt || s.created_at > entry.lastCallAt) entry.lastCallAt = s.created_at;
     if (s.outcome === "meeting_booked") entry.booked += 1;
     const sc = Array.isArray(s.call_scores) ? s.call_scores[0]?.overall : s.call_scores?.overall;
     if (typeof sc === "number") entry.scores.push(sc);
     statsByUser.set(s.user_id, entry);
   }
 
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const activeSeats = (members ?? []).filter((m) => (statsByUser.get(m.user_id)?.lastCallAt ?? "") >= thirtyDaysAgo).length;
+
   return (
     <div className="space-y-8">
       <PageHeader
         title="Team"
-        description={`${members?.length ?? 0} of ${viewer.org.seat_limit} seats in use.`}
+        description={`${members?.length ?? 0} of ${viewer.org.seat_limit} seats in use, ${activeSeats} active in the last 30 days.`}
         actions={
           <Button variant="outline" asChild>
             <Link href="/team/coaching">Coaching insights</Link>
@@ -82,6 +86,7 @@ export default async function TeamPage() {
               <TableHead>Member</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Calls</TableHead>
+              <TableHead>Last call</TableHead>
               <TableHead>Booked</TableHead>
               <TableHead className="text-right">Avg score</TableHead>
               <TableHead className="w-10" />
@@ -113,6 +118,7 @@ export default async function TeamPage() {
                     )}
                   </TableCell>
                   <TableCell className="tabular-nums">{st?.calls ?? 0}</TableCell>
+                  <TableCell className={st?.lastCallAt && st.lastCallAt >= thirtyDaysAgo ? "text-xs" : "text-muted-foreground text-xs"}>{st?.lastCallAt ? fmtDate(st.lastCallAt) : "Never"}</TableCell>
                   <TableCell className="tabular-nums">{st?.booked ?? 0}</TableCell>
                   <TableCell className="text-right"><ScorePill value={avg} /></TableCell>
                   <TableCell>
