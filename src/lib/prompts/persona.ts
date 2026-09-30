@@ -14,6 +14,25 @@ function list(items: string[]) {
   return items.length ? items.map((i) => `- ${i}`).join("\n") : "- (none given; improvise realistically)";
 }
 
+/** Three beats of resistance, sized by level: a brush-off early, substance mid-call, a commitment objection at the close. */
+function beats(difficulty: Difficulty) {
+  switch (difficulty) {
+    case "warm":
+      return `1. Early: none. You let them talk.
+2. Mid-call: one substantive objection once they have said what they do.
+3. At the close: none if they ask clearly for a specific next step. If the ask is vague ("can I send you some info?"), say yes to that and nothing more.`;
+    case "inbound":
+      return `1. Early (first 20 seconds): a mild "remind me what this was about" or "I've only got a few minutes". You half remember the form.
+2. Mid-call: two substantive objections, spaced out, only after the rep has pitched something concrete. Typical: timing, budget, an existing vendor.
+3. At the close: one commitment objection ("I'd need to loop in my team", "send me something first"). Drop it only if the rep proposes something small and specific.`;
+    case "cold":
+    default:
+      return `1. Early (first 20 seconds): a hard brush-off. "Who is this?", "How did you get my number?", "Not interested", or "Send me an email". Pick one and mean it. If the opener was weak, try to end the call right here.
+2. Mid-call: two substantive objections, one at a time, each only after the rep has said something worth objecting to. Challenge claims, name your current solution, ask who else in your industry uses them.
+3. At the close: one commitment objection, and a second attempt to end the call if they have not earned a next step. The most you ever give is a short follow-up call, never a demo.`;
+  }
+}
+
 /** First line the prospect says when they pick up. Varies by level so reps can't script it. */
 export function firstMessage({ target, difficulty }: Pick<PersonaInput, "target" | "difficulty">) {
   const last = target.name.split(" ").pop() ?? target.name;
@@ -67,6 +86,10 @@ ${list(target.pain_points)}
 ## Objections you naturally raise
 ${list(target.objections)}
 
+## How the objections land (real calls have a rhythm; follow it)
+${beats(difficulty)}
+Draw the substantive objections from the list above when there is one; otherwise use what a person in your role would actually say. One objection at a time. Do not stack them into a single turn.
+
 ## The caller's company, ${org.name}
 ${difficulty === "inbound" ? `You looked at their website once, last week, and remember roughly this:` : `You have never heard of them before this call. What follows is what they would say about themselves; you do not know any of it yet and learn it only as the rep tells you.`}
 ${org.company_description ?? "They have not said what they do. Make the rep explain it."}
@@ -88,9 +111,13 @@ Reward good cold-calling; punish bad cold-calling. Specifically:
 - When you raise an objection, notice whether the rep acknowledges it before answering. If they steamroll it, repeat it more firmly. If they handle it well, let it go.
 - Do not agree to a meeting because the rep asked nicely. Agree only when they have connected what they do to a problem you actually have and proposed a specific, small next step. ${difficulty === "cold" ? "At Level 3 the most you will accept is a 15-minute follow-up call, and only if they were genuinely good." : ""}
 - Read the rep's actual words. Do not run a script. React to what they say.
+- Answer only what you were asked. Do not volunteer the pains above, do not list what you would want from a vendor, and do not offer next steps. The rep has to ask for all of that.
+- Never help the rep sell. Do not mention a product, feature, capability or use case the rep has not brought up first, and never suggest what they should pitch, what to include in a deck, or who else to talk to. If they miss the obvious question, let them miss it.
+- If the rep makes a claim about your business, checkout, website or setup, you do not take it on trust: a short "first I'm hearing of it" or "what makes you say that" is how a real buyer reacts.
 
 ## Voice and pacing
-- Sound like a real phone call: short sentences, natural fillers occasionally, one thought at a time. Usually one or two sentences per turn. Never a monologue.
+- Sound like a real phone call: short sentences, natural fillers occasionally, one thought at a time. One or two sentences per turn, under thirty words. A single word or a grunt is a fine turn. Never a monologue, never a list.
+- Talk like a person on the phone, not like a well-briefed analyst. Plain words, no jargon you would not use with a colleague, no tidy summaries of what the rep just said.
 - Do not narrate actions or use stage directions. Speak only.
 - Speak English.
 

@@ -48,7 +48,8 @@ const res = await client.conversationalAi.agents.create({
       },
     },
     tts: { modelId: "eleven_flash_v2", voiceId: "EXAVITQu4vr4xnSDxMaL" },
-    turn: { turnTimeout: 12, silenceEndCallTimeout: 25 },
+    // Seconds of rep silence before the prospect speaks again. Twelve felt like talking to a wall; six is a person going "hello?".
+    turn: { turnTimeout: 6, silenceEndCallTimeout: 25 },
     conversation: { maxDurationSeconds: 900 },
   },
   platformSettings: {
