@@ -47,8 +47,12 @@ export function rollMood(difficulty: Difficulty, rand = Math.random): Mood {
   return pool[0]!;
 }
 
-/** Share of cold calls that an assistant or receptionist answers first. Other levels never have one. */
-const GATEKEEPER_RATE: Record<Difficulty, number> = { warm: 0, inbound: 0, cold: 0.35 };
+/**
+ * Share of cold calls that an assistant or receptionist answers first. Other levels never have one.
+ * Off until GATEKEEPER_RATE is set, because the gatekeeper's voice only exists once `pnpm elevenlabs:update`
+ * has registered it on the agent; without that the tags would be read aloud in the prospect's voice.
+ */
+const GATEKEEPER_RATE: Record<Difficulty, number> = { warm: 0, inbound: 0, cold: Math.min(1, Math.max(0, Number(process.env.GATEKEEPER_RATE ?? 0))) };
 
 export function rollGatekeeper(difficulty: Difficulty, rand = Math.random) {
   return rand() < GATEKEEPER_RATE[difficulty];

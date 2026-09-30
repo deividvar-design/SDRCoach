@@ -52,6 +52,7 @@ async function update(modelId) {
 try {
   await update(wantedModel);
   console.log(`Agent ${agentId} updated: tts ${wantedModel}, turn timeout 6s, ${supportedVoices.length} gatekeeper voices.`);
+  console.log("Now set GATEKEEPER_RATE=0.35 in Vercel and redeploy to turn gatekeepers on.");
   if (wantedModel !== "eleven_flash_v2") console.log(`Set ELEVENLABS_TTS_MODEL=${wantedModel} in Vercel so the prompt uses delivery tags.`);
 } catch (err) {
   const msg = err?.body?.detail?.message ?? err?.message ?? String(err);
