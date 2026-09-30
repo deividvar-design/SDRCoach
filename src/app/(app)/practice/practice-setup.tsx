@@ -84,7 +84,7 @@ export function PracticeSetup({
             <Phone /> Dial
           </Button>
         </form>
-        <p className="text-muted-foreground text-center text-xs">Headset recommended. You’ll be recorded.</p>
+        <p className="text-muted-foreground text-center text-xs">Headset recommended.</p>
       </aside>
     </div>
   );
