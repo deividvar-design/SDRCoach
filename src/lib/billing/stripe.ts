@@ -15,7 +15,7 @@ export function stripe() {
 }
 
 export type PaidPlanId = "starter" | "team";
-export type Interval = "month" | "year";
+export type Interval = "month" | "quarter" | "year";
 
 export interface PriceCatalog {
   /** price id -> plan + interval */
@@ -28,8 +28,10 @@ export interface PriceCatalog {
 export function priceCatalog(env: NodeJS.ProcessEnv = process.env): PriceCatalog {
   const table: [PaidPlanId, Interval, string | undefined][] = [
     ["starter", "month", env.STRIPE_PRICE_STARTER_MONTHLY],
+    ["starter", "quarter", env.STRIPE_PRICE_STARTER_QUARTERLY],
     ["starter", "year", env.STRIPE_PRICE_STARTER_ANNUAL],
     ["team", "month", env.STRIPE_PRICE_TEAM_MONTHLY],
+    ["team", "quarter", env.STRIPE_PRICE_TEAM_QUARTERLY],
     ["team", "year", env.STRIPE_PRICE_TEAM_ANNUAL],
   ];
   const byPrice: PriceCatalog["byPrice"] = {};

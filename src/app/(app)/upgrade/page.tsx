@@ -50,7 +50,7 @@ export default async function UpgradePage({ searchParams }: PageProps<"/upgrade"
           <form action={openBillingPortal}><Button type="submit">Manage billing</Button></form>
         </div>
       ) : (
-        <PlanGrid orgName={viewer.org.name} canBuy={isManager} checkoutAction={startCheckout} defaultSeats={Math.max(2, memberCount)} billingReady={stripeConfigured()} />
+        <PlanGrid orgName={viewer.org.name} canBuy={isManager} checkoutAction={startCheckout} defaultSeats={Math.max(1, memberCount)} billingReady={stripeConfigured()} intervals={["month", "quarter", "year"]} />
       )}
       <p className="text-muted-foreground text-sm">Secure card checkout by Stripe. Change seats, switch plans, update your card or cancel any time from Settings.</p>
     </div>

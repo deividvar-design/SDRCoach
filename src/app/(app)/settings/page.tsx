@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { leaveWorkspace } from "./actions";
 import { openBillingPortal } from "../upgrade/actions";
 
-import { PLANS } from "@/lib/billing/plans";
+import { INTERVALS, PLANS } from "@/lib/billing/plans";
 import { loadTrialStatus } from "@/lib/billing/usage";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -51,7 +51,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
             ) : (
               <>
                 <span className="text-foreground">{PLANS.find((p) => p.id === viewer.org.plan)?.name ?? viewer.org.plan}</span> plan, {viewer.org.seat_limit} seats
-                {viewer.org.billing_interval ? `, billed ${viewer.org.billing_interval === "year" ? "yearly" : "monthly"}` : ""}
+                {viewer.org.billing_interval ? `, ${INTERVALS[viewer.org.billing_interval].billed.toLowerCase()}` : ""}
                 {viewer.org.current_period_end ? `, ${viewer.org.cancel_at_period_end ? "ends" : "renews"} ${fmtDate(viewer.org.current_period_end)}` : ""}
                 {viewer.org.subscription_status === "past_due" && <span className="text-destructive">, payment failed, please update your card</span>}
                 . {usage.label}
@@ -105,11 +105,11 @@ async function periodUsage(org: Awaited<ReturnType<typeof requireViewer>>["org"]
   const plan = PLANS.find((p) => p.id === org.plan);
   const end = org.current_period_end ? new Date(org.current_period_end) : null;
   if (!plan?.callsPerSeat || !end) return { label: "" };
+  const months = org.billing_interval ? INTERVALS[org.billing_interval].months : 1;
   const start = new Date(end);
-  if (org.billing_interval === "year") start.setUTCFullYear(start.getUTCFullYear() - 1);
-  else start.setUTCMonth(start.getUTCMonth() - 1);
+  start.setUTCMonth(start.getUTCMonth() - months);
   const supabase = await createClient();
   const { count } = await supabase.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null).neq("status", "failed").gte("started_at", start.toISOString());
-  const included = plan.callsPerSeat * org.seat_limit * (org.billing_interval === "year" ? 12 : 1);
+  const included = plan.callsPerSeat * org.seat_limit * months;
   return { label: `${count ?? 0} of ${included} included calls used this period.` };
 }

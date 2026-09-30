@@ -10,7 +10,7 @@ import { PLANS } from "@/lib/billing/plans";
 
 const Body = z.object({
   plan: z.enum(["starter", "team"]),
-  interval: z.enum(["month", "year"]),
+  interval: z.enum(["month", "quarter", "year"]),
   seats: z.coerce.number().int().min(1).max(500),
 });
 

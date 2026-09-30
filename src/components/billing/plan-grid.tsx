@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PLANS, SALES_EMAIL, TRIAL } from "@/lib/billing/plans";
+import { INTERVALS, PLANS, SALES_EMAIL, TRIAL, pricePerSeat, type BillingInterval } from "@/lib/billing/plans";
 import { Button } from "@/components/ui/button";
 
 export function PlanGrid({
@@ -14,6 +14,7 @@ export function PlanGrid({
   checkoutAction,
   defaultSeats = 3,
   billingReady = false,
+  intervals = ["month", "year"],
 }: {
   orgName?: string;
   canBuy?: boolean;
@@ -22,31 +23,36 @@ export function PlanGrid({
   checkoutAction?: (formData: FormData) => void | Promise<void>;
   defaultSeats?: number;
   billingReady?: boolean;
+  /** Billing intervals to offer. The public page shows monthly and annual; the app adds quarterly. */
+  intervals?: BillingInterval[];
 }) {
-  const [annual, setAnnual] = useState(true);
+  const [interval, setInterval] = useState<BillingInterval>("year");
   const [seats, setSeats] = useState(defaultSeats);
+  const meta = INTERVALS[interval];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-center gap-3 text-sm">
-        <button type="button" onClick={() => setAnnual(false)} className={cn("cursor-pointer", !annual ? "font-medium" : "text-muted-foreground")}>Monthly</button>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={annual}
-          onClick={() => setAnnual((a) => !a)}
-          className={cn("relative h-6 w-11 rounded-full transition-colors", annual ? "bg-foreground" : "bg-muted")}
-        >
-          <span className={cn("bg-background absolute top-0.5 size-5 rounded-full shadow transition-transform", annual ? "left-0.5 translate-x-5" : "left-0.5")} />
-        </button>
-        <button type="button" onClick={() => setAnnual(true)} className={cn("cursor-pointer", annual ? "font-medium" : "text-muted-foreground")}>
-          Annual <span className="text-success ml-1 text-xs">save 20%</span>
-        </button>
+      <div className="flex justify-center">
+        <div className="bg-muted inline-flex rounded-full p-1 text-sm" role="radiogroup" aria-label="Billing interval">
+          {intervals.map((i) => (
+            <button
+              key={i}
+              type="button"
+              role="radio"
+              aria-checked={interval === i}
+              onClick={() => setInterval(i)}
+              className={cn("cursor-pointer rounded-full px-4 py-1.5 transition-colors", interval === i ? "bg-background shadow-sm font-medium" : "text-muted-foreground hover:text-foreground")}
+            >
+              {INTERVALS[i].label}
+              {INTERVALS[i].saving && <span className={cn("ml-1.5 text-xs", interval === i ? "text-success" : "")}>{INTERVALS[i].saving}</span>}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
         {PLANS.map((p) => {
-          const price = annual ? p.annualPerSeat : p.monthlyPerSeat;
+          const price = pricePerSeat(p, interval);
           const subject = encodeURIComponent(`100 Dials ${p.name}${orgName ? ` for ${orgName}` : ""}`);
           const href = p.id === "enterprise" || !marketing ? `mailto:${SALES_EMAIL}?subject=${subject}` : "/signup";
           return (
@@ -79,7 +85,7 @@ export function PlanGrid({
               {checkoutAction && p.id !== "enterprise" && canBuy ? (
                 <form action={checkoutAction} className="mt-6 space-y-3">
                   <input type="hidden" name="plan" value={p.id} />
-                  <input type="hidden" name="interval" value={annual ? "year" : "month"} />
+                  <input type="hidden" name="interval" value={interval} />
                   <label className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Seats</span>
                     <input
@@ -94,8 +100,8 @@ export function PlanGrid({
                   </label>
                   {price != null && (
                     <div className="text-muted-foreground flex justify-between text-xs">
-                      <span>{annual ? "Billed yearly" : "Billed monthly"}</span>
-                      <span className="font-mono tabular">${(price * Math.max(seats, p.minSeats) * (annual ? 12 : 1)).toLocaleString()} / {annual ? "year" : "month"}</span>
+                      <span>{meta.billed}</span>
+                      <span className="font-mono tabular">${(price * Math.max(seats, p.minSeats) * meta.months).toLocaleString()} / {interval === "year" ? "year" : interval === "quarter" ? "quarter" : "month"}</span>
                     </div>
                   )}
                   <Button type="submit" className="w-full" variant={p.highlight ? "default" : "outline"} disabled={!billingReady}>

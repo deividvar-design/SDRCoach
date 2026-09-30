@@ -21,9 +21,26 @@ if (!key) {
 const stripe = new Stripe(key);
 
 const PLANS = [
-  { id: "starter", name: "100 Dials Starter", monthly: 5900, annual: 4700, calls: 40 },
-  { id: "team", name: "100 Dials Team", monthly: 15900, annual: 12700, calls: 100 },
+  { id: "starter", name: "100 Dials Starter", monthly: 5900, quarterly: 5300, annual: 4700, calls: 40 },
+  { id: "team", name: "100 Dials Team", monthly: 15900, quarterly: 14300, annual: 12700, calls: 100 },
 ];
+
+// `--quarterly-only`: products already exist (created by an earlier run); add the quarterly price to each and stop.
+if (process.argv.includes("--quarterly-only")) {
+  const lines = [];
+  const { data: products } = await stripe.products.list({ active: true, limit: 100 });
+  for (const p of PLANS) {
+    const product = products.find((x) => x.metadata?.plan === p.id);
+    if (!product) {
+      console.error(`No active product with metadata.plan=${p.id}. Run without --quarterly-only to create everything.`);
+      process.exit(1);
+    }
+    const quarterly = await stripe.prices.create({ product: product.id, unit_amount: p.quarterly * 3, currency: "usd", recurring: { interval: "month", interval_count: 3 }, nickname: `${p.id} quarterly`, metadata: { plan: p.id, interval: "quarter" } });
+    lines.push(`STRIPE_PRICE_${p.id.toUpperCase()}_QUARTERLY=${quarterly.id}`);
+  }
+  console.log(`\nAdd to your environment:\n${lines.join("\n")}\n\nThen in Billing → Customer portal, edit the default configuration and add the quarterly prices to the products customers may switch between.`);
+  process.exit(0);
+}
 
 const out = [];
 const portalProducts = [];
@@ -34,9 +51,10 @@ for (const p of PLANS) {
     metadata: { plan: p.id },
   });
   const monthly = await stripe.prices.create({ product: product.id, unit_amount: p.monthly, currency: "usd", recurring: { interval: "month" }, nickname: `${p.id} monthly`, metadata: { plan: p.id, interval: "month" } });
+  const quarterly = await stripe.prices.create({ product: product.id, unit_amount: p.quarterly * 3, currency: "usd", recurring: { interval: "month", interval_count: 3 }, nickname: `${p.id} quarterly`, metadata: { plan: p.id, interval: "quarter" } });
   const annual = await stripe.prices.create({ product: product.id, unit_amount: p.annual * 12, currency: "usd", recurring: { interval: "year" }, nickname: `${p.id} annual`, metadata: { plan: p.id, interval: "year" } });
-  out.push(`STRIPE_PRICE_${p.id.toUpperCase()}_MONTHLY=${monthly.id}`, `STRIPE_PRICE_${p.id.toUpperCase()}_ANNUAL=${annual.id}`);
-  portalProducts.push({ product: product.id, prices: [monthly.id, annual.id] });
+  out.push(`STRIPE_PRICE_${p.id.toUpperCase()}_MONTHLY=${monthly.id}`, `STRIPE_PRICE_${p.id.toUpperCase()}_QUARTERLY=${quarterly.id}`, `STRIPE_PRICE_${p.id.toUpperCase()}_ANNUAL=${annual.id}`);
+  portalProducts.push({ product: product.id, prices: [monthly.id, quarterly.id, annual.id] });
 }
 
 const portal = await stripe.billingPortal.configurations.create({
