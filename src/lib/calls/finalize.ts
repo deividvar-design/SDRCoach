@@ -11,6 +11,7 @@ import { loadOrgDigests } from "@/lib/knowledge/digest";
 import type { CallOutcome, TranscriptTurn } from "@/types/database";
 import { trialStatus } from "@/lib/billing/trial";
 import { countTrialCalls } from "@/lib/billing/usage";
+import { track } from "@vercel/analytics/server";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { recordAnthropicUsage, recordVoiceUsage } from "@/lib/usage/record";
 
@@ -204,11 +205,14 @@ export async function finalizeCall(sessionId: string) {
   }
 }
 
-/** Trial emails: after this call, how many are left? Runs once per call, when it is first collected. */
+/** Funnel milestones and trial emails: after this call, where does the workspace stand? Runs once per call, when it is first collected. */
 async function afterCollect(db: Db, orgId: string) {
   const { data: orgRow } = await db.from("organizations").select("plan, trial_call_limit, trial_ends_at").eq("id", orgId).single();
+  const connected = await countTrialCalls(db, orgId);
+  if (connected === 1) await track("first_call", { plan: orgRow?.plan ?? "" }).catch(() => {});
+  if (connected === 5) await track("fifth_call", { plan: orgRow?.plan ?? "" }).catch(() => {});
   if (orgRow?.plan !== "trial") return;
-  const t = trialStatus(orgRow, await countTrialCalls(db, orgId));
+  const t = trialStatus(orgRow, connected);
   if (t.callsLeft <= 2 && t.callsLeft > 0) await sendLifecycle(orgId, "two_calls_left").catch((err) => reportError(err, { where: "trial_email", orgId }));
   if (t.callsLeft === 0) await sendLifecycle(orgId, "trial_ended", { reason: "calls" }).catch((err) => reportError(err, { where: "trial_email", orgId }));
 }

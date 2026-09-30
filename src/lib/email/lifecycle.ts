@@ -4,7 +4,7 @@ import { emailConfigured, sendMail } from "./send";
 import { templates } from "./templates";
 import { PLANS } from "@/lib/billing/plans";
 
-export type LifecycleKind = "welcome" | "nudge_day3" | "two_calls_left" | "trial_ended" | "subscription_started" | "payment_failed" | "subscription_canceled" | `weekly_digest:${string}`;
+export type LifecycleKind = "welcome" | "nudge_day1" | "nudge_day3" | "three_days_left" | "two_calls_left" | "trial_ended" | "subscription_started" | "payment_failed" | "subscription_canceled" | `weekly_digest:${string}`;
 
 /** Owner's address and first name. */
 export async function orgOwner(orgId: string) {
@@ -31,7 +31,7 @@ export async function orgManagers(orgId: string, ownerOnly = false) {
 }
 
 /** Sends a lifecycle email at most once per org (and per user when given). */
-export async function sendLifecycle(orgId: string, kind: LifecycleKind, opts: { userId?: string; reason?: "calls" | "time"; to?: { userId: string; email: string; firstName: string }; digest?: import("@/lib/stats/weekly-digest").WeeklyDigest } = {}) {
+export async function sendLifecycle(orgId: string, kind: LifecycleKind, opts: { userId?: string; reason?: "calls" | "time"; to?: { userId: string; email: string; firstName: string }; digest?: import("@/lib/stats/weekly-digest").WeeklyDigest; trial?: { calls: number; daysLeft: number } } = {}) {
   // Without a provider nothing is recorded, so the email still goes out once one is configured.
   if (!emailConfigured()) return { sent: false, reason: "email not configured" };
 
@@ -50,7 +50,9 @@ export async function sendLifecycle(orgId: string, kind: LifecycleKind, opts: { 
   const base = { firstName: owner.firstName, orgName: org.name };
   const mail =
     kind === "welcome" ? templates.welcome(base)
+    : kind === "nudge_day1" ? templates.nudgeDay1(base)
     : kind === "nudge_day3" ? templates.nudge(base)
+    : kind === "three_days_left" ? templates.threeDaysLeft({ ...base, calls: opts.trial?.calls ?? 0, daysLeft: opts.trial?.daysLeft ?? 3 })
     : kind === "two_calls_left" ? templates.twoCallsLeft(base)
     : kind === "trial_ended" ? templates.trialEnded({ ...base, reason: opts.reason ?? "time" })
     : kind === "subscription_started" ? templates.subscriptionStarted({ ...base, plan: PLANS.find((p) => p.id === org.plan)?.name ?? org.plan, seats: org.seat_limit })

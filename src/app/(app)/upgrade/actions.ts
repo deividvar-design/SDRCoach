@@ -7,6 +7,7 @@ import { priceCatalog, stripe, stripeConfigured } from "@/lib/billing/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SITE } from "@/lib/site";
 import { PLANS } from "@/lib/billing/plans";
+import { track } from "@vercel/analytics/server";
 
 const Body = z.object({
   plan: z.enum(["starter", "team"]),
@@ -26,6 +27,7 @@ export async function startCheckout(formData: FormData) {
   if (parsed.data.seats < minSeats) redirect("/upgrade?error=invalid");
   const price = priceCatalog().priceFor(parsed.data.plan, parsed.data.interval);
   if (!price) redirect("/upgrade?error=price_missing");
+  await track("checkout_start", { plan: parsed.data.plan, interval: parsed.data.interval, currency: parsed.data.currency, seats: parsed.data.seats }).catch(() => {});
 
   const db = createAdminClient();
   let customer = viewer.org.stripe_customer_id;

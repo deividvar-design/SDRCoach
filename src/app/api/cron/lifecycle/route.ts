@@ -19,7 +19,8 @@ function authorized(header: string | null, secret: string) {
 
 /**
  * Daily (Vercel cron). Emails first, then the sweep, so a slow transcript fetch never starves the mail:
- *  - day-3 nudge for trial workspaces that have not made a call
+ *  - day-1 and day-3 nudges for trial workspaces that have not made a call
+ *  - three-days-left note to trial workspaces without a subscription
  *  - trial-ended notice for workspaces whose 14 days ran out in the last two weeks
  *  - repair of sessions stuck between states
  * All idempotent (email_log, finalize claim).
@@ -32,17 +33,25 @@ export async function GET(request: Request) {
 
   const db = createAdminClient();
   const now = Date.now();
-  const results = { nudged: 0, ended: 0, digests: 0, swept: { failed: 0, finalized: 0 } };
+  const results = { nudged_day1: 0, nudged: 0, three_days: 0, ended: 0, digests: 0, swept: { failed: 0, finalized: 0 } };
 
-  const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at").eq("plan", "trial").gt("trial_ends_at", new Date(now - 14 * DAY).toISOString()).limit(1000);
+  const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at, stripe_subscription_id").eq("plan", "trial").gt("trial_ends_at", new Date(now - 14 * DAY).toISOString()).limit(1000);
   for (const org of trials ?? []) {
     const ageDays = (now - new Date(org.created_at).getTime()) / DAY;
-    if (ageDays >= 3 && ageDays < 10) {
+    const daysLeft = Math.ceil((new Date(org.trial_ends_at).getTime() - now) / DAY);
+    // The cron runs once a day, so "a day old" means anything past twenty hours; the day-3 email is a separate kind.
+    if ((ageDays >= 0.85 && ageDays < 3) || (ageDays >= 3 && ageDays < 10)) {
       const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id);
       if ((count ?? 0) === 0) {
-        const r = await sendLifecycle(org.id, "nudge_day3").catch((err) => (reportError(err, { where: "cron_nudge", orgId: org.id }), { sent: false }));
-        if (r.sent) results.nudged += 1;
+        const kind = ageDays < 3 ? "nudge_day1" : "nudge_day3";
+        const r = await sendLifecycle(org.id, kind).catch((err) => (reportError(err, { where: `cron_${kind}`, orgId: org.id }), { sent: false }));
+        if (r.sent) results[kind === "nudge_day1" ? "nudged_day1" : "nudged"] += 1;
       }
+    }
+    if (daysLeft > 0 && daysLeft <= 3 && !org.stripe_subscription_id) {
+      const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null);
+      const r = await sendLifecycle(org.id, "three_days_left", { trial: { calls: count ?? 0, daysLeft } }).catch((err) => (reportError(err, { where: "cron_three_days", orgId: org.id }), { sent: false }));
+      if (r.sent) results.three_days += 1;
     }
     if (new Date(org.trial_ends_at).getTime() <= now) {
       const r = await sendLifecycle(org.id, "trial_ended").catch((err) => (reportError(err, { where: "cron_trial_ended", orgId: org.id }), { sent: false }));

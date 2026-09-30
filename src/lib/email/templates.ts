@@ -49,10 +49,32 @@ export const templates = {
     return { subject: `${p.inviterName} invited you to ${p.orgName} on ${SITE.name}`, html: layout(`Join ${p.orgName}.`, lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
   },
 
+  nudgeDay1(p: { firstName: string; orgName: string }): Rendered {
+    const cta = { label: "Make the first call", href: absoluteUrl("/practice") };
+    const lines = [
+      `Hi ${p.firstName},`,
+      `${p.orgName}'s workspace has been open for a day and no call has been made yet. Nothing is wrong, it just means the interesting part hasn't started.`,
+      "Pick any prospect, put on a headset and dial. Two minutes on the call, one minute for the report. Nobody scores well on the first one, and that's the point of a practice line.",
+    ];
+    return { subject: "Your first prospect is still waiting", html: layout("The first dial is the whole trial.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
   nudge(p: { firstName: string }): Rendered {
     const cta = { label: "Dial a Level 1 persona", href: absoluteUrl("/practice") };
     const lines = [`Hi ${p.firstName},`, "Your trial has been open for three days and nobody has made a call yet. The first one takes two minutes and the report lands a minute after.", "Level 1 is friendly. Nobody scores well on their first dial, which is the point."];
     return { subject: "Two minutes for your first practice call", html: layout("The first call is the hardest. It's also two minutes.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  threeDaysLeft(p: { firstName: string; orgName: string; calls: number; daysLeft: number }): Rendered {
+    const cta = { label: "Pick a plan", href: absoluteUrl("/upgrade") };
+    const made = p.calls === 0 ? "no practice calls yet" : `${p.calls} practice call${p.calls === 1 ? "" : "s"}`;
+    const lines = [
+      `Hi ${p.firstName},`,
+      `${p.orgName}'s trial ends in ${p.daysLeft} day${p.daysLeft === 1 ? "" : "s"}. The team has made ${made}. Everything stays: targets, recordings, scores and the coaching view.`,
+      "Plans are per seat, monthly, quarterly or yearly, and you can change seats any time. Every first payment carries a 30-day money-back guarantee, so trying the paid plan is as safe as the trial was.",
+      `Want a few more days instead? Reply to this email and say so.`,
+    ];
+    return { subject: `${p.daysLeft} day${p.daysLeft === 1 ? "" : "s"} left on ${p.orgName}'s trial`, html: layout("Three days left. Here's where you stand.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
   },
 
   twoCallsLeft(p: { firstName: string; orgName: string }): Rendered {

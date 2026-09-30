@@ -8,6 +8,7 @@ import { openBillingPortal, startCheckout } from "./actions";
 import { Button } from "@/components/ui/button";
 import { stripeConfigured } from "@/lib/billing/stripe";
 import { viewerCurrency } from "@/lib/billing/currency-server";
+import { track } from "@vercel/analytics/server";
 
 export const metadata = { title: "Upgrade" };
 
@@ -23,6 +24,7 @@ export default async function UpgradePage({ searchParams }: PageProps<"/upgrade"
   const currency = await viewerCurrency();
   const isManager = canManage(viewer.membership.role);
   const subscribed = Boolean(viewer.org.stripe_subscription_id) && viewer.org.plan !== "canceled";
+  await track("upgrade_view", { plan: viewer.org.plan, manager: isManager, calls_left: trial.onTrial ? trial.callsLeft : -1 }).catch(() => {});
 
   return (
     <div className="space-y-8">
