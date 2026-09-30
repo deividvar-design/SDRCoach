@@ -16,7 +16,7 @@ const FAQ = [
   { q: "Do unused calls roll over?", a: "No. Allowances reset monthly. Annual plans are billed up front with a 20% discount." },
   { q: "Can we use our own call recordings?", a: "Yes, on Team and above. Upload transcripts from Gong, Chorus or your dialer and prospects start sounding like your market within minutes." },
   { q: "Is our data used to train models?", a: "No. Your transcripts and recordings are used only to ground your own team's prospects and grading." },
-  { q: "Why work email only?", a: "SDRCoach is built for teams. The trial creates a workspace for your company domain, so one person can start and invite the rest." },
+  { q: "Why work email only?", a: "100 Dials is built for teams. The trial creates a workspace for your company domain, so one person can start and invite the rest." },
 ];
 
 export default function PricingPage() {

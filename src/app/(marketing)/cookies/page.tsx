@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/marketing/legal";
 import { CookieSettingsLink } from "@/components/analytics/cookie-banner";
 
-export const metadata: Metadata = { title: "Cookie policy", description: "Which cookies SDRCoach sets, what they do, and how to change your choice.", alternates: { canonical: "/cookies" } };
+export const metadata: Metadata = { title: "Cookie policy", description: "Which cookies 100 Dials sets, what they do, and how to change your choice.", alternates: { canonical: "/cookies" } };
 
 export default function CookiesPage() {
   return (

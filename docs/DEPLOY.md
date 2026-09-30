@@ -1,4 +1,4 @@
-# Deploying SDRCoach
+# Deploying 100 Dials
 
 Target: Vercel (Frankfurt) + Supabase (Ireland). Everything below is a one-time setup; after that, every push to `main` deploys.
 
@@ -15,6 +15,7 @@ Authentication → URL configuration:
 Authentication → Email: enable "Confirm email". The signup gate relies on it.
 
 ## 3. Stripe
+Statement descriptor: `100DIALS` (Settings → Business → Public details). The sandbox products created before the rename still say "SDRCoach"; rename them in the dashboard or re-run the setup script.
 1. `STRIPE_SECRET_KEY=sk_test_… pnpm stripe:setup` creates products, prices and a portal configuration and prints the `STRIPE_PRICE_*` lines. Repeat with the live key when going live.
 2. Developers → Webhooks → add endpoint `https://<domain>/api/webhooks/stripe` with events `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`. Put the signing secret in `STRIPE_WEBHOOK_SECRET`.
 3. Local testing: `stripe listen --forward-to localhost:3000/api/webhooks/stripe` prints a temporary signing secret.

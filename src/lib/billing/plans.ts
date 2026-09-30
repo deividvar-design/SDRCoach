@@ -58,4 +58,4 @@ export const PLANS: Plan[] = [
 
 export const TRIAL = { calls: 10, days: 14 } as const;
 
-export const SALES_EMAIL = process.env.NEXT_PUBLIC_SALES_EMAIL ?? "hello@sdrcoach.io";
+export const SALES_EMAIL = process.env.NEXT_PUBLIC_SALES_EMAIL ?? "hello@100dials.com";

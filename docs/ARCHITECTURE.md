@@ -1,4 +1,4 @@
-# SDRCoach architecture
+# 100 Dials architecture
 
 ## The product in one paragraph
 A rep picks a **target** (a prospect persona their team actually calls), a **level** (warm / inbound / cold), and dials. ElevenLabs runs a live, interruptible voice conversation as the prospect. When the call ends, the transcript is stored and Claude grades it on a fixed rubric, producing a report the rep and their manager can read. Company call transcripts uploaded to the **knowledge base** ground both the persona (how prospects in this market talk and object) and the grader (what this team's playbook rewards).

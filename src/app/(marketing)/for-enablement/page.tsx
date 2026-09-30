@@ -18,7 +18,7 @@ export default function ForEnablementPage() {
           <Eyebrow>For sales enablement</Eyebrow>
           <h1 className="font-display mt-4 text-5xl text-balance md:text-6xl">Your call library is a training ground. Use it.</h1>
           <p className="text-muted-foreground mt-6 text-lg text-balance">
-            You have thousands of recorded calls and one rubric in a slide deck. SDRCoach turns the recordings into prospects that talk like your market and turns the rubric into a score on every practice call, for every rep, every week.
+            You have thousands of recorded calls and one rubric in a slide deck. 100 Dials turns the recordings into prospects that talk like your market and turns the rubric into a score on every practice call, for every rep, every week.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>
@@ -31,7 +31,7 @@ export default function ForEnablementPage() {
         <FeatureRow
           eyebrow="Grounding"
           title="Upload a quarter of calls. Prospects start sounding like your buyers."
-          body={<><p>Drop in CSV exports from Gong, Chorus, Fireflies or your dialer. SDRCoach extracts the objections your market actually raises, in the phrasing it uses, plus tone and the moves that booked meetings.</p><p>That digest, never the raw transcript, is injected into every persona and into the grader. Your reps practise against your market's real pushback.</p></>}
+          body={<><p>Drop in CSV exports from Gong, Chorus, Fireflies or your dialer. 100 Dials extracts the objections your market actually raises, in the phrasing it uses, plus tone and the moves that booked meetings.</p><p>That digest, never the raw transcript, is injected into every persona and into the grader. Your reps practise against your market's real pushback.</p></>}
           image="/screens/knowledge.png"
           alt="Knowledge page with uploaded transcripts and their digest status"
         />

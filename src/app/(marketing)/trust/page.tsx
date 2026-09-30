@@ -5,7 +5,7 @@ import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Trust & security",
-  description: "How SDRCoach handles your call recordings, transcripts and team data: EU hosting, per-tenant isolation, no model training on your data, and deletion on request.",
+  description: "How 100 Dials handles your call recordings, transcripts and team data: EU hosting, per-tenant isolation, no model training on your data, and deletion on request.",
   alternates: { canonical: "/trust" },
 };
 
@@ -33,7 +33,7 @@ export default function TrustPage() {
           <Eyebrow>Trust & security</Eyebrow>
           <h1 className="font-display mt-4 text-5xl text-balance md:text-6xl">Your reps' voices and your call library. Handled carefully.</h1>
           <p className="text-muted-foreground mt-6 text-lg text-balance">
-            SDRCoach processes voice recordings and sales transcripts, which is sensitive data. This page explains exactly what happens to it. Questions go to <a href={`mailto:${SITE.company.securityEmail}`} className="underline underline-offset-4">{SITE.company.securityEmail}</a>.
+            100 Dials processes voice recordings and sales transcripts, which is sensitive data. This page explains exactly what happens to it. Questions go to <a href={`mailto:${SITE.company.securityEmail}`} className="underline underline-offset-4">{SITE.company.securityEmail}</a>.
           </p>
         </div>
       </Section>

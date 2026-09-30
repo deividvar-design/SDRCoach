@@ -20,7 +20,7 @@ brand, read that file's structure and substitute its values - touch nothing else
 > The single most important habit: **the color part is computable, so compute it.**
 > Never eyeball whether a palette is colorblind-safe - run `scripts/validate_palette.js`.
 
-## SDRCoach note
+## 100 Dials note
 
 This project's tokens live in `src/app/globals.css` (oklch, light and dark). Chart hues should be
 stepped from those ramps, with `--signal` reserved for live states and the status colours

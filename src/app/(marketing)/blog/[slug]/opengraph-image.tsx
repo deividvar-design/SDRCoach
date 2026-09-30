@@ -7,5 +7,5 @@ export const contentType = "image/png";
 export default async function OgImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = getPost(slug);
-  return ogCard({ title: post?.title ?? "SDRCoach blog", kicker: "From the SDRCoach blog", footer: post ? `${post.readingMinutes} min read` : undefined });
+  return ogCard({ title: post?.title ?? "100 Dials blog", kicker: "From the 100 Dials blog", footer: post ? `${post.readingMinutes} min read` : undefined });
 }

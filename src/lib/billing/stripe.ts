@@ -10,7 +10,7 @@ export function stripeConfigured() {
 export function stripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("STRIPE_SECRET_KEY is not set");
-  client ??= new Stripe(key, { appInfo: { name: "SDRCoach" } });
+  client ??= new Stripe(key, { appInfo: { name: "100 Dials" } });
   return client;
 }
 

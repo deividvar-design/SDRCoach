@@ -9,15 +9,15 @@ export function ogCard({ title, kicker, footer }: { title: string; kicker?: stri
     (
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: 72, background: "#f7f5f0", color: "#1c1b19", fontFamily: "serif" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 30 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: "#1c1b19", display: "flex", alignItems: "center", justifyContent: "center", color: "#f7f5f0", fontSize: 18, fontWeight: 700, fontFamily: "sans-serif" }}>SC</div>
-          {SITE.name}
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: "#1c1b19", display: "flex", alignItems: "center", justifyContent: "center", color: "#f7f5f0", fontSize: 15, fontWeight: 700, fontFamily: "sans-serif" }}>100</div>
+          <div style={{ display: "flex", flexDirection: "column" }}><span>{SITE.name}</span><span style={{ fontSize: 16, color: "#6b665c", fontFamily: "sans-serif" }}>{SITE.descriptor}</span></div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {kicker && <div style={{ fontSize: 26, color: "#6b665c", fontFamily: "sans-serif" }}>{kicker}</div>}
           <div style={{ fontSize: title.length > 60 ? 64 : 84, lineHeight: 1.04, letterSpacing: -2 }}>{title}</div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 22, color: "#6b665c", fontFamily: "sans-serif" }}>
-          <span>{footer ?? "AI cold-call training for SDR teams"}</span>
+          <span>{footer ?? "Cold Call Coach for SDR teams"}</span>
           <span style={{ color: "#2f4fd8" }}>● live</span>
         </div>
       </div>

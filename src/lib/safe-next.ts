@@ -3,8 +3,8 @@ export function safeNext(value: FormDataEntryValue | null) {
   const next = typeof value === "string" ? value : "";
   if (!next.startsWith("/")) return "/dashboard";
   try {
-    const u = new URL(next, "http://sdrcoach.local");
-    if (u.origin !== "http://sdrcoach.local") return "/dashboard";
+    const u = new URL(next, "http://100dials.local");
+    if (u.origin !== "http://100dials.local") return "/dashboard";
     return `${u.pathname}${u.search}`;
   } catch {
     return "/dashboard";

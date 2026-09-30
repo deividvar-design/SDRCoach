@@ -6,8 +6,8 @@ export interface Consent {
 }
 
 const KEY = "cookie-consent";
-export const CONSENT_EVENT = "sdrcoach:consent";
-export const OPEN_EVENT = "sdrcoach:consent-open";
+export const CONSENT_EVENT = "100dials:consent";
+export const OPEN_EVENT = "100dials:consent-open";
 
 export function readConsent(): Consent | null {
   try {

@@ -14,11 +14,11 @@ const display = Instrument_Serif({ variable: "--font-display", subsets: ["latin"
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
-  title: { default: `${SITE.name}, ${SITE.tagline}`, template: `%s, ${SITE.name}` },
+  title: { default: `${SITE.name}, ${SITE.descriptor}`, template: `%s, ${SITE.name}` },
   description: SITE.description,
   applicationName: SITE.name,
   openGraph: { type: "website", siteName: SITE.name, locale: "en_US", url: SITE.url },
-  twitter: { card: "summary_large_image", site: "@sdrcoach" },
+  twitter: { card: "summary_large_image", site: "@100dials" },
   robots: INDEXABLE ? { index: true, follow: true } : { index: false, follow: false },
   alternates: { types: { "application/rss+xml": `${SITE.url}/blog/rss.xml` } },
 };

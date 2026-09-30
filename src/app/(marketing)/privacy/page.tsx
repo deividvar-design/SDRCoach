@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/marketing/legal";
 import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Privacy policy", description: "How SDRCoach collects, uses and protects personal data.", alternates: { canonical: "/privacy" } };
+export const metadata: Metadata = { title: "Privacy policy", description: "How 100 Dials collects, uses and protects personal data.", alternates: { canonical: "/privacy" } };
 
 export default function PrivacyPage() {
   const c = SITE.company;
   return (
-    <LegalPage title="Privacy policy" intro="This policy explains what personal data SDRCoach collects, why, how long we keep it, and the rights you have. It is written to be read, not skimmed.">
+    <LegalPage title="Privacy policy" intro="This policy explains what personal data 100 Dials collects, why, how long we keep it, and the rights you have. It is written to be read, not skimmed.">
       <h2>1. Who we are</h2>
-      <p>{c.legalName}, {c.address} (“SDRCoach”, “we”) operates the SDRCoach service at {SITE.url}. We are the data controller for the data described in sections 3 and 4, and a data processor for the customer content described in section 5. Contact: <a href={`mailto:${c.privacyEmail}`}>{c.privacyEmail}</a>.</p>
+      <p>{c.legalName}, {c.address} (“100 Dials”, “we”) operates the 100 Dials service at {SITE.url}. We are the data controller for the data described in sections 3 and 4, and a data processor for the customer content described in section 5. Contact: <a href={`mailto:${c.privacyEmail}`}>{c.privacyEmail}</a>.</p>
 
       <h2>2. Scope</h2>
       <p>This policy covers visitors to our website, people who sign up for a trial or subscription, and people who use the service as members of a customer workspace. Where your employer created the workspace, your employer decides why the service is used and is the controller for content you create in it; this policy describes our role as their processor.</p>

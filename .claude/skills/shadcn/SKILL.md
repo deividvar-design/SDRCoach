@@ -3,7 +3,7 @@ name: shadcn
 description: How UI primitives are built and used in this repo (shadcn/ui conventions on Radix, Tailwind v4, cva). Use when adding or changing anything under src/components/ui, when a page needs a component the kit lacks (sheet, popover, tooltip, checkbox, switch, command palette, toast variants), or when styling forms, tables, dialogs and menus so they match the rest of the app.
 ---
 
-# shadcn/ui conventions for SDRCoach
+# shadcn/ui conventions for 100 Dials
 
 The kit in `src/components/ui` is hand-written in the shadcn/ui style. There is no `components.json`
 and the shadcn registry is not reachable from CI, so **never run `npx shadcn add`**. Write the

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 type Theme = "system" | "light" | "dark";
 
-const EVENT = "sdrcoach:themechange";
+const EVENT = "100dials:themechange";
 
 function readTheme(): Theme {
   try {

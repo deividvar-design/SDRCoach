@@ -14,7 +14,7 @@ export function MarketingFooter() {
     <footer className="border-t">
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="space-y-3">
-          <Logo />
+          <Logo descriptor />
           <p className="text-muted-foreground max-w-xs text-sm">{SITE.description}</p>
           <p className="text-muted-foreground text-xs">
             {SITE.company.legalName}{SITE.company.address ? `, ${SITE.company.address}` : ""}

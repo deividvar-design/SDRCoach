@@ -1,4 +1,4 @@
--- SDRCoach initial schema
+-- 100 Dials initial schema
 -- Multi-tenant B2B: organizations -> memberships (owner | manager | rep)
 -- Core loop: rep runs a simulated cold call against a target persona at a difficulty level,
 -- ElevenLabs handles the live voice conversation, transcript is stored, Claude scores it.

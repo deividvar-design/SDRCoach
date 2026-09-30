@@ -34,7 +34,7 @@ export async function GET() {
   return new Response(JSON.stringify(body, null, 2), {
     headers: {
       "content-type": "application/json; charset=utf-8",
-      "content-disposition": `attachment; filename="sdrcoach-${viewer.org.slug}-${new Date().toISOString().slice(0, 10)}.json"`,
+      "content-disposition": `attachment; filename="100dials-${viewer.org.slug}-${new Date().toISOString().slice(0, 10)}.json"`,
       "cache-control": "no-store",
     },
   });

@@ -1,4 +1,4 @@
-# SDRCoach
+# 100 Dials
 
 > AI cold-call training for SDR teams. Reps dial a realistic AI prospect built from their own targets at three levels of difficulty; every call ends with the prospect's decision and a transcript, and a scored coach's review is one click away. Managers see skills by rep, the objections the team mishandles, a team leaderboard and a Monday digest.
 

@@ -1,5 +1,5 @@
 /**
- * One-time setup: creates the SDRCoach prospect agent in your ElevenLabs workspace.
+ * One-time setup: creates the 100 Dials prospect agent in your ElevenLabs workspace.
  * Every call overrides the prompt, first message and voice per target, so one agent serves all orgs.
  *
  *   ELEVENLABS_API_KEY=... node scripts/elevenlabs-setup.mjs
@@ -28,13 +28,13 @@ const llm = process.env.ELEVENLABS_AGENT_LLM ?? "claude-sonnet-5";
 const OUTCOMES = ["meeting_booked", "callback", "info_sent", "rejected", "hung_up", "incomplete"];
 
 const res = await client.conversationalAi.agents.create({
-  name: "SDRCoach Prospect",
+  name: "100 Dials Prospect",
   conversationConfig: {
     agent: {
       firstMessage: "Hello?",
       language: "en",
       prompt: {
-        prompt: "Placeholder. SDRCoach overrides this prompt on every call.",
+        prompt: "Placeholder. 100 Dials overrides this prompt on every call.",
         llm,
         temperature: 0.7,
         builtInTools: {

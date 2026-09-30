@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  SDRCoach design system: "ink & paper".
+  100 Dials design system: "ink & paper".
   Warm paper surfaces in the light theme, warm graphite in the dark theme, ink-coloured primary
   actions in both, and exactly one hot colour (signal) reserved for live/recording/dial states.
   Serif display type carries the character; numerals are always tabular mono.

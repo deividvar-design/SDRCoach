@@ -26,7 +26,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     <div className="flex min-h-dvh">
       <aside className="bg-sidebar sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r p-3 md:flex">
         <Link href="/dashboard" className="px-2 py-3">
-          <Logo />
+          <Logo descriptor />
         </Link>
         <div className="text-muted-foreground mb-4 truncate px-3 text-xs">{viewer.org.name}</div>
         <SidebarNav isManager={isManager} />

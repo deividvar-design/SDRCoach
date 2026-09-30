@@ -10,7 +10,7 @@ import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/market
 import { JsonLd, organizationLd, softwareLd } from "@/components/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: { absolute: "SDRCoach, AI cold-call training for SDR teams" },
+  title: { absolute: "100 Dials: Cold Call Coach for SDR teams" },
   description: "Reps dial realistic AI prospects built from your own targets. Every call ends with the prospect's decision and a transcript; a scored coach's review is one click away. Managers see where the team struggles and what prospects push back on. Free trial, work email only.",
   alternates: { canonical: "/" },
 };
@@ -112,7 +112,7 @@ export default function HomePage() {
             <Eyebrow>Grounded in your calls</Eyebrow>
             <H2>Prospects that sound like your market, not like a chatbot.</H2>
             <p className="text-muted-foreground mt-5">
-              Upload transcripts from Gong, Chorus or your dialer. SDRCoach extracts how your buyers talk, the objections they actually raise and the phrasing they use, then puts it in the prospect's mouth. The coach grades against your playbook, not a generic one.
+              Upload transcripts from Gong, Chorus or your dialer. 100 Dials extracts how your buyers talk, the objections they actually raise and the phrasing they use, then puts it in the prospect's mouth. The coach grades against your playbook, not a generic one.
             </p>
             <Button className="mt-6" variant="outline" asChild><Link href="/for-enablement">How enablement teams use it</Link></Button>
           </div>

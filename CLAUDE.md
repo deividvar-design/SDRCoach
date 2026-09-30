@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# SDRCoach
+# 100 Dials (formerly SDRCoach)
 
 B2B SaaS: SDRs practise cold calls against an AI prospect (ElevenLabs voice), get scored by Claude, managers track the team.
 

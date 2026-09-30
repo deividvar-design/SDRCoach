@@ -33,7 +33,7 @@ function read(slug: string): Post | null {
     description: String(data.description ?? ""),
     date: String(data.date ?? "1970-01-01"),
     updated: data.updated ? String(data.updated) : undefined,
-    author: String(data.author ?? "SDRCoach"),
+    author: String(data.author ?? "100 Dials"),
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
     readingMinutes: Math.max(1, Math.round(readingTime(content).minutes)),
     draft: Boolean(data.draft),

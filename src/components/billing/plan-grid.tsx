@@ -47,7 +47,7 @@ export function PlanGrid({
       <div className="grid gap-5 lg:grid-cols-3">
         {PLANS.map((p) => {
           const price = annual ? p.annualPerSeat : p.monthlyPerSeat;
-          const subject = encodeURIComponent(`SDRCoach ${p.name}${orgName ? ` for ${orgName}` : ""}`);
+          const subject = encodeURIComponent(`100 Dials ${p.name}${orgName ? ` for ${orgName}` : ""}`);
           const href = p.id === "enterprise" || !marketing ? `mailto:${SALES_EMAIL}?subject=${subject}` : "/signup";
           return (
             <div key={p.id} className={cn("bg-card relative flex flex-col rounded-2xl border p-6", p.highlight && "border-foreground shadow-lg")}>

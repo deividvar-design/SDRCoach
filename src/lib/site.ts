@@ -8,22 +8,24 @@ export function appUrl() {
 
 /** Single source of truth for site-wide identity. */
 export const SITE = {
-  name: "SDRCoach",
-  url: (process.env.NEXT_PUBLIC_APP_URL ?? "https://sdrcoach.io").replace(/\/$/, ""),
+  name: "100 Dials",
+  /** The one-line descriptor that sits under the name wherever the name stands alone. */
+  descriptor: "Cold Call Coach",
+  url: (process.env.NEXT_PUBLIC_APP_URL ?? "https://100dials.com").replace(/\/$/, ""),
   tagline: "Practice the call before it counts.",
   description: "AI cold-call training for SDR teams. Reps dial realistic AI prospects built from their own targets and get coached on every call.",
   company: {
     // Set NEXT_PUBLIC_LEGAL_NAME / NEXT_PUBLIC_LEGAL_ADDRESS once incorporated; until then the pages name the product only.
-    legalName: process.env.NEXT_PUBLIC_LEGAL_NAME ?? "SDRCoach",
+    legalName: process.env.NEXT_PUBLIC_LEGAL_NAME ?? "100 Dials",
     address: process.env.NEXT_PUBLIC_LEGAL_ADDRESS ?? "",
     country: process.env.NEXT_PUBLIC_LEGAL_COUNTRY ?? "the European Union",
-    email: process.env.NEXT_PUBLIC_SALES_EMAIL ?? "hello@sdrcoach.io",
-    privacyEmail: "privacy@sdrcoach.io",
-    securityEmail: "security@sdrcoach.io",
+    email: process.env.NEXT_PUBLIC_SALES_EMAIL ?? "hello@100dials.com",
+    privacyEmail: "privacy@100dials.com",
+    securityEmail: "security@100dials.com",
   },
   social: {
-    linkedin: "https://www.linkedin.com/company/sdrcoach",
-    x: "https://x.com/sdrcoach",
+    linkedin: "https://www.linkedin.com/company/100dials",
+    x: "https://x.com/100dials",
   },
   legalUpdated: "2026-09-26",
   /** Bumped when marketing pages change materially; the sitemap reports it instead of "now". */

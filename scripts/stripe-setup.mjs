@@ -1,5 +1,5 @@
 /**
- * One-time: creates the SDRCoach products and prices in the Stripe account the key belongs to
+ * One-time: creates the 100 Dials products and prices in the Stripe account the key belongs to
  * (run once with a test key, once with a live key) and prints the env lines to paste.
  *
  *   STRIPE_SECRET_KEY=sk_test_... node scripts/stripe-setup.mjs
@@ -21,8 +21,8 @@ if (!key) {
 const stripe = new Stripe(key);
 
 const PLANS = [
-  { id: "starter", name: "SDRCoach Starter", monthly: 9900, annual: 7900, calls: 40 },
-  { id: "team", name: "SDRCoach Team", monthly: 17900, annual: 14900, calls: 100 },
+  { id: "starter", name: "100 Dials Starter", monthly: 9900, annual: 7900, calls: 40 },
+  { id: "team", name: "100 Dials Team", monthly: 17900, annual: 14900, calls: 100 },
 ];
 
 const out = [];
@@ -40,7 +40,7 @@ for (const p of PLANS) {
 }
 
 const portal = await stripe.billingPortal.configurations.create({
-  business_profile: { headline: "SDRCoach billing" },
+  business_profile: { headline: "100 Dials billing" },
   features: {
     customer_update: { enabled: true, allowed_updates: ["email", "address", "tax_id"] },
     invoice_history: { enabled: true },
@@ -57,7 +57,7 @@ if (appUrl && process.argv.includes("--webhook")) {
   const endpoint = await stripe.webhookEndpoints.create({
     url: `${appUrl.replace(/\/$/, "")}/api/webhooks/stripe`,
     enabled_events: ["checkout.session.completed", "customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted", "invoice.payment_failed"],
-    description: "SDRCoach billing sync",
+    description: "100 Dials billing sync",
   });
   webhookLine = `STRIPE_WEBHOOK_SECRET=${endpoint.secret}`;
   out.push(webhookLine);

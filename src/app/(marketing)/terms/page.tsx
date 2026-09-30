@@ -3,14 +3,14 @@ import { LegalPage } from "@/components/marketing/legal";
 import { SITE } from "@/lib/site";
 import { TRIAL } from "@/lib/billing/plans";
 
-export const metadata: Metadata = { title: "Terms of service", description: "The agreement between SDRCoach and customers using the service.", alternates: { canonical: "/terms" } };
+export const metadata: Metadata = { title: "Terms of service", description: "The agreement between 100 Dials and customers using the service.", alternates: { canonical: "/terms" } };
 
 export default function TermsPage() {
   const c = SITE.company;
   return (
-    <LegalPage title="Terms of service" intro="These terms govern use of SDRCoach. By creating a workspace or accepting an invitation you agree to them on behalf of yourself and, where applicable, your employer.">
+    <LegalPage title="Terms of service" intro="These terms govern use of 100 Dials. By creating a workspace or accepting an invitation you agree to them on behalf of yourself and, where applicable, your employer.">
       <h2>1. The service</h2>
-      <p>SDRCoach (provided by {c.legalName}) is a training tool that lets sales representatives practise calls with AI-generated prospects and receive automated coaching. AI output is probabilistic: scores and feedback are guidance, not a measure of employment performance, and you should not use them as the sole basis for personnel decisions.</p>
+      <p>100 Dials (provided by {c.legalName}) is a training tool that lets sales representatives practise calls with AI-generated prospects and receive automated coaching. AI output is probabilistic: scores and feedback are guidance, not a measure of employment performance, and you should not use them as the sole basis for personnel decisions.</p>
 
       <h2>2. Accounts and workspaces</h2>
       <ul>

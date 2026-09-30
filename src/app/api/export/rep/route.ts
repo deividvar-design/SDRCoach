@@ -55,7 +55,7 @@ export async function GET(request: Request) {
   return new NextResponse(lines.join("\n"), {
     headers: {
       "content-type": "text/csv; charset=utf-8",
-      "content-disposition": `attachment; filename="sdrcoach-${name}-${new Date().toISOString().slice(0, 10)}.csv"`,
+      "content-disposition": `attachment; filename="100dials-${name}-${new Date().toISOString().slice(0, 10)}.csv"`,
       "cache-control": "no-store",
     },
   });
