@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { OrganizationForm, PasswordForm, ProfileForm, TeamVisibilityForm } from "./settings-forms";
 import { DangerZone } from "./danger-zone";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { leaveWorkspace } from "./actions";
 import { openBillingPortal } from "../upgrade/actions";
 
@@ -26,7 +27,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   const { checkout, error } = await searchParams;
   const viewer = await requireViewer();
   const fmtDate = await dateFormatter();
-  const usage = await periodUsage(viewer.org, viewer.userId);
+  const allowance = await loadAllowance(viewer.org, { userId: viewer.userId, isManager: true });
   const problem = typeof error === "string" ? (ERRORS[error] ?? "Something went wrong.") : null;
   const paidPlan = PLANS.find((p) => p.id === viewer.org.plan && p.prices);
   const subscribed = paidPlan
@@ -50,15 +51,14 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
           <h2 className="mb-1 font-medium">Plan</h2>
           <p className="text-muted-foreground mb-4 text-sm">
             {viewer.org.plan === "trial" ? (
-              <>Free trial with {viewer.org.seat_limit} {viewer.org.seat_limit === 1 ? "seat" : "seats"}. {usage.label}</>
+              <>Free trial with {viewer.org.seat_limit} {viewer.org.seat_limit === 1 ? "seat" : "seats"}.</>
             ) : (
               <>
                 <span className="text-foreground">{PLANS.find((p) => p.id === viewer.org.plan)?.name ?? viewer.org.plan}</span> plan, {viewer.org.seat_limit} seats
                 {viewer.org.billing_interval ? `, ${INTERVALS[viewer.org.billing_interval].billed.toLowerCase()}` : ""}
                 {viewer.org.billing_currency ? ` in ${viewer.org.billing_currency.toUpperCase()}` : ""}
                 {viewer.org.current_period_end ? `, ${viewer.org.cancel_at_period_end ? "ends" : "renews"} ${fmtDate(viewer.org.current_period_end)}` : ""}
-                {viewer.org.subscription_status === "past_due" && <span className="text-destructive">, payment failed, please update your card</span>}
-                . {usage.label}
+                {viewer.org.subscription_status === "past_due" && <span className="text-destructive">, payment failed, please update your card</span>}.
               </>
             )}
           </p>
@@ -68,6 +68,21 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
             ) : null}
             <Button variant={viewer.org.plan === "trial" ? "default" : "ghost"} asChild><Link href="/upgrade">{viewer.org.plan === "trial" ? "Choose a plan" : "See plans"}</Link></Button>
           </div>
+        </section>
+      )}
+      {canManage(viewer.membership.role) && allowance && (
+        <section id="usage" className="bg-card rounded-xl border p-6">
+          <h2 className="mb-1 font-medium">Usage</h2>
+          <p className="text-muted-foreground mb-4 text-sm">
+            <span className="text-foreground tabular">{allowance.used}</span> of <span className="tabular">{allowance.included}</span>{" "}
+            {allowance.kind === "trial" ? "trial calls used" : "included calls used this period"}
+            {allowance.over > 0 ? `, ${allowance.over} over the allowance` : ""}
+            {allowance.resetsAt ? `. ${allowance.kind === "trial" ? "Trial ends" : "Resets"} ${fmtDate(allowance.resetsAt)}.` : "."}
+          </p>
+          <Progress value={allowance.included > 0 ? Math.min(100, Math.round((allowance.used / allowance.included) * 100)) : 100} className="h-1.5 max-w-md" />
+          {allowance.kind === "paid" && (
+            <p className="text-muted-foreground mt-3 text-xs">Calls beyond the allowance are billed at the plan's overage rate.</p>
+          )}
         </section>
       )}
       {canManage(viewer.membership.role) && (
@@ -101,9 +116,3 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
 }
 
 /** What the workspace has used in the current period, against what the plan includes. */
-async function periodUsage(org: Awaited<ReturnType<typeof requireViewer>>["org"], userId: string): Promise<{ label: string }> {
-  const a = await loadAllowance(org, { userId, isManager: true });
-  if (!a) return { label: "" };
-  if (a.kind === "trial") return { label: `${a.used} of ${a.included} trial calls used.` };
-  return { label: `${a.used} of ${a.included} included calls used this period${a.over > 0 ? `, ${a.over} over` : ""}.` };
-}
