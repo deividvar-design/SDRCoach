@@ -7,6 +7,8 @@ import { SidebarNav } from "@/components/shell/sidebar-nav";
 import { UserMenu } from "@/components/shell/user-menu";
 import { FeedbackLink } from "@/components/shell/feedback-dialog";
 import { TrialBanner } from "@/components/billing/trial-banner";
+import { TrialGate } from "@/components/billing/trial-gate";
+import { SITE } from "@/lib/site";
 import { ReviewWatcher } from "@/components/calls/review-watcher";
 import { loadTrialStatus } from "@/lib/billing/usage";
 import { loadAllowance } from "@/lib/billing/allowance";
@@ -54,6 +56,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <UserMenu compact name={viewer.profile.full_name ?? viewer.email} email={viewer.email} avatarUrl={viewer.profile.avatar_url} role={ROLE_LABEL[viewer.membership.role]} isAdmin={isAdmin} />
         </header>
         <TrialBanner status={trial} isManager={isManager} />
+        <TrialGate status={trial} isManager={isManager} orgName={viewer.org.name} salesEmail={SITE.company.email} viewerEmail={viewer.email} />
         <ReviewWatcher initialPending={(pendingRows ?? []).map((r) => r.id)} />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-24 md:px-8 md:py-8">{children}</main>
         <div className="bg-sidebar/95 fixed inset-x-0 bottom-0 z-20 border-t px-2 pt-1 pb-[max(env(safe-area-inset-bottom),4px)] backdrop-blur md:hidden">
