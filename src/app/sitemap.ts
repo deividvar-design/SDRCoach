@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/blog";
+import { getAllObjectionPages } from "@/lib/objections";
 import { SITE, absoluteUrl } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -11,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/for-managers"), lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/for-enablement"), lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/blog"), lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: absoluteUrl("/objections"), lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/trust"), lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: absoluteUrl("/privacy"), lastModified: legal, changeFrequency: "yearly", priority: 0.2 },
     { url: absoluteUrl("/terms"), lastModified: legal, changeFrequency: "yearly", priority: 0.2 },
@@ -22,5 +24,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "monthly",
     priority: 0.6,
   }));
-  return [...pages, ...posts];
+  const objections: MetadataRoute.Sitemap = getAllObjectionPages().map((p) => ({
+    url: absoluteUrl(`/objections/${p.slug}`),
+    lastModified: new Date(p.updated),
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+  return [...pages, ...objections, ...posts];
 }

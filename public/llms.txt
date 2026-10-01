@@ -10,6 +10,7 @@
 - [Pricing](/pricing): per-seat plans and the free trial
 - [Trust and security](/trust): data handling, retention, deletion
 - [Blog](/blog): research-backed guides on cold calling
+- [Objection library](/objections): fifteen cold-call objections, each with what it means, three ways to handle it and a worked exchange
 
 ## Facts
 
@@ -22,3 +23,21 @@
 ## Recent posts
 
 - [AI cold call practice software: what to look for and what to ignore](/blog/ai-cold-call-practice-software): the four things that decide whether reps improve, and the features to ignore
+
+## Objection library
+
+- [I don't have time: how to handle it on a cold call](/objections/i-dont-have-time)
+- [Not interested: how to handle it on a cold call](/objections/not-interested)
+- [Send me an email: how to handle it on a cold call](/objections/send-me-an-email)
+- [We already have a solution: how to handle it on a cold call](/objections/we-already-have-a-solution)
+- [No budget: how to handle it on a cold call](/objections/no-budget)
+- [I'm not the decision maker: how to handle it on a cold call](/objections/not-the-decision-maker)
+- [Call me back later: how to handle it on a cold call](/objections/call-me-back-later)
+- [We're happy with what we have: how to handle it on a cold call](/objections/happy-with-what-we-have)
+- [Too expensive: how to handle the price objection on a cold call](/objections/too-expensive)
+- [Does it actually work: handling doubt on a cold call](/objections/does-it-actually-work)
+- [How did you get my number: how to handle it on a cold call](/objections/how-did-you-get-my-number)
+- [We're not a fit: how to handle it on a cold call](/objections/were-not-a-fit)
+- [Too hard to switch: how to handle it on a cold call](/objections/too-hard-to-switch)
+- [Why are you calling me: how to handle it on a cold call](/objections/why-are-you-calling-me)
+- [They won't share details: how to handle it on a cold call](/objections/wont-share-details)

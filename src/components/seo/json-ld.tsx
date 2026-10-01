@@ -46,7 +46,7 @@ export function faqLd(items: readonly { q: string; a: string }[]): Ld {
   };
 }
 
-export function articleLd(p: { title: string; description: string; slug: string; date: string; updated?: string; author: string }): Ld {
+export function articleLd(p: { title: string; description: string; slug: string; date: string; updated?: string; author: string; path?: string }): Ld {
   return {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -56,7 +56,7 @@ export function articleLd(p: { title: string; description: string; slug: string;
     dateModified: p.updated ?? p.date,
     author: p.author === SITE.name ? { "@type": "Organization", name: SITE.name, url: SITE.url } : { "@type": "Person", name: p.author },
     publisher: { "@type": "Organization", name: SITE.name, logo: { "@type": "ImageObject", url: absoluteUrl("/opengraph-image") } },
-    mainEntityOfPage: absoluteUrl(`/blog/${p.slug}`),
+    mainEntityOfPage: absoluteUrl(p.path ?? `/blog/${p.slug}`),
     image: absoluteUrl("/opengraph-image"),
   };
 }
