@@ -1,17 +1,13 @@
 /**
- * Social proof shown on the marketing site.
- *
- * `placeholder: true` renders everything under an "Illustrative" label. These are written to show the
- * shape of real results, not to be passed off as customer claims: publishing invented testimonials or
- * numbers as genuine is unlawful in the EU (UCPD) and the US (FTC endorsement rules) and it is the
- * fastest way to lose a B2B buyer's trust. Replace with design-partner quotes and flip the flag.
+ * The proof strip on the marketing site. Every figure here is a product fact the code backs, never a result claimed
+ * on a customer's behalf. Add quotes only from named customers who agreed in writing: invented testimonials or
+ * numbers are unlawful in the EU (UCPD) and the US (FTC endorsement rules) and the fastest way to lose a B2B buyer.
  */
 export const PROOF = {
-  placeholder: true,
   stats: [
-    { value: "2.1×", label: "more meetings booked", detail: "by reps after 20 practice calls, versus their first 20 real dials" },
-    { value: "9 days", label: "average ramp to first booked meeting", detail: "for new SDRs, down from about five weeks" },
-    { value: "83%", label: "of calls scored within 60 seconds", detail: "with a transcript, six-dimension breakdown and a coach summary" },
+    { value: "6", label: "skills scored on every reviewed call", detail: "Opener, reason for call, discovery, objection handling, value and close, each with a rationale and a coach summary." },
+    { value: "16", label: "objection types tagged with how the rep handled them", detail: "So 'send me an email' has a number per rep, not a feeling, and the coaching view shows which ones the team loses." },
+    { value: "3 + 3", label: "difficulty levels and boss fights", detail: "From a warm-up to a cold, resistant buyer, then Karen, Jax and Victor. All built from your own targets and company context." },
   ],
   quotes: [] as { quote: string; name: string; company: string }[],
 } as const;

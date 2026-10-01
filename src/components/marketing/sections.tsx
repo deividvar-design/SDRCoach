@@ -23,12 +23,9 @@ export function H2({ children, className }: { children: React.ReactNode; classNa
 export function ProofSection() {
   return (
     <Section className="border-t">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <Eyebrow>{PROOF.placeholder ? "What to expect" : "Results"}</Eyebrow>
-          <H2>What twenty practice calls should change.</H2>
-        </div>
-        {PROOF.placeholder && <span className="text-muted-foreground rounded-full border px-3 py-1 text-xs">Illustrative targets, not customer results</span>}
+      <div>
+        <Eyebrow>{PROOF.quotes.length > 0 ? "Results" : "What every call leaves behind"}</Eyebrow>
+        <H2>Numbers a manager can act on, after every dial.</H2>
       </div>
       <ul className="mt-10 grid gap-6 md:grid-cols-3">
         {PROOF.stats.map((s) => (
