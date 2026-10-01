@@ -12,7 +12,7 @@ import { PRACTICE_PERSONAS } from "@/content/practice-personas";
 import { BOSS_PERSONAS } from "@/content/boss-personas";
 import { isAdminEmail } from "@/lib/auth";
 import { track } from "@vercel/analytics/server";
-import { DRAFT_MODEL, draftWorkspace, fetchSiteText, normaliseSite, type WorkspaceDraft } from "@/lib/onboarding/draft";
+import { DRAFT_MODEL, SITE_COOKIE, draftWorkspace, fetchSiteText, normaliseSite, type WorkspaceDraft } from "@/lib/onboarding/draft";
 import { recordAnthropicUsage } from "@/lib/usage/record";
 import { cookies } from "next/headers";
 import { VOICE_IDS } from "@/lib/domain/voices";
@@ -71,7 +71,6 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
   redirect("/onboarding/context");
 }
 
-export const SITE_COOKIE = "onboarding_site";
 /** Drafts per workspace per day. Each one is a page fetch plus a Sonnet call. */
 const DRAFTS_PER_DAY = 10;
 

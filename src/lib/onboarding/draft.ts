@@ -7,6 +7,8 @@ import { isIP } from "node:net";
 import { VOICES } from "@/lib/domain/voices";
 
 export const DRAFT_MODEL = "claude-sonnet-5";
+/** Carries the website from onboarding step 1 to step 2, server-side only. */
+export const SITE_COOKIE = "onboarding_site";
 
 const client = new Anthropic({ timeout: 45_000, maxRetries: 1 });
 

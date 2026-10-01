@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { SITE_COOKIE } from "../actions";
+import { SITE_COOKIE } from "@/lib/onboarding/draft";
 import { Logo } from "@/components/logo";
 import { ContextForm } from "./context-form";
 
