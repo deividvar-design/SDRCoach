@@ -28,7 +28,7 @@ export default async function TeamPage() {
   const [{ data: members }, { data: invites }, sessions] = await Promise.all([
     supabase.from("memberships").select("*, profiles!memberships_user_id_fkey(full_name, avatar_url, email)").eq("org_id", viewer.org.id).order("created_at"),
     supabase.from("invites").select("*").eq("org_id", viewer.org.id).is("accepted_at", null).order("created_at", { ascending: false }),
-    fetchAll((a, b) => supabase.from("call_sessions").select("user_id, outcome, status, created_at, call_scores(overall)").eq("org_id", viewer.org.id).order("created_at").range(a, b)),
+    fetchAll((a, b) => supabase.from("call_sessions").select("user_id, outcome, status, created_at, boss, call_scores(overall)").eq("org_id", viewer.org.id).order("created_at").range(a, b)),
   ]);
 
   const statsByUser = new Map<string, { calls: number; booked: number; scores: number[]; lastCallAt: string | null }>();
@@ -38,7 +38,7 @@ export default async function TeamPage() {
     if (!entry.lastCallAt || s.created_at > entry.lastCallAt) entry.lastCallAt = s.created_at;
     if (s.outcome === "meeting_booked") entry.booked += 1;
     const sc = Array.isArray(s.call_scores) ? s.call_scores[0]?.overall : s.call_scores?.overall;
-    if (typeof sc === "number") entry.scores.push(sc);
+    if (typeof sc === "number" && !s.boss) entry.scores.push(sc);
     statsByUser.set(s.user_id, entry);
   }
 

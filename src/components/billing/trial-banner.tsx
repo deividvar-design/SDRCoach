@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { TrialStatus } from "@/lib/billing/trial";
 
-export function TrialBanner({ status, isManager }: { status: TrialStatus; isManager: boolean }) {
+export function TrialBanner({ status, isManager, offerLine }: { status: TrialStatus; isManager: boolean; offerLine?: string | null }) {
   if (!status.onTrial && status.reason !== "subscription") return null;
   const urgent = status.exhausted || status.callsLeft <= 2 || status.daysLeft <= 2;
   return (
@@ -13,6 +13,7 @@ export function TrialBanner({ status, isManager }: { status: TrialStatus; isMana
       ) : (
         <span>
           <strong className="tabular">{status.callsLeft}</strong> of {status.callsUsed + status.callsLeft} calls left, <strong className="tabular">{status.daysLeft}</strong> day{status.daysLeft === 1 ? "" : "s"}
+          {isManager && offerLine && <span className="text-muted-foreground"> · {offerLine}</span>}
         </span>
       )}
       {isManager && (

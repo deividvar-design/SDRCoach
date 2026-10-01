@@ -2,12 +2,14 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import type Stripe from "stripe";
 import { requireManager } from "@/lib/auth";
 import { priceCatalog, stripe, stripeConfigured } from "@/lib/billing/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SITE } from "@/lib/site";
 import { PLANS } from "@/lib/billing/plans";
 import { track } from "@vercel/analytics/server";
+import { currentOffer } from "@/lib/billing/offers";
 
 const Body = z.object({
   plan: z.enum(["starter", "team"]),
@@ -27,7 +29,8 @@ export async function startCheckout(formData: FormData) {
   if (parsed.data.seats < minSeats) redirect("/upgrade?error=invalid");
   const price = priceCatalog().priceFor(parsed.data.plan, parsed.data.interval);
   if (!price) redirect("/upgrade?error=price_missing");
-  await track("checkout_start", { plan: parsed.data.plan, interval: parsed.data.interval, currency: parsed.data.currency, seats: parsed.data.seats }).catch(() => {});
+  const offer = await currentOffer(viewer.org);
+  await track("checkout_start", { plan: parsed.data.plan, interval: parsed.data.interval, currency: parsed.data.currency, seats: parsed.data.seats, offer: offer?.id ?? "" }).catch(() => {});
 
   const db = createAdminClient();
   let customer = viewer.org.stripe_customer_id;
@@ -44,8 +47,8 @@ export async function startCheckout(formData: FormData) {
   if (viewer.org.stripe_subscription_id && viewer.org.plan !== "canceled") redirect("/settings?error=already_subscribed");
 
   let url: string | null = null;
-  try {
-    const session = await stripe().checkout.sessions.create({
+  // Stripe refuses `discounts` together with `allow_promotion_codes`, so an offer replaces the code box.
+  const params = (withOffer: boolean): Stripe.Checkout.SessionCreateParams => ({
       mode: "subscription",
       customer,
       // Required by Stripe when collecting tax ids / addresses for an existing customer.
@@ -56,13 +59,22 @@ export async function startCheckout(formData: FormData) {
       currency: parsed.data.currency,
       success_url: `${SITE.url}/settings?checkout=success`,
       cancel_url: `${SITE.url}/upgrade?checkout=canceled`,
-      allow_promotion_codes: true,
+      ...(withOffer && offer ? { discounts: [{ coupon: offer.coupon }] } : { allow_promotion_codes: true }),
       billing_address_collection: "required",
       tax_id_collection: { enabled: true },
       ...(process.env.STRIPE_AUTOMATIC_TAX === "1" ? { automatic_tax: { enabled: true } } : {}),
-      subscription_data: { metadata: { org_id: viewer.org.id, plan: parsed.data.plan } },
+      subscription_data: { metadata: { org_id: viewer.org.id, plan: parsed.data.plan, ...(withOffer && offer ? { offer: offer.id } : {}) } },
       metadata: { org_id: viewer.org.id },
-    });
+  });
+  try {
+    let session: Stripe.Checkout.Session;
+    try {
+      session = await stripe().checkout.sessions.create(params(true));
+    } catch (err) {
+      // A missing coupon in this Stripe mode must never block a purchase.
+      if (offer && err instanceof Error && /coupon/i.test(err.message)) session = await stripe().checkout.sessions.create(params(false));
+      else throw err;
+    }
     url = session.url;
   } catch (err) {
     console.error("stripe checkout failed", err);

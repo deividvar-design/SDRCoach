@@ -8,6 +8,8 @@ export interface SessionLite {
   difficulty: Difficulty;
   outcome: string | null;
   overall: number | null;
+  /** Boss-fight calls count for streaks and call totals, never for scores or the leaderboard. */
+  boss?: boolean;
 }
 
 const DAY_MS = 86_400_000;
@@ -36,7 +38,7 @@ export function streakDays(sessions: SessionLite[], now = new Date(), tz?: strin
 }
 
 export function personalBest(sessions: SessionLite[]) {
-  return sessions.reduce<number | null>((best, s) => (s.overall != null && (best == null || s.overall > best) ? s.overall : best), null);
+  return sessions.reduce<number | null>((best, s) => (!s.boss && s.overall != null && (best == null || s.overall > best) ? s.overall : best), null);
 }
 
 export function average(values: number[]) {
@@ -49,7 +51,7 @@ export function average(values: number[]) {
  */
 export function levelProgress(sessions: SessionLite[]) {
   return LEVEL_LIST.map((level, i) => {
-    const scored = sessions.filter((s) => s.difficulty === level.id && s.overall != null).map((s) => s.overall as number);
+    const scored = sessions.filter((s) => !s.boss && s.difficulty === level.id && s.overall != null).map((s) => s.overall as number);
     const recent = scored.slice(0, LEVEL_UP_MIN_CALLS);
     const avg = average(recent);
     const next = LEVEL_LIST[i + 1];
@@ -91,7 +93,7 @@ export function leaderboard(sessions: SessionLite[], names: Map<string, string>,
   const since = now.getTime() - sinceDays * 86_400_000;
   const byUser = new Map<string, SessionLite[]>();
   for (const s of sessions) {
-    if (new Date(s.created_at).getTime() < since) continue;
+    if (s.boss || new Date(s.created_at).getTime() < since) continue;
     byUser.set(s.user_id, [...(byUser.get(s.user_id) ?? []), s]);
   }
   return [...byUser.entries()]

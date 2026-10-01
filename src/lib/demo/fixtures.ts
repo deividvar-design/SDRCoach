@@ -132,6 +132,7 @@ export const SESSIONS: CallSession[] = SPECS.map((s) => ({
   scoring_started_at: null,
   mood: null,
   gatekeeper: false,
+  boss: false,
   created_at: daysAgo(s.day, s.hour),
 }));
 

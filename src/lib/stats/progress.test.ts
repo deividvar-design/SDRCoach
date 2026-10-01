@@ -42,6 +42,16 @@ describe("levelProgress / suggestedLevel", () => {
   });
 });
 
+describe("boss fights", () => {
+  it("count for streaks but never for scores or the board", () => {
+    const boss: SessionLite = { ...s(0, 10), boss: true };
+    const list = [boss, s(1, 6), s(2, 6), s(3, 6)];
+    expect(streakDays(list, now)).toBe(4);
+    expect(levelProgress(list)[0]!.calls).toBe(3);
+    expect(leaderboard(list, new Map([["u1", "Ana"]]), 7, now)[0]).toMatchObject({ calls: 3, best: 6 });
+  });
+});
+
 describe("leaderboard", () => {
   it("ranks by calls made within the window and ignores old calls", () => {
     const names = new Map([["u1", "A"], ["u2", "B"]]);

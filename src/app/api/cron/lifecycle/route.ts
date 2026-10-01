@@ -6,6 +6,10 @@ import { sendLifecycle } from "@/lib/email/lifecycle";
 import { sweepStaleSessions } from "@/lib/calls/sweep";
 import { orgManagers } from "@/lib/email/lifecycle";
 import { buildWeeklyDigest } from "@/lib/stats/weekly-digest";
+import { COMEBACK_DAYS } from "@/lib/billing/offers";
+import { emailConfigured, sendMail } from "@/lib/email/send";
+import { templates } from "@/lib/email/templates";
+import { formatDate } from "@/lib/utils";
 
 export const maxDuration = 300;
 
@@ -33,9 +37,9 @@ export async function GET(request: Request) {
 
   const db = createAdminClient();
   const now = Date.now();
-  const results = { nudged_day1: 0, nudged: 0, three_days: 0, ended: 0, digests: 0, swept: { failed: 0, finalized: 0 } };
+  const results = { nudged_day1: 0, nudged: 0, three_days: 0, ended: 0, chased: 0, demo_followups: 0, digests: 0, swept: { failed: 0, finalized: 0 } };
 
-  const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at, stripe_subscription_id").eq("plan", "trial").gt("trial_ends_at", new Date(now - 14 * DAY).toISOString()).limit(1000);
+  const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at, stripe_subscription_id").eq("plan", "trial").gt("trial_ends_at", new Date(now - 20 * DAY).toISOString()).limit(1000);
   for (const org of trials ?? []) {
     const ageDays = (now - new Date(org.created_at).getTime()) / DAY;
     const daysLeft = Math.ceil((new Date(org.trial_ends_at).getTime() - now) / DAY);
@@ -56,6 +60,29 @@ export async function GET(request: Request) {
     if (new Date(org.trial_ends_at).getTime() <= now) {
       const r = await sendLifecycle(org.id, "trial_ended").catch((err) => (reportError(err, { where: "cron_trial_ended", orgId: org.id }), { sent: false }));
       if (r.sent) results.ended += 1;
+    }
+    // After the trial, three touches for workspaces that never bought: a nudge, a question, and a 20% break-up.
+    const daysSinceEnd = (now - new Date(org.trial_ends_at).getTime()) / DAY;
+    if (daysSinceEnd >= 2 && !org.stripe_subscription_id) {
+      const step = daysSinceEnd >= 12 ? "chase_breakup" : daysSinceEnd >= 6 ? "chase_feedback" : "chase_1";
+      const opts = step === "chase_1" ? { calls: (await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null)).count ?? 0 } : step === "chase_breakup" ? { until: formatDate(new Date(now + COMEBACK_DAYS * DAY)) } : {};
+      const r = await sendLifecycle(org.id, step, opts).catch((err) => (reportError(err, { where: `cron_${step}`, orgId: org.id }), { sent: false }));
+      if (r.sent) results.chased += 1;
+    }
+  }
+
+  // Karen demo leads: two days after a scored call, one nudge towards the trial, unless they already signed up.
+  if (emailConfigured()) {
+    const { data: demos } = await db.from("demo_calls").select("id, email, overall, outcome").eq("status", "scored").is("followup_sent_at", null).lte("created_at", new Date(now - 2 * DAY).toISOString()).gte("created_at", new Date(now - 10 * DAY).toISOString()).limit(200);
+    for (const d of demos ?? []) {
+      const { data: existing } = await db.from("profiles").select("id").ilike("email", d.email).limit(1).maybeSingle();
+      if (!existing) {
+        const firstName = d.email.split("@")[0]?.split(/[._-]/)[0] ?? "there";
+        const mail = templates.demoFollowUp({ firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1), email: d.email, overall: Number(d.overall ?? 0), outcome: d.outcome ?? "" });
+        const ok = await sendMail({ to: d.email, ...mail }).then(() => true).catch((err) => (reportError(err, { where: "cron_demo_followup", extra: { demoId: d.id } }), false));
+        if (ok) results.demo_followups += 1;
+      }
+      await db.from("demo_calls").update({ followup_sent_at: new Date().toISOString() }).eq("id", d.id);
     }
   }
 

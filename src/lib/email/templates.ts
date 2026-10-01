@@ -26,6 +26,7 @@ export interface Rendered {
   subject: string;
   html: string;
   text: string;
+  replyTo?: string;
 }
 
 export const templates = {
@@ -74,10 +75,58 @@ export const templates = {
     const lines = [
       `Hi ${p.firstName},`,
       `${p.orgName}'s trial ends in ${p.daysLeft} day${p.daysLeft === 1 ? "" : "s"}. The team has made ${made}. Everything stays: targets, recordings, scores and the coaching view.`,
-      "Plans are per seat, monthly, quarterly or yearly, and you can change seats any time. Every first payment carries a 30-day money-back guarantee, so trying the paid plan is as safe as the trial was.",
+      "Upgrade before the trial ends and your first three months are 15% off, applied automatically at checkout. Plans are per seat, monthly, quarterly or yearly, and every first payment carries a 30-day money-back guarantee.",
       `Want a few more days instead? Reply to this email and say so.`,
     ];
     return { subject: `${p.daysLeft} day${p.daysLeft === 1 ? "" : "s"} left on ${p.orgName}'s trial`, html: layout("Three days left. Here's where you stand.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  chaseOne(p: { firstName: string; orgName: string; calls: number }): Rendered {
+    const cta = { label: "Pick a plan", href: absoluteUrl("/upgrade") };
+    const lines = [
+      `Hi ${p.firstName},`,
+      p.calls > 0
+        ? `${p.orgName}'s trial ended two days ago with ${p.calls} practice call${p.calls === 1 ? "" : "s"} on the board. The targets, recordings, scores and coaching view are all still there, frozen where you left them.`
+        : `${p.orgName}'s trial ended two days ago and nobody made a call. That usually means the week got away from you, not that the idea was wrong.`,
+      "A plan starts at one seat and takes a minute to set up. Dialing resumes the moment it goes through, and the first payment carries a 30-day money-back guarantee.",
+      "If something stopped you, reply and say what it was. We read every one.",
+    ];
+    return { subject: `${p.orgName} on ${SITE.name}: what happens next`, html: layout("The trial ended. The work didn't have to.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta), replyTo: SITE.company.email };
+  },
+
+  chaseFeedback(p: { firstName: string; orgName: string }): Rendered {
+    const lines = [
+      `Hi ${p.firstName},`,
+      `You tried ${SITE.name} with ${p.orgName} and didn't pick a plan. Fair enough. I'd like to know why, in one line, because it decides what we build next.`,
+      "Was it the prospects, the scoring, the price, the timing, or something I haven't thought of? Reply to this email with whichever it was. One word is fine.",
+      "If it was something we can fix, I'll tell you when it's fixed.",
+    ];
+    return { subject: "One line: what stopped you?", html: layout("What stopped you?", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("")), text: textOf(lines), replyTo: SITE.company.email };
+  },
+
+  chaseBreakup(p: { firstName: string; orgName: string; until: string }): Rendered {
+    const cta = { label: "Pick a plan with 20% off", href: absoluteUrl("/upgrade") };
+    const lines = [
+      `Hi ${p.firstName},`,
+      `This is the last email about ${p.orgName}'s trial. If the timing was wrong, no hard feelings, and your workspace stays readable so nothing is lost.`,
+      `If it was close, here is a nudge: pick any plan before ${p.until} and your first three months are 20% off. It is applied automatically at checkout, no code to type.`,
+      "After that we stop writing, and you can come back whenever the team is ready.",
+    ];
+    return { subject: `Last one from us: 20% off until ${p.until}`, html: layout("Last one from us.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta), replyTo: SITE.company.email };
+  },
+
+  demoFollowUp(p: { firstName: string; email: string; overall: number; outcome: string }): Rendered {
+    const cta = { label: "Start a free trial", href: absoluteUrl(`/signup?email=${encodeURIComponent(p.email)}`) };
+    const won = p.outcome === "meeting_booked" || p.outcome === "callback";
+    const lines = [
+      `Hi ${p.firstName},`,
+      won
+        ? `You got ${p.overall.toFixed(1)} against Karen and she gave you a next step. Almost nobody does. The question is whether your reps can.`
+        : `You scored ${p.overall.toFixed(1)} against Karen. She is built so that most people land between four and six, so that is about where it should be on a first go.`,
+      "The people who score highest against her do two things: they keep every turn under fifteen words, and they ask one specific question about her world before they say anything about their own. Both are habits, and habits come from reps.",
+      `A free trial gives your team ${TRIAL.calls} calls over ${TRIAL.days} days against prospects built from your own targets, at three levels, with Karen and two other boss fights thrown in. Work email, no card.`,
+    ];
+    return { subject: won ? "You beat Karen. Can your team?" : `${p.overall.toFixed(1)} against Karen. Here's how to climb`, html: layout("Round two.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
   },
 
   twoCallsLeft(p: { firstName: string; orgName: string }): Rendered {

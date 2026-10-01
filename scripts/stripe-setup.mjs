@@ -59,6 +59,24 @@ if (process.argv.includes("--eur")) {
   process.exit(0);
 }
 
+// `--coupons`: create the two fixed-id coupons the app applies itself, then stop. Safe to re-run.
+if (process.argv.includes("--coupons")) {
+  const wanted = [
+    { id: "TRIAL15", percent_off: 15, duration: "repeating", duration_in_months: 3, name: "Upgraded before the trial ended" },
+    { id: "COMEBACK20", percent_off: 20, duration: "repeating", duration_in_months: 3, name: "Came back after the trial" },
+  ];
+  for (const c of wanted) {
+    const existing = await stripe.coupons.retrieve(c.id).catch(() => null);
+    if (existing) {
+      console.log(`${c.id} already exists (${existing.percent_off}% off, ${existing.duration}${existing.duration_in_months ? ` ${existing.duration_in_months} months` : ""}).`);
+      continue;
+    }
+    await stripe.coupons.create(c);
+    console.log(`Created ${c.id}: ${c.percent_off}% off for ${c.duration_in_months} months.`);
+  }
+  process.exit(0);
+}
+
 // `--quarterly-only`: products already exist (created by an earlier run); add the quarterly price to each and stop.
 if (process.argv.includes("--quarterly-only")) {
   const lines = [];

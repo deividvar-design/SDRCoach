@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { leaveWorkspace } from "./actions";
 import { openBillingPortal } from "../upgrade/actions";
 
-import { INTERVALS, PLANS } from "@/lib/billing/plans";
+import { INTERVALS, PLANS, SALES_EMAIL } from "@/lib/billing/plans";
 import { loadAllowance } from "@/lib/billing/allowance";
 import Link from "next/link";
 import { StatusToast } from "@/components/status-toast";
@@ -68,6 +68,11 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
             ) : null}
             <Button variant={viewer.org.plan === "trial" ? "default" : "ghost"} asChild><Link href="/upgrade">{viewer.org.plan === "trial" ? "Choose a plan" : "See plans"}</Link></Button>
           </div>
+          {!(viewer.org.stripe_subscription_id && viewer.org.plan !== "canceled") && (
+            <p className="text-muted-foreground mt-3 text-xs">
+              Annual plans can be paid by invoice with 30-day terms. <a href={`mailto:${SALES_EMAIL}?subject=${encodeURIComponent(`Invoice billing for ${viewer.org.name}`)}&body=${encodeURIComponent(`Plan: Starter / Team\nSeats: ${viewer.org.seat_limit}\nWorkspace id: ${viewer.org.id}\n`)}`} className="underline underline-offset-4">Request an invoice</a>.
+            </p>
+          )}
         </section>
       )}
       {canManage(viewer.membership.role) && allowance && (

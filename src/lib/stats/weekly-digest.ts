@@ -24,6 +24,7 @@ export async function buildWeeklyDigest(db: SupabaseClient<Database>, orgId: str
     .from("call_sessions")
     .select("id, user_id, status, outcome, profiles(full_name), call_scores(overall, dimensions, objections)")
     .eq("org_id", orgId)
+    .eq("boss", false)
     .gte("created_at", since)
     .not("started_at", "is", null)
     .neq("status", "failed")

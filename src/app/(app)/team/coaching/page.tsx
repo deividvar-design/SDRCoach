@@ -47,6 +47,7 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
       .select("id, user_id, created_at, profiles(full_name), call_scores(overall, dimensions, objections)")
       .eq("org_id", viewer.org.id)
       .eq("status", "scored")
+      .eq("boss", false)
       .order("created_at", { ascending: false });
     if (range !== "all") query = query.gte("created_at", sinceIso(Number(range)));
     return query.range(a, b) as unknown as PromiseLike<{ data: Row[] | null }>;

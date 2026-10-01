@@ -30,7 +30,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const [{ data: rows }, { data: members }, { count: targetCount }, { data: notes }] = await Promise.all([
     supabase
       .from("call_sessions")
-      .select("id, user_id, created_at, difficulty, outcome, status, targets(name, company), profiles(full_name), call_scores(overall)")
+      .select("id, user_id, created_at, difficulty, outcome, status, boss, targets(name, company), profiles(full_name), call_scores(overall)")
       .eq("org_id", viewer.org.id)
       .order("created_at", { ascending: false })
       .limit(500),
@@ -72,12 +72,13 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
     difficulty: s.difficulty,
     outcome: s.outcome,
     overall: s.call_scores?.overall ?? null,
+    boss: s.boss,
   }));
   const mine = lite.filter((s) => s.user_id === viewer.userId);
   const scope = isManager ? lite : mine;
   const scopeRows = isManager ? all : all.filter((s) => s.user_id === viewer.userId);
 
-  const avg = average(scope.map((s) => s.overall).filter((v): v is number => v != null));
+  const avg = average(scope.filter((s) => !s.boss).map((s) => s.overall).filter((v): v is number => v != null));
   const booked = scope.filter((s) => s.outcome === "meeting_booked").length;
   const decided = scope.filter((s) => s.outcome && s.outcome !== "incomplete").length;
   const bookRate = decided ? Math.round((booked / decided) * 100) : null;

@@ -15,10 +15,11 @@ interface Props {
   orgName: string;
   salesEmail: string;
   viewerEmail: string;
+  offerLine?: string | null;
 }
 
 /** Greys out the app when the trial or subscription has ended. Only the plan and billing pages stay reachable. */
-export function TrialGate({ status, isManager, orgName, salesEmail, viewerEmail }: Props) {
+export function TrialGate({ status, isManager, orgName, salesEmail, viewerEmail, offerLine }: Props) {
   const pathname = usePathname();
   if (!status.exhausted || OPEN_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return null;
 
@@ -47,6 +48,7 @@ export function TrialGate({ status, isManager, orgName, salesEmail, viewerEmail 
               : `${status.callsUsed} ${status.callsUsed === 1 ? "call" : "calls"} made. Everything is saved. ${isManager ? "Pick a plan to keep the team dialing, or ask us for a few more days." : "Ask your manager to pick a plan, or ask us for a few more days."}`}
           </DialogDescription>
         </DialogHeader>
+        {isManager && offerLine && <p className="text-signal text-sm font-medium">{offerLine}</p>}
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           {isManager && (
             <Button asChild size="lg">

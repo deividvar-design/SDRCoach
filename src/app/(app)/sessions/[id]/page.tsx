@@ -74,7 +74,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
     <div className="space-y-8">
       <ScorePoller active={collecting || reviewing} sessionId={session.id} doneMessage={reviewing ? "Your review is ready" : null} />
       <PageHeader
-        eyebrow={`${fmtDate(session.created_at)}, ${formatDuration(session.duration_seconds)}, L${level.level} ${level.name}${moodById(session.mood) ? `, ${moodById(session.mood)!.label.toLowerCase()}` : ""}${session.gatekeeper ? ", via gatekeeper" : ""}${!isOwn && session.profiles?.full_name ? `, ${session.profiles.full_name}` : ""}`}
+        eyebrow={`${fmtDate(session.created_at)}, ${formatDuration(session.duration_seconds)}, L${level.level} ${level.name}${moodById(session.mood) ? `, ${moodById(session.mood)!.label.toLowerCase()}` : ""}${session.gatekeeper ? ", via gatekeeper" : ""}${session.boss ? ", boss fight (not counted in stats)" : ""}${!isOwn && session.profiles?.full_name ? `, ${session.profiles.full_name}` : ""}`}
         title={session.targets ? `${session.targets.name}, ${session.targets.company}` : "Call"}
         description={session.targets?.title}
         actions={

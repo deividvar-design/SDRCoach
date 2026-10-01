@@ -93,6 +93,7 @@ export async function POST(request: Request) {
       prompt_hash: hashPrompt(prompt),
       mood: mood.id,
       gatekeeper: Boolean(gatekeeper),
+      boss: target.kind === "boss",
     })
     .select("id")
     .single();

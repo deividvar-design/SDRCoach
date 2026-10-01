@@ -12,6 +12,7 @@ import { SITE } from "@/lib/site";
 import { ReviewWatcher } from "@/components/calls/review-watcher";
 import { loadTrialStatus } from "@/lib/billing/usage";
 import { loadAllowance } from "@/lib/billing/allowance";
+import { currentOffer } from "@/lib/billing/offers";
 import { DialsLeft } from "@/components/billing/dials-left";
 import { dateFormatter } from "@/lib/tz";
 import { createClient } from "@/lib/supabase/server";
@@ -22,10 +23,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const viewer = await requireViewer();
   const isManager = canManage(viewer.membership.role);
   const supabase = await createClient();
-  const [trial, allowance, formatDate, { data: pendingRows }] = await Promise.all([
+  const [trial, allowance, formatDate, offer, { data: pendingRows }] = await Promise.all([
     loadTrialStatus(viewer.org),
     loadAllowance(viewer.org, { userId: viewer.userId, isManager }),
     dateFormatter(),
+    isManager ? currentOffer(viewer.org) : null,
     supabase.from("call_sessions").select("id").eq("user_id", viewer.userId).not("review_requested_at", "is", null).in("status", ["ended", "scoring"]).limit(10),
   ]);
   const isAdmin = isAdminEmail(viewer.email);
@@ -55,8 +57,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <Logo />
           <UserMenu compact name={viewer.profile.full_name ?? viewer.email} email={viewer.email} avatarUrl={viewer.profile.avatar_url} role={ROLE_LABEL[viewer.membership.role]} isAdmin={isAdmin} />
         </header>
-        <TrialBanner status={trial} isManager={isManager} />
-        <TrialGate status={trial} isManager={isManager} orgName={viewer.org.name} salesEmail={SITE.company.email} viewerEmail={viewer.email} />
+        <TrialBanner status={trial} isManager={isManager} offerLine={offer?.id === "trial15" ? `Upgrade by ${formatDate(offer.until)} for ${offer.percent}% off` : null} />
+        <TrialGate status={trial} isManager={isManager} orgName={viewer.org.name} salesEmail={SITE.company.email} viewerEmail={viewer.email} offerLine={offer?.id === "comeback20" ? `${offer.percent}% off until ${formatDate(offer.until)}, applied at checkout.` : null} />
         <ReviewWatcher initialPending={(pendingRows ?? []).map((r) => r.id)} />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-24 md:px-8 md:py-8">{children}</main>
         <div className="bg-sidebar/95 fixed inset-x-0 bottom-0 z-20 border-t px-2 pt-1 pb-[max(env(safe-area-inset-bottom),4px)] backdrop-blur md:hidden">

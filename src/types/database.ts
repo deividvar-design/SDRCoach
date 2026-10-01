@@ -123,6 +123,7 @@ export type DemoCall = {
   transcript: TranscriptTurn[] | null;
   error: string | null;
   email_sent_at: string | null;
+  followup_sent_at: string | null;
   created_at: string;
 };
 
@@ -215,6 +216,8 @@ export type CallSession = {
   mood: string | null;
   /** Whether an assistant or receptionist answered before the prospect. */
   gatekeeper: boolean;
+  /** Dialed a boss-fight persona: shown on the report, left out of leaderboards and averages. */
+  boss: boolean;
   created_at: string;
 };
 
@@ -277,7 +280,7 @@ export type Database = {
         Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
-      demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "created_at">>;
+      demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "followup_sent_at" | "created_at">>;
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
       admin_actions: Table<AdminAction, Insert<AdminAction, "id" | "org_id" | "payload" | "created_at">>;
       email_log: Table<EmailLog, Insert<EmailLog, "id" | "user_id" | "sent_at">>;
@@ -325,7 +328,7 @@ export type Database = {
       >;
       call_sessions: Table<
         CallSession,
-        Insert<CallSession, "id" | "target_id" | "status" | "outcome" | "elevenlabs_conversation_id" | "elevenlabs_agent_id" | "started_at" | "ended_at" | "duration_seconds" | "audio_path" | "error" | "outcome_reason" | "metrics" | "prospect_summary" | "review_requested_at" | "review_skipped_at" | "prompt_hash" | "finalize_attempts" | "scoring_started_at" | "mood" | "gatekeeper" | "created_at">,
+        Insert<CallSession, "id" | "target_id" | "status" | "outcome" | "elevenlabs_conversation_id" | "elevenlabs_agent_id" | "started_at" | "ended_at" | "duration_seconds" | "audio_path" | "error" | "outcome_reason" | "metrics" | "prospect_summary" | "review_requested_at" | "review_skipped_at" | "prompt_hash" | "finalize_attempts" | "scoring_started_at" | "mood" | "gatekeeper" | "boss" | "created_at">,
         [
           { foreignKeyName: "call_sessions_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "organizations"; referencedColumns: ["id"] },
           { foreignKeyName: "call_sessions_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },

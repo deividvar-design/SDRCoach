@@ -35,7 +35,7 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
     supabase.from("memberships").select("role, profiles!memberships_user_id_fkey(full_name, avatar_url)").eq("org_id", viewer.org.id).eq("user_id", userId).maybeSingle(),
     supabase
       .from("call_sessions")
-      .select("id, created_at, difficulty, outcome, status, duration_seconds, targets(name, company), call_scores(overall, dimensions)")
+      .select("id, created_at, difficulty, outcome, status, duration_seconds, boss, targets(name, company), call_scores(overall, dimensions)")
       .eq("org_id", viewer.org.id)
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
@@ -45,7 +45,7 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
 
   const name = membership.profiles?.full_name ?? "Rep";
   const all = sessions ?? [];
-  const lite: SessionLite[] = all.map((s) => ({ user_id: userId, created_at: s.created_at, difficulty: s.difficulty, outcome: s.outcome, overall: s.call_scores?.overall ?? null }));
+  const lite: SessionLite[] = all.map((s) => ({ user_id: userId, created_at: s.created_at, difficulty: s.difficulty, outcome: s.outcome, overall: s.call_scores?.overall ?? null, boss: s.boss }));
   const scored = all.filter((s) => s.call_scores?.overall != null);
   const avg = average(scored.map((s) => s.call_scores!.overall));
   const booked = all.filter((s) => s.outcome === "meeting_booked").length;
