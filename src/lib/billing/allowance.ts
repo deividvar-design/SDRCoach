@@ -1,7 +1,7 @@
 import "server-only";
 import type { Organization } from "@/types/database";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { INTERVALS, PLANS } from "./plans";
+import { PLANS } from "./plans";
 import { countTrialCalls } from "./usage";
 import { trialStatus } from "./trial";
 
