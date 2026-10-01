@@ -27,8 +27,12 @@ const llm = process.env.ELEVENLABS_AGENT_LLM ?? "claude-sonnet-5";
 
 const OUTCOMES = ["meeting_booked", "callback", "info_sent", "rejected", "hung_up", "incomplete"];
 
+// `--demo-agent`: a second agent for the public Karen demo. Same brief, but the conversation itself is capped server-side,
+// so a visitor who disables the page timer still cannot run up more than about three minutes.
+const demo = process.argv.includes("--demo-agent");
+
 const res = await client.conversationalAi.agents.create({
-  name: "100 Dials Prospect",
+  name: demo ? "100 Dials Karen demo" : "100 Dials Prospect",
   conversationConfig: {
     agent: {
       firstMessage: "Hello?",
@@ -58,7 +62,7 @@ const res = await client.conversationalAi.agents.create({
     },
     // Seconds of rep silence before the prospect speaks again. Twelve felt like talking to a wall; six is a person going "hello?".
     turn: { turnTimeout: 6, silenceEndCallTimeout: 25 },
-    conversation: { maxDurationSeconds: 900 },
+    conversation: { maxDurationSeconds: demo ? 200 : 900 },
   },
   platformSettings: {
     // Only sessions started with a server-minted token may connect; the agent id alone is useless.
@@ -83,4 +87,4 @@ const res = await client.conversationalAi.agents.create({
   },
 });
 
-console.log(`\nAgent created: ${res.agentId}\n\nAdd to your environment:\nELEVENLABS_AGENT_ID=${res.agentId}\n`);
+console.log(`\nAgent created: ${res.agentId}\n\nAdd to your environment:\n${demo ? "ELEVENLABS_DEMO_AGENT_ID" : "ELEVENLABS_AGENT_ID"}=${res.agentId}\n`);

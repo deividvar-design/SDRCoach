@@ -43,6 +43,6 @@ export async function challengeKaren(_prev: ChallengeState, formData: FormData):
   if (error || !demo) return { error: "Something went wrong. Try again in a minute." };
 
   await track("demo_started", { domain: check.domain }).catch(() => {});
-  (await cookies()).set(DEMO_COOKIE, demo.id, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 });
+  (await cookies()).set(DEMO_COOKIE, demo.id, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 3 * 60 * 60 });
   redirect("/karen/call");
 }

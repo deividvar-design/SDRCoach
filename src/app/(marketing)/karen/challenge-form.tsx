@@ -15,7 +15,7 @@ export function ChallengeForm() {
     return (
       <div className="bg-card rounded-2xl border p-6">
         <div className="font-display text-2xl">Karen is busy.</div>
-        <p className="text-muted-foreground mt-2 text-sm">She has taken all the calls she will take today. We kept your address and will email you when she is free. Or skip the queue and <Link href="/signup" className="text-foreground underline underline-offset-4">start a free trial</Link>, where she picks up every time.</p>
+        <p className="text-muted-foreground mt-2 text-sm">She has taken all the calls she will take today. Come back tomorrow, or skip the queue and <Link href="/signup" className="text-foreground underline underline-offset-4">start a free trial</Link>, where she picks up every time.</p>
       </div>
     );
   }

@@ -115,7 +115,7 @@ export const templates = {
     return { subject: `Last one from us: 20% off until ${p.until}`, html: layout("Last one from us.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta), replyTo: SITE.company.email };
   },
 
-  demoFollowUp(p: { firstName: string; email: string; overall: number; outcome: string }): Rendered {
+  demoFollowUp(p: { firstName: string; email: string; overall: number; outcome: string; unsubscribeUrl: string }): Rendered {
     const cta = { label: "Start a free trial", href: absoluteUrl(`/signup?email=${encodeURIComponent(p.email)}`) };
     const won = p.outcome === "meeting_booked" || p.outcome === "callback";
     const lines = [
@@ -126,7 +126,8 @@ export const templates = {
       "The people who score highest against her do two things: they keep every turn under fifteen words, and they ask one specific question about her world before they say anything about their own. Both are habits, and habits come from reps.",
       `A free trial gives your team ${TRIAL.calls} calls over ${TRIAL.days} days against prospects built from your own targets, at three levels, with Karen and two other boss fights thrown in. Work email, no card.`,
     ];
-    return { subject: won ? "You beat Karen. Can your team?" : `${p.overall.toFixed(1)} against Karen. Here's how to climb`, html: layout("Round two.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+    const foot = `<p style="margin:12px 0 0;font-size:12px;color:#8a857a">This is the last email about your call. <a href="${p.unsubscribeUrl}" style="color:#8a857a">No more from us</a>.</p>`;
+    return { subject: won ? "You beat Karen. Can your team?" : `${p.overall.toFixed(1)} against Karen. Here's how to climb`, html: layout("Round two.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("") + foot, cta), text: textOf([...lines, "", `No more emails: ${p.unsubscribeUrl}`], cta) };
   },
 
   twoCallsLeft(p: { firstName: string; orgName: string }): Rendered {
@@ -147,7 +148,7 @@ export const templates = {
     return { subject: `Welcome to ${SITE.name} ${p.plan}`, html: layout("You're all set.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
   },
 
-  demoScorecard(p: { firstName: string; email: string; overall: number; outcome: string; outcomeReason: string; dimensions: ScoreDimensions; strengths: string[]; improvements: string[]; coachSummary: string }): Rendered {
+  demoScorecard(p: { firstName: string; email: string; overall: number; outcome: string; outcomeReason: string; dimensions: ScoreDimensions; strengths: string[]; improvements: string[]; coachSummary: string; unsubscribeUrl: string }): Rendered {
     const cta = { label: "Start a free trial with this address", href: absoluteUrl(`/signup?email=${encodeURIComponent(p.email)}`) };
     const rows = (Object.keys(RUBRIC) as RubricKey[]).map((k) => ({ label: RUBRIC[k].label, score: p.dimensions[k].score, note: p.dimensions[k].rationale }));
     const outcome = OUTCOME_TEXT[p.outcome] ?? p.outcome;
@@ -160,6 +161,7 @@ export const templates = {
       `<p style="margin:12px 0 6px;font-weight:600">What to fix first</p>${p.improvements.map((x) => `<p style="margin:0 0 6px">${esc(x)}</p>`).join("")}`,
       `<p style="margin:16px 0 0;color:#3b3833">${esc(p.coachSummary)}</p>`,
       `<p style="margin:16px 0 0;font-size:13px;color:#8a857a">Karen is one of the prospects in ${esc(SITE.name)}. Reps dial prospects built from their own targets, at three levels, and every call is scored like this one. Ten calls are free.</p>`,
+      `<p style="margin:12px 0 0;font-size:12px;color:#8a857a">We'll send one follow-up in a couple of days. <a href="${p.unsubscribeUrl}" style="color:#8a857a">Don't</a>.</p>`,
     ].join("");
     const text = [
       `Hi ${p.firstName},`,
@@ -174,6 +176,8 @@ export const templates = {
       ...p.improvements,
       "",
       p.coachSummary,
+      "",
+      `No follow-up: ${p.unsubscribeUrl}`,
     ];
     return { subject: `Your call with Karen: ${p.overall.toFixed(1)} / 10`, html: layout("Here's how it went.", html, cta), text: textOf(text, cta) };
   },

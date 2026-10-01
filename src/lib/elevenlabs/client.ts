@@ -17,9 +17,14 @@ export function agentId() {
 }
 
 /** Mint a short-lived WebRTC token so the browser can join without ever seeing the API key. */
-export async function mintConversationToken() {
-  const res = await elevenlabs().conversationalAi.conversations.getWebrtcToken({ agentId: agentId() });
+export async function mintConversationToken(agent: string = agentId()) {
+  const res = await elevenlabs().conversationalAi.conversations.getWebrtcToken({ agentId: agent });
   return res.token;
+}
+
+/** The agent the public Karen demo dials: a copy with a hard three-minute ceiling. Falls back to the shared agent. */
+export function demoAgentId() {
+  return process.env.ELEVENLABS_DEMO_AGENT_ID || agentId();
 }
 
 import { stripVoiceTags } from "@/lib/elevenlabs/tags";

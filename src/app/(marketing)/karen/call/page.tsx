@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function KarenCallPage() {
   const demo = await currentDemo();
   if (!demo) redirect("/karen");
-  if (demo.status !== "created") redirect("/karen/result");
+  if (demo.status !== "created" && demo.status !== "dialing") redirect("/karen/result");
   return (
     <DemoCallScreen
       prospect={{ name: KAREN.name, title: KAREN.title, company: KAREN.company, notes: KAREN.persona_notes }}

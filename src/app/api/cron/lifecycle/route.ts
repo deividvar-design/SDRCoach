@@ -9,6 +9,7 @@ import { buildWeeklyDigest } from "@/lib/stats/weekly-digest";
 import { COMEBACK_DAYS } from "@/lib/billing/offers";
 import { emailConfigured, sendMail } from "@/lib/email/send";
 import { templates } from "@/lib/email/templates";
+import { unsubscribeUrl } from "@/lib/demo/boss";
 import { formatDate } from "@/lib/utils";
 
 export const maxDuration = 300;
@@ -75,14 +76,16 @@ export async function GET(request: Request) {
   if (emailConfigured()) {
     const { data: demos } = await db.from("demo_calls").select("id, email, overall, outcome").eq("status", "scored").is("followup_sent_at", null).lte("created_at", new Date(now - 2 * DAY).toISOString()).gte("created_at", new Date(now - 10 * DAY).toISOString()).limit(200);
     for (const d of demos ?? []) {
-      const { data: existing } = await db.from("profiles").select("id").ilike("email", d.email).limit(1).maybeSingle();
-      if (!existing) {
-        const firstName = d.email.split("@")[0]?.split(/[._-]/)[0] ?? "there";
-        const mail = templates.demoFollowUp({ firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1), email: d.email, overall: Number(d.overall ?? 0), outcome: d.outcome ?? "" });
-        const ok = await sendMail({ to: d.email, ...mail }).then(() => true).catch((err) => (reportError(err, { where: "cron_demo_followup", extra: { demoId: d.id } }), false));
-        if (ok) results.demo_followups += 1;
-      }
-      await db.from("demo_calls").update({ followup_sent_at: new Date().toISOString() }).eq("id", d.id);
+      // Claim before sending so overlapping cron runs cannot double-send; release the claim if the send fails.
+      const { data: claimed } = await db.from("demo_calls").update({ followup_sent_at: new Date().toISOString() }).eq("id", d.id).is("followup_sent_at", null).select("id").maybeSingle();
+      if (!claimed) continue;
+      const { data: existing } = await db.from("profiles").select("id").eq("email", d.email).limit(1).maybeSingle();
+      if (existing) continue;
+      const firstName = d.email.split("@")[0]?.split(/[._-]/)[0] ?? "there";
+      const mail = templates.demoFollowUp({ firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1), email: d.email, overall: Number(d.overall ?? 0), outcome: d.outcome ?? "", unsubscribeUrl: unsubscribeUrl(d.id) });
+      const ok = await sendMail({ to: d.email, ...mail }).then(() => true).catch((err) => (reportError(err, { where: "cron_demo_followup", extra: { demoId: d.id } }), false));
+      if (ok) results.demo_followups += 1;
+      else await db.from("demo_calls").update({ followup_sent_at: null }).eq("id", d.id);
     }
   }
 

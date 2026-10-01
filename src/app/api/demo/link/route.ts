@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     .from("demo_calls")
     .update({ status: "live", elevenlabs_conversation_id: body.data.conversationId, started_at: new Date().toISOString() })
     .eq("id", demo.id)
-    .eq("status", "created")
+    .in("status", ["created", "dialing"])
     .select("id")
     .maybeSingle();
   if (!data) return NextResponse.json({ error: "Not waiting to start" }, { status: 409 });
