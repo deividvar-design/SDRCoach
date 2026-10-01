@@ -2,6 +2,8 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
 import { VOICES } from "@/lib/domain/voices";
 
 export const DRAFT_MODEL = "claude-sonnet-5";
@@ -27,6 +29,7 @@ const DraftSchema = z.object({
 
 export type WorkspaceDraft = Omit<z.infer<typeof DraftSchema>, "target"> & {
   target: Omit<z.infer<typeof DraftSchema>["target"], "gender"> & { voice_id: string };
+  usage: { input_tokens: number; output_tokens: number; cache_read_tokens: number; cache_write_tokens: number };
 };
 
 const PRIVATE_HOST = /^(localhost|.*\.local|.*\.internal|0\.0\.0\.0|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|169\.254\.\d+\.\d+|\[?::1\]?|\[?fc.*|\[?fd.*)$/i;
@@ -42,22 +45,75 @@ export function normaliseSite(input: string): URL | null {
     return null;
   }
   if (!["http:", "https:"].includes(url.protocol)) return null;
-  if (!url.hostname.includes(".") || PRIVATE_HOST.test(url.hostname) || /^\d+\.\d+\.\d+\.\d+$/.test(url.hostname)) return null;
+  if (url.username || url.password || url.port) return null;
+  if (!url.hostname.includes(".") || PRIVATE_HOST.test(url.hostname) || isIP(url.hostname)) return null;
   url.hash = "";
   return url;
 }
 
+/** RFC 1918, loopback, link-local, CGNAT, IPv6 local and IPv4-mapped forms. */
+function isPrivateAddress(ip: string) {
+  const v4 = ip.replace(/^::ffff:/i, "");
+  if (isIP(v4) === 4) {
+    const [a, b] = v4.split(".").map(Number) as [number, number];
+    return a === 10 || a === 127 || a === 0 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254) || (a === 100 && b >= 64 && b <= 127);
+  }
+  const low = ip.toLowerCase();
+  return low === "::1" || low === "::" || low.startsWith("fc") || low.startsWith("fd") || low.startsWith("fe80");
+}
+
+/** A hostname is safe only if every address it resolves to is public: nip.io style names and split DNS both resolve inward. */
+async function assertPublicHost(hostname: string) {
+  const addrs = await lookup(hostname, { all: true }).catch(() => []);
+  if (!addrs.length) throw new Error("host does not resolve");
+  if (addrs.some((a) => isPrivateAddress(a.address))) throw new Error("host resolves to a private address");
+}
+
+const MAX_BYTES = 1_000_000;
+const MAX_HOPS = 3;
+
 /** Plain text of a page: title, description and the visible copy, capped so the prompt stays small. */
 export async function fetchSiteText(url: URL): Promise<string> {
-  const res = await fetch(url, {
-    signal: AbortSignal.timeout(8_000),
-    redirect: "follow",
-    headers: { "user-agent": "Mozilla/5.0 (compatible; 100DialsBot/1.0; +https://100dials.com)", accept: "text/html,application/xhtml+xml" },
-  });
+  let current = url;
+  let res: Response | null = null;
+  for (let hop = 0; hop <= MAX_HOPS; hop++) {
+    await assertPublicHost(current.hostname);
+    res = await fetch(current, {
+      signal: AbortSignal.timeout(8_000),
+      redirect: "manual",
+      headers: { "user-agent": "Mozilla/5.0 (compatible; 100DialsBot/1.0; +https://100dials.com)", accept: "text/html,application/xhtml+xml" },
+    });
+    const location = res.headers.get("location");
+    if (res.status >= 300 && res.status < 400 && location) {
+      const next = normaliseSite(new URL(location, current).href);
+      if (!next) throw new Error("redirected somewhere we will not follow");
+      current = next;
+      res = null;
+      continue;
+    }
+    break;
+  }
+  if (!res) throw new Error("too many redirects");
   if (!res.ok) throw new Error(`site returned ${res.status}`);
   const type = res.headers.get("content-type") ?? "";
   if (!type.includes("html")) throw new Error("site is not an HTML page");
-  const html = (await res.text()).slice(0, 400_000);
+  if (Number(res.headers.get("content-length") ?? 0) > MAX_BYTES) throw new Error("page too large");
+
+  // Read at most MAX_BYTES whatever the headers claim.
+  const reader = res.body?.getReader();
+  let received = 0;
+  const chunks: Uint8Array[] = [];
+  while (reader) {
+    const { done, value } = await reader.read();
+    if (done || !value) break;
+    chunks.push(value);
+    received += value.byteLength;
+    if (received >= MAX_BYTES) {
+      await reader.cancel().catch(() => {});
+      break;
+    }
+  }
+  const html = new TextDecoder("utf-8", { fatal: false }).decode(Buffer.concat(chunks.map((c) => Buffer.from(c)))).slice(0, 400_000);
 
   const title = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1] ?? "";
   const description = /<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i.exec(html)?.[1] ?? /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["']/i.exec(html)?.[1] ?? "";
@@ -96,5 +152,9 @@ export async function draftWorkspace(input: { orgName: string; site: string; tex
   const voice = pool[Math.floor(Math.random() * pool.length)] ?? VOICES[0];
   const { gender, ...target } = parsed.target;
   void gender;
-  return { ...parsed, target: { ...target, voice_id: voice.id } };
+  return {
+    ...parsed,
+    target: { ...target, voice_id: voice.id },
+    usage: { input_tokens: response.usage.input_tokens, output_tokens: response.usage.output_tokens, cache_read_tokens: response.usage.cache_read_input_tokens ?? 0, cache_write_tokens: response.usage.cache_creation_input_tokens ?? 0 },
+  };
 }

@@ -6,7 +6,7 @@ import { sendLifecycle } from "@/lib/email/lifecycle";
 import { sweepStaleSessions } from "@/lib/calls/sweep";
 import { orgManagers } from "@/lib/email/lifecycle";
 import { buildWeeklyDigest } from "@/lib/stats/weekly-digest";
-import { COMEBACK_DAYS } from "@/lib/billing/offers";
+import { comebackUntil } from "@/lib/billing/offers";
 import { emailConfigured, sendMail } from "@/lib/email/send";
 import { templates } from "@/lib/email/templates";
 import { unsubscribeUrl } from "@/lib/demo/boss";
@@ -40,13 +40,13 @@ export async function GET(request: Request) {
   const now = Date.now();
   const results = { nudged_day1: 0, nudged: 0, three_days: 0, ended: 0, chased: 0, demo_followups: 0, digests: 0, swept: { failed: 0, finalized: 0 } };
 
-  const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at, stripe_subscription_id").eq("plan", "trial").gt("trial_ends_at", new Date(now - 20 * DAY).toISOString()).limit(1000);
+  const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at, stripe_subscription_id").eq("plan", "trial").is("stripe_subscription_id", null).gt("trial_ends_at", new Date(now - 30 * DAY).toISOString()).limit(1000);
   for (const org of trials ?? []) {
     const ageDays = (now - new Date(org.created_at).getTime()) / DAY;
     const daysLeft = Math.ceil((new Date(org.trial_ends_at).getTime() - now) / DAY);
     // The cron runs once a day, so "a day old" means anything past twenty hours; the day-3 email is a separate kind.
     if ((ageDays >= 0.85 && ageDays < 3) || (ageDays >= 3 && ageDays < 10)) {
-      const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id);
+      const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null);
       if ((count ?? 0) === 0) {
         const kind = ageDays < 3 ? "nudge_day1" : "nudge_day3";
         const r = await sendLifecycle(org.id, kind).catch((err) => (reportError(err, { where: `cron_${kind}`, orgId: org.id }), { sent: false }));
@@ -63,12 +63,17 @@ export async function GET(request: Request) {
       if (r.sent) results.ended += 1;
     }
     // After the trial, three touches for workspaces that never bought: a nudge, a question, and a 20% break-up.
+    // The next step is chosen from what was already sent, so a missed cron day never skips one.
     const daysSinceEnd = (now - new Date(org.trial_ends_at).getTime()) / DAY;
     if (daysSinceEnd >= 2 && !org.stripe_subscription_id) {
-      const step = daysSinceEnd >= 12 ? "chase_breakup" : daysSinceEnd >= 6 ? "chase_feedback" : "chase_1";
-      const opts = step === "chase_1" ? { calls: (await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null)).count ?? 0 } : step === "chase_breakup" ? { until: formatDate(new Date(now + COMEBACK_DAYS * DAY)) } : {};
-      const r = await sendLifecycle(org.id, step, opts).catch((err) => (reportError(err, { where: `cron_${step}`, orgId: org.id }), { sent: false }));
-      if (r.sent) results.chased += 1;
+      const { data: sent } = await db.from("email_log").select("kind").eq("org_id", org.id).in("kind", ["chase_1", "chase_feedback", "chase_breakup"]);
+      const done = new Set((sent ?? []).map((r) => r.kind));
+      const step = !done.has("chase_1") ? "chase_1" : !done.has("chase_feedback") && daysSinceEnd >= 6 ? "chase_feedback" : !done.has("chase_breakup") && daysSinceEnd >= 12 ? "chase_breakup" : null;
+      if (step) {
+        const opts = step === "chase_1" ? { calls: (await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null)).count ?? 0 } : step === "chase_breakup" ? { until: formatDate(comebackUntil(new Date(now))) } : {};
+        const r = await sendLifecycle(org.id, step, opts).catch((err) => (reportError(err, { where: `cron_${step}`, orgId: org.id }), { sent: false }));
+        if (r.sent) results.chased += 1;
+      }
     }
   }
 

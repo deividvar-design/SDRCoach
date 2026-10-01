@@ -38,10 +38,18 @@ describe("subscriptionToPatch", () => {
     expect(p).toMatchObject({ plan: "team", subscription_status: "active", cancel_at_period_end: true });
     expect(p.current_period_end).toBe(new Date(1_800_000_000 * 1000).toISOString());
   });
-  it("shows an earlier cancel_at as the end date", () => {
+  it("keeps the real period end even when cancel_at is earlier, so the allowance window does not move", () => {
     const p = subscriptionToPatch(sub({ cancel_at: 1_700_000_000 }), catalog);
     expect(p.cancel_at_period_end).toBe(true);
-    expect(p.current_period_end).toBe(new Date(1_700_000_000 * 1000).toISOString());
+    expect(p.current_period_end).toBe(new Date(1_800_000_000 * 1000).toISOString());
+  });
+  it("leaves the plan alone while a checkout is incomplete or the subscription is paused", () => {
+    expect(subscriptionToPatch(sub({ status: "incomplete" }), catalog)).toEqual({ subscription_status: "incomplete" });
+    expect(subscriptionToPatch(sub({ status: "paused" }), catalog).plan).toBeUndefined();
+  });
+  it("reads the plan from the price's own metadata when the price is not in the env catalog", () => {
+    const p = subscriptionToPatch(sub({ price: "price_dashboard", items: { object: "list", data: [{ id: "si_1", price: { id: "price_dashboard", metadata: { plan: "team" } } as never, quantity: 2, current_period_end: 1_800_000_000 } as never], has_more: false, url: "" } as never }), catalog);
+    expect(p.plan).toBe("team");
   });
   it("falls back to the plan written at checkout for an unknown price", () => {
     const p = subscriptionToPatch(sub({ price: "price_mystery", metadata: { org_id: "org-1", plan: "starter" } }), catalog);

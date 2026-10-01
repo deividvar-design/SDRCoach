@@ -6,6 +6,7 @@ import { StatusToast } from "@/components/status-toast";
 import { SESSION_STATUS } from "@/lib/domain/session-status";
 import { ArrowUpRight, CheckCircle2, Circle, Flame, Phone, Target as TargetIcon, Trophy, Users } from "lucide-react";
 import { requireViewer } from "@/lib/auth";
+import { fetchAll } from "@/lib/supabase/paginate";
 import { canManage } from "@/lib/domain/roles";
 import { LEVELS } from "@/lib/domain/levels";
 import { createClient } from "@/lib/supabase/server";
@@ -27,13 +28,14 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const isManager = canManage(viewer.membership.role);
   const tz = (await cookies()).get("tz")?.value;
 
-  const [{ data: rows }, { data: members }, { count: targetCount }, { data: notes }] = await Promise.all([
-    supabase
-      .from("call_sessions")
-      .select("id, user_id, created_at, difficulty, outcome, status, boss, targets(name, company), profiles(full_name), call_scores(overall)")
-      .eq("org_id", viewer.org.id)
-      .order("created_at", { ascending: false })
-      .limit(500),
+  const select = "id, user_id, created_at, difficulty, outcome, status, boss, targets(name, company), profiles(full_name), call_scores(overall)";
+  const [{ data: ownRows }, orgRows, { data: members }, { count: targetCount }, { data: notes }] = await Promise.all([
+    // The viewer's own history, so streaks and personal bests never depend on how busy the rest of the team is.
+    supabase.from("call_sessions").select(select).eq("org_id", viewer.org.id).eq("user_id", viewer.userId).order("created_at", { ascending: false }).limit(500),
+    // The team's last 30 days, complete, for the leaderboard and the team average.
+    isManager || viewer.org.reps_see_team
+      ? fetchAll((a, b) => supabase.from("call_sessions").select(select).eq("org_id", viewer.org.id).gte("created_at", daysAgoIso(30)).order("created_at", { ascending: false }).range(a, b))
+      : Promise.resolve([] as never[]),
     supabase.from("memberships").select("user_id, profiles!memberships_user_id_fkey(full_name)").eq("org_id", viewer.org.id),
     supabase.from("targets").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id).eq("is_archived", false),
     supabase
@@ -57,7 +59,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
           { done: Boolean(viewer.org.product_description), label: "Describe what you sell", href: "/settings#company", hint: "The prospect and the coach both read it." },
           { done: (realTargets ?? 0) > 0, label: "Add a real target", href: "/targets", hint: "Someone the team is actually going to call." },
           { done: (members?.length ?? 0) > 1, label: "Invite a rep", href: "/team", hint: "Or make the first call yourself." },
-          { done: (rows?.length ?? 0) > 0, label: "Make a call", href: "/practice", hint: "Level 1 is the warm-up." },
+          { done: (ownRows?.length ?? 0) + orgRows.length > 0, label: "Make a call", href: "/practice", hint: "Level 1 is the warm-up." },
           { done: (reviewed ?? 0) > 0, label: "Get a review", href: "/sessions", hint: "Say yes on the report after a call." },
           { done: (knowledge ?? 0) > 0, label: "Upload real call transcripts", href: "/knowledge", hint: "Optional. Makes the prospect sound like your market." },
         ];
@@ -65,7 +67,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
     : null;
   const setupOpen = setup?.some((s) => !s.done) ?? false;
 
-  const all = rows ?? [];
+  const own = ownRows ?? [];
+  const all = [...own, ...orgRows.filter((r) => r.user_id !== viewer.userId)].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   const lite: SessionLite[] = all.map((s) => ({
     user_id: s.user_id,
     created_at: s.created_at,
@@ -78,9 +81,10 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const scope = isManager ? lite : mine;
   const scopeRows = isManager ? all : all.filter((s) => s.user_id === viewer.userId);
 
-  const avg = average(scope.filter((s) => !s.boss).map((s) => s.overall).filter((v): v is number => v != null));
-  const booked = scope.filter((s) => s.outcome === "meeting_booked").length;
-  const decided = scope.filter((s) => s.outcome && s.outcome !== "incomplete").length;
+  const real = scope.filter((s) => !s.boss);
+  const avg = average(real.map((s) => s.overall).filter((v): v is number => v != null));
+  const booked = real.filter((s) => s.outcome === "meeting_booked").length;
+  const decided = real.filter((s) => s.outcome && s.outcome !== "incomplete").length;
   const bookRate = decided ? Math.round((booked / decided) * 100) : null;
   const streak = streakDays(mine, new Date(), tz);
   const best = personalBest(mine);
@@ -88,7 +92,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const nextLevel = suggestedLevel(mine);
   const names = new Map((members ?? []).map((m) => [m.user_id, m.profiles?.full_name ?? "Rep"]));
   const thirtyDaysAgo = daysAgoIso(30);
-  const activeSeats = new Set((rows ?? []).filter((r) => r.created_at >= thirtyDaysAgo).map((r) => r.user_id)).size;
+  const activeSeats = new Set(all.filter((r) => r.created_at >= thirtyDaysAgo).map((r) => r.user_id)).size;
   const board = leaderboard(lite, names);
   const firstName = viewer.profile.full_name?.split(" ")[0] ?? "there";
 

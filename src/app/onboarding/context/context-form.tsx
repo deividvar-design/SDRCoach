@@ -27,7 +27,8 @@ export function ContextForm({ site }: { site?: string }) {
         setDraftError(result.error);
         return;
       }
-      const { target: t, ...rest } = result.draft;
+      const { target: t, usage: _usage, ...rest } = result.draft;
+      void _usage;
       setFields(rest);
       setTarget(t);
     });

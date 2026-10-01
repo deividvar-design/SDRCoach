@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const FAQ = [
   { q: "Is there a money-back guarantee?", a: "Yes. If a paid plan isn't working for your team, email us within 30 days of your first payment and we refund it in full, no questions. It covers the first payment on a new subscription." },
   { q: "Can we pay by invoice?", a: `Yes, on annual plans. Email ${SALES_EMAIL} with the plan and seat count and we send a Stripe invoice with 30-day payment terms. Monthly and quarterly plans are card only.` },
-  { q: "What counts as a call?", a: "A practice call that connects to the AI prospect. Failed dials and calls under ten seconds are not counted." },
+  { q: "What counts as a call?", a: "A practice call that connects to the AI prospect. Dials that never connect are not counted." },
   { q: "What happens when the team uses its allowance?", a: "Calls are pooled across seats, so one rep can use more than another. When the pool is empty, dialing pauses until the month resets. Adding a seat raises the pool immediately, and there is never a surprise charge." },
   { q: "Do unused calls roll over?", a: "No. Allowances reset monthly. Annual plans are billed up front with a 20% discount." },
   { q: "Which currency will we be charged in?", a: "Euros or US dollars, your choice at checkout. European companies see euro prices by default. Prices exclude VAT; EU companies with a VAT number are reverse-charged." },

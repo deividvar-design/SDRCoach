@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { SITE_COOKIE } from "../actions";
 import { Logo } from "@/components/logo";
 import { ContextForm } from "./context-form";
 
@@ -8,8 +10,8 @@ export const metadata = { title: "Set up your prospects" };
 // Reading a website and drafting the context can take half a minute.
 export const maxDuration = 60;
 
-export default async function OnboardingContextPage({ searchParams }: PageProps<"/onboarding/context">) {
-  const { site } = await searchParams;
+export default async function OnboardingContextPage() {
+  const site = (await cookies()).get(SITE_COOKIE)?.value;
   const supabase = await createClient();
   const {
     data: { user },
@@ -29,7 +31,7 @@ export default async function OnboardingContextPage({ searchParams }: PageProps<
             Every AI prospect knows this much about {membership.organizations?.name ?? "your company"}, the same as a real buyer would after a glance at your website. The more specific, the more realistic the objections.
           </p>
         </div>
-        <ContextForm site={typeof site === "string" ? site : undefined} />
+        <ContextForm site={site} />
         <p className="text-muted-foreground text-center text-xs">
           You can edit this any time in Settings.{" "}
           <Link href="/dashboard" className="underline underline-offset-4">Skip for now</Link>

@@ -91,6 +91,9 @@ export async function finalizeCall(sessionId: string) {
         return;
       }
 
+      // Minutes were spent whatever happened to the prompt, so they are counted before the tamper check.
+      if (convo.durationSecs > 0) await recordVoiceUsage(db, { orgId: claimed.org_id, sessionId, seconds: convo.durationSecs });
+
       // The browser sent the prospect brief as an override. If it is missing or does not match what the server
       // issued, the call ran on some other prompt: keep the record, never score it, never let it on the leaderboard.
       if (claimed.prompt_hash && (convo.overridePrompt === null || hashPrompt(convo.overridePrompt) !== claimed.prompt_hash)) {
@@ -158,7 +161,7 @@ export async function finalizeCall(sessionId: string) {
         turns,
         metrics: metrics ?? computeMetrics(turns, durationSecs),
         difficulty: claimed.difficulty,
-        prospect: claimed.targets ?? { name: "Prospect", title: "", company: "", pain_points: [], objections: [] },
+        prospect: { ...(claimed.targets ?? { name: "Prospect", title: "", company: "", pain_points: [], objections: [] }), kind: claimed.boss ? "boss" : claimed.targets?.kind },
         company: claimed.organizations ?? { name: "the rep's company", company_description: null, product_description: null, ideal_customer_profile: null },
         repName: claimed.profiles?.full_name ?? "Rep",
         orgPlaybook: digests,
@@ -214,5 +217,9 @@ async function afterCollect(db: Db, orgId: string) {
   if (orgRow?.plan !== "trial") return;
   const t = trialStatus(orgRow, connected);
   if (t.callsLeft <= 2 && t.callsLeft > 0) await sendLifecycle(orgId, "two_calls_left").catch((err) => reportError(err, { where: "trial_email", orgId }));
-  if (t.callsLeft === 0) await sendLifecycle(orgId, "trial_ended", { reason: "calls" }).catch((err) => reportError(err, { where: "trial_email", orgId }));
+  if (t.callsLeft === 0) {
+    // The trial is over now, not at the original end date: every later email and offer keys off trial_ends_at.
+    if (new Date(orgRow.trial_ends_at).getTime() > Date.now()) await db.from("organizations").update({ trial_ends_at: new Date().toISOString() }).eq("id", orgId).eq("plan", "trial");
+    await sendLifecycle(orgId, "trial_ended", { reason: "calls" }).catch((err) => reportError(err, { where: "trial_email", orgId }));
+  }
 }

@@ -10,6 +10,7 @@ export function DialsLeft({ allowance, isManager, formatDate }: { allowance: All
   const pct = included > 0 ? Math.min(100, Math.round((used / included) * 100)) : 100;
   const low = left === 0 || (included > 0 && left / included <= 0.1);
   const title = kind === "trial" ? "Trial dials left" : scope === "you" ? "Your dials left" : "Team dials left";
+  void scope;
   const sub =
     kind === "trial"
       ? allowance.daysLeft === 0

@@ -23,6 +23,13 @@ describe("periodWindow", () => {
     expect(w.end.toISOString()).toBe("2026-08-15T10:00:00.000Z");
   });
 
+  it("clamps the day so a period ending on the 31st does not drift", () => {
+    const now = Date.parse("2027-03-15T00:00:00Z");
+    const w = periodWindow({ billing_interval: "year", current_period_end: "2027-05-31T10:00:00.000Z" }, now)!;
+    expect(w.start.toISOString()).toBe("2027-02-28T10:00:00.000Z");
+    expect(w.end.toISOString()).toBe("2027-03-31T10:00:00.000Z");
+  });
+
   it("returns null without a period end", () => {
     expect(periodWindow({ billing_interval: "month", current_period_end: null })).toBeNull();
   });

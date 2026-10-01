@@ -22,21 +22,21 @@ export async function buildWeeklyDigest(db: SupabaseClient<Database>, orgId: str
   const since = new Date(now - 7 * 86_400_000).toISOString();
   const { data } = await db
     .from("call_sessions")
-    .select("id, user_id, status, outcome, profiles(full_name), call_scores(overall, dimensions, objections)")
+    .select("id, user_id, status, outcome, boss, profiles(full_name), call_scores(overall, dimensions, objections)")
     .eq("org_id", orgId)
-    .eq("boss", false)
     .gte("created_at", since)
     .not("started_at", "is", null)
     .neq("status", "failed")
     .limit(1000);
   const rows = data ?? [];
-  const scored = rows.filter((r) => r.call_scores);
+  // Boss fights count as calls; their scores and outcomes stay out of every average.
+  const scored = rows.filter((r) => r.call_scores && !r.boss);
 
   const byRep = new Map<string, { name: string; scores: number[]; calls: number }>();
   for (const r of rows) {
     const e = byRep.get(r.user_id) ?? { name: r.profiles?.full_name ?? "Rep", scores: [], calls: 0 };
     e.calls += 1;
-    if (r.call_scores?.overall != null) e.scores.push(r.call_scores.overall);
+    if (r.call_scores?.overall != null && !r.boss) e.scores.push(r.call_scores.overall);
     byRep.set(r.user_id, e);
   }
   // Top of the board needs enough reviews to mean something; reps choose what to review.
@@ -59,7 +59,7 @@ export async function buildWeeklyDigest(db: SupabaseClient<Database>, orgId: str
   return {
     calls: rows.length,
     reviewed: scored.length,
-    booked: rows.filter((r) => r.outcome === "meeting_booked").length,
+    booked: rows.filter((r) => r.outcome === "meeting_booked" && !r.boss).length,
     avg: avg(scored.map((r) => r.call_scores!.overall)),
     topRep: top,
     weakest: dims[0] ? { label: RUBRIC[dims[0].key].label, avg: dims[0].avg } : null,

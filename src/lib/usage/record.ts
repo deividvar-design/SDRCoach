@@ -31,6 +31,11 @@ export async function recordVoiceUsage(db: Db, p: { orgId: string; sessionId: st
     seconds: p.seconds,
     cost_usd: voiceCost(p.seconds),
   });
-  // 23505: a voice row already exists for this session (re-finalize). Never count minutes twice.
-  if (error && error.code !== "23505") reportError(new Error(error.message), { where: "usage_record_voice", orgId: p.orgId, sessionId: p.sessionId });
+  // 23505: the row was written when the token was minted (seconds 0) or by an earlier finalize. Set the real length
+  // rather than counting the call twice.
+  if (error?.code === "23505") {
+    if (p.seconds > 0) await db.from("usage_events").update({ seconds: p.seconds, cost_usd: voiceCost(p.seconds) }).eq("session_id", p.sessionId).eq("kind", "voice");
+    return;
+  }
+  if (error) reportError(new Error(error.message), { where: "usage_record_voice", orgId: p.orgId, sessionId: p.sessionId });
 }

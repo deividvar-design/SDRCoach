@@ -36,7 +36,7 @@ export default async function TeamPage() {
     const entry = statsByUser.get(s.user_id) ?? { calls: 0, booked: 0, scores: [], lastCallAt: null };
     entry.calls += 1;
     if (!entry.lastCallAt || s.created_at > entry.lastCallAt) entry.lastCallAt = s.created_at;
-    if (s.outcome === "meeting_booked") entry.booked += 1;
+    if (s.outcome === "meeting_booked" && !s.boss) entry.booked += 1;
     const sc = Array.isArray(s.call_scores) ? s.call_scores[0]?.overall : s.call_scores?.overall;
     if (typeof sc === "number" && !s.boss) entry.scores.push(sc);
     statsByUser.set(s.user_id, entry);

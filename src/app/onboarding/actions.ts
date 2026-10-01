@@ -12,7 +12,9 @@ import { PRACTICE_PERSONAS } from "@/content/practice-personas";
 import { BOSS_PERSONAS } from "@/content/boss-personas";
 import { isAdminEmail } from "@/lib/auth";
 import { track } from "@vercel/analytics/server";
-import { draftWorkspace, fetchSiteText, normaliseSite, type WorkspaceDraft } from "@/lib/onboarding/draft";
+import { DRAFT_MODEL, draftWorkspace, fetchSiteText, normaliseSite, type WorkspaceDraft } from "@/lib/onboarding/draft";
+import { recordAnthropicUsage } from "@/lib/usage/record";
+import { cookies } from "next/headers";
 import { VOICE_IDS } from "@/lib/domain/voices";
 
 export interface OnboardingState {
@@ -64,8 +66,14 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
     return { error: error.message };
   }
 
-  redirect(site ? `/onboarding/context?site=${encodeURIComponent(site.href)}` : "/onboarding/context");
+  // The website travels to step 2 in a short-lived cookie, never in the URL, so a crafted link cannot trigger a draft.
+  if (site) (await cookies()).set(SITE_COOKIE, site.href, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/onboarding", maxAge: 600 });
+  redirect("/onboarding/context");
 }
+
+export const SITE_COOKIE = "onboarding_site";
+/** Drafts per workspace per day. Each one is a page fetch plus a Sonnet call. */
+const DRAFTS_PER_DAY = 10;
 
 export type DraftResult = { draft: WorkspaceDraft; site: string } | { error: string };
 
@@ -79,8 +87,13 @@ export async function draftFromWebsite(website: string): Promise<DraftResult> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  const { data: membership } = await supabase.from("memberships").select("org_id, organizations(name)").eq("user_id", user.id).limit(1).maybeSingle();
+  const { data: membership } = await supabase.from("memberships").select("org_id, role, organizations(name)").eq("user_id", user.id).limit(1).maybeSingle();
   if (!membership) redirect("/onboarding");
+  if (membership.role !== "owner" && membership.role !== "manager") return { error: "Only managers can draft the company context." };
+
+  const admin = createAdminClient();
+  const { count: today } = await admin.from("usage_events").select("id", { count: "exact", head: true }).eq("org_id", membership.org_id).eq("kind", "digest").eq("model", DRAFT_MODEL).gte("created_at", new Date(Date.now() - 86_400_000).toISOString());
+  if ((today ?? 0) >= DRAFTS_PER_DAY) return { error: "That is enough drafts for today. Edit the boxes by hand, or try again tomorrow." };
 
   let text: string;
   try {
@@ -91,6 +104,7 @@ export async function draftFromWebsite(website: string): Promise<DraftResult> {
   }
   try {
     const draft = await draftWorkspace({ orgName: membership.organizations?.name ?? site.hostname, site: site.href, text });
+    await recordAnthropicUsage(admin, { orgId: membership.org_id, kind: "digest", model: DRAFT_MODEL, usage: draft.usage });
     return { draft, site: site.hostname };
   } catch (err) {
     reportError(err, { where: "onboarding_draft", orgId: membership.org_id, extra: { site: site.href } });

@@ -26,7 +26,7 @@ export default function TermsPage() {
       <ul>
         <li>Fees are per seat per month or per year as shown on the pricing page at the time of purchase, with a monthly call allowance per seat, pooled across the workspace. When the allowance is used, calls pause until it resets; there are no usage charges.</li>
         <li>Seats can be added at any time and are prorated. Seat reductions take effect at the next renewal.</li>
-        <li>Fees are charged in euros or US dollars as chosen at checkout and exclude VAT and similar taxes. Invoices are due within 14 days unless agreed otherwise. Late amounts may suspend the service after notice.</li>
+        <li>Fees are charged in euros or US dollars as chosen at checkout and exclude VAT and similar taxes. Invoices are due within 30 days unless agreed otherwise. Late amounts may suspend the service after notice.</li>
         <li>Prices may change with 30 days' notice; changes apply from your next renewal.</li>
       </ul>
 

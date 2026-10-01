@@ -28,60 +28,52 @@ type Org = Pick<Organization, "id" | "plan" | "seat_limit" | "trial_call_limit" 
 export function periodWindow(org: Pick<Org, "billing_interval" | "current_period_end">, now = Date.now()): { start: Date; end: Date; months: number } | null {
   if (!org.current_period_end) return null;
   const end = new Date(org.current_period_end);
-  const monthBefore = (d: Date) => {
-    const x = new Date(d);
-    x.setUTCMonth(x.getUTCMonth() - 1);
-    return x;
+  // The i-th anchor is computed from the period end directly, with the day clamped, so a period ending on the 31st
+  // never drifts earlier month after month.
+  const anchor = (i: number) => {
+    const y = end.getUTCFullYear();
+    const m = end.getUTCMonth() - i;
+    const lastDay = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    return new Date(Date.UTC(y, m, Math.min(end.getUTCDate(), lastDay), end.getUTCHours(), end.getUTCMinutes(), end.getUTCSeconds()));
   };
-  let winEnd = end;
-  for (let i = 0; i < 24; i++) {
-    const candidate = monthBefore(winEnd);
-    if (candidate.getTime() <= now) break;
-    winEnd = candidate;
-  }
-  return { start: monthBefore(winEnd), end: winEnd, months: 1 };
+  let i = 0;
+  while (i < 36 && anchor(i + 1).getTime() > now) i += 1;
+  return { start: anchor(i + 1), end: anchor(i), months: 1 };
+}
+
+/** A paid plan with no period end on record (invoice customers set up by hand) runs on calendar months. */
+function calendarMonth(now = Date.now()) {
+  const d = new Date(now);
+  return { start: new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)), end: new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)), months: 1 };
 }
 
 /**
- * How many practice calls remain: the team pool for managers and trials, the viewer's own seat share for reps.
- * Trials count voice usage rows so deleting calls never refunds them; paid plans count connected sessions.
- * The team pool is what the call route enforces: at zero, nobody in the workspace can dial until it resets.
+ * How many practice calls remain for the workspace this month. Everyone sees the same team pool, because the pool is
+ * what the call route enforces: at zero, nobody in the workspace can dial until it resets or a seat is added.
  */
-export async function loadAllowance(org: Org, viewer: { userId: string; isManager: boolean }): Promise<Allowance | null> {
+export async function loadAllowance(org: Org, viewer?: { userId: string; isManager: boolean }): Promise<Allowance | null> {
+  // Everyone sees the pool the call route enforces; the viewer argument is kept so call sites need not change.
+  void viewer;
   const db = createAdminClient();
 
-  if (org.plan === "trial" || org.plan === "canceled") {
+  if (org.plan === "trial") {
     const t = trialStatus(org, await countTrialCalls(db, org.id));
-    return {
-      scope: "team",
-      kind: "trial",
-      used: t.callsUsed,
-      included: org.trial_call_limit,
-      left: t.callsLeft,
-      over: 0,
-      resetsAt: org.trial_ends_at,
-      daysLeft: t.onTrial ? t.daysLeft : 0,
-    };
+    return { scope: "team", kind: "trial", used: t.callsUsed, included: org.trial_call_limit, left: t.callsLeft, over: 0, resetsAt: org.trial_ends_at, daysLeft: t.onTrial ? t.daysLeft : 0 };
   }
+  // A canceled workspace is gated elsewhere; trial numbers would be nonsense for it.
+  if (org.plan === "canceled") return null;
 
   const plan = PLANS.find((p) => p.id === org.plan);
-  const window = periodWindow(org);
-  if (!plan?.callsPerSeat || !window) return null;
+  if (!plan?.callsPerSeat) return null;
+  const window = periodWindow(org) ?? calendarMonth();
 
-  let query = db
-    .from("call_sessions")
-    .select("id", { count: "exact", head: true })
-    .eq("org_id", org.id)
-    .not("started_at", "is", null)
-    .neq("status", "failed")
-    .gte("started_at", window.start.toISOString());
-  if (!viewer.isManager) query = query.eq("user_id", viewer.userId);
-  const { count } = await query;
-
+  // Voice usage rows are written the moment a token is minted and survive call deletion, so this is the same
+  // count the trial uses and it cannot be dodged by a client that never reports the call as started.
+  const { count } = await db.from("usage_events").select("id", { count: "exact", head: true }).eq("org_id", org.id).eq("kind", "voice").gte("created_at", window.start.toISOString());
   const used = count ?? 0;
-  const included = plan.callsPerSeat * window.months * (viewer.isManager ? org.seat_limit : 1);
+  const included = plan.callsPerSeat * window.months * org.seat_limit;
   return {
-    scope: viewer.isManager ? "team" : "you",
+    scope: "team",
     kind: "paid",
     used,
     included,

@@ -64,7 +64,7 @@ export async function startCheckout(formData: FormData) {
       tax_id_collection: { enabled: true },
       ...(process.env.STRIPE_AUTOMATIC_TAX === "1" ? { automatic_tax: { enabled: true } } : {}),
       subscription_data: { metadata: { org_id: viewer.org.id, plan: parsed.data.plan, ...(withOffer && offer ? { offer: offer.id } : {}) } },
-      metadata: { org_id: viewer.org.id },
+      metadata: { org_id: viewer.org.id, plan: parsed.data.plan },
   });
   try {
     let session: Stripe.Checkout.Session;

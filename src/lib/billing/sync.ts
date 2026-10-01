@@ -17,6 +17,8 @@ export interface OrgBillingPatch {
 
 const ACTIVE = new Set<Stripe.Subscription.Status>(["active", "trialing"]);
 const GRACE = new Set<Stripe.Subscription.Status>(["past_due"]);
+/** Checkout still in progress, or paused by the customer: not a cancellation, so the plan is left alone. */
+const LIMBO = new Set<Stripe.Subscription.Status>(["incomplete", "paused"]);
 const PAID_PLANS = new Set(["starter", "team"]);
 
 /** Pure mapping from a Stripe subscription to what we store. */
@@ -25,10 +27,15 @@ export function subscriptionToPatch(sub: Stripe.Subscription, catalog: PriceCata
   const priceId = item?.price?.id ?? null;
   const known = priceId ? catalog.byPrice[priceId] : undefined;
   const customer = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
-  // The portal and dashboard now schedule cancellations through `cancel_at`; older flows set the boolean.
+  // The portal and dashboard schedule cancellations through `cancel_at`; older flows set the boolean.
   const cancelAt = typeof sub.cancel_at === "number" ? sub.cancel_at : null;
-  const periodEnd = item?.current_period_end ?? null;
-  const endsAt = cancelAt !== null && (periodEnd === null || cancelAt < periodEnd) ? cancelAt : periodEnd;
+  // Newer API versions put the period end on the item; older webhook payloads still carry it on the subscription.
+  const periodEnd = item?.current_period_end ?? (sub as unknown as { current_period_end?: number | null }).current_period_end ?? null;
+
+  if (LIMBO.has(sub.status)) {
+    // Nothing is decided yet: record what we see, never flip the plan or point the org at an unpaid subscription.
+    return { subscription_status: sub.status };
+  }
 
   const patch: OrgBillingPatch = {
     stripe_customer_id: customer,
@@ -37,14 +44,15 @@ export function subscriptionToPatch(sub: Stripe.Subscription, catalog: PriceCata
     billing_interval: known?.interval ?? null,
     billing_currency: sub.currency === "eur" || sub.currency === "usd" ? sub.currency : null,
     subscription_status: sub.status,
-    current_period_end: endsAt ? new Date(endsAt * 1000).toISOString() : null,
+    current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
     cancel_at_period_end: Boolean(sub.cancel_at_period_end) || cancelAt !== null,
   };
 
   if (ACTIVE.has(sub.status) || GRACE.has(sub.status)) {
     // Past due keeps access during Stripe's retry window; the status is shown in Settings.
     const metaPlan = sub.metadata?.plan;
-    const plan = known?.plan ?? (metaPlan && PAID_PLANS.has(metaPlan) ? metaPlan : undefined);
+    const pricePlan = item?.price?.metadata?.plan;
+    const plan = known?.plan ?? [pricePlan, metaPlan].find((p): p is string => typeof p === "string" && PAID_PLANS.has(p));
     if (plan) patch.plan = plan;
     if (item?.quantity) patch.seat_limit = item.quantity;
   } else {
@@ -66,6 +74,8 @@ export interface SyncDeps {
   findOrg(q: { orgId?: string | null; customerId?: string | null; subscriptionId?: string | null }): Promise<OrgRef | null>;
   patchOrg(orgId: string, patch: OrgBillingPatch): Promise<void>;
   retrieveSubscription(id: string): Promise<Stripe.Subscription>;
+  /** Cancels a subscription that should never have been created (a second checkout racing the first). */
+  cancelSubscription?(id: string): Promise<void>;
   notify?(orgId: string, kind: "subscription_started" | "payment_failed" | "subscription_canceled"): Promise<void>;
 }
 
@@ -84,6 +94,11 @@ export async function handleStripeEvent(event: Stripe.Event, deps: SyncDeps): Pr
       const customer = typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
       const org = await deps.findOrg({ orgId: session.metadata?.org_id ?? session.client_reference_id, customerId: customer });
       if (!org) return { handled: false, reason: "org not found" };
+      // Two upgrade tabs can both complete. The org keeps its first subscription; the second is cancelled and refunded pro rata.
+      if (org.stripe_subscription_id && org.stripe_subscription_id !== subId && org.plan !== "canceled") {
+        await deps.cancelSubscription?.(subId);
+        return { handled: false, reason: "duplicate subscription cancelled", orgId: org.id };
+      }
       const sub = await deps.retrieveSubscription(subId);
       await deps.patchOrg(org.id, subscriptionToPatch(sub, deps.catalog));
       await deps.notify?.(org.id, "subscription_started");

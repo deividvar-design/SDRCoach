@@ -46,10 +46,12 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
   const name = membership.profiles?.full_name ?? "Rep";
   const all = sessions ?? [];
   const lite: SessionLite[] = all.map((s) => ({ user_id: userId, created_at: s.created_at, difficulty: s.difficulty, outcome: s.outcome, overall: s.call_scores?.overall ?? null, boss: s.boss }));
-  const scored = all.filter((s) => s.call_scores?.overall != null);
+  // Boss fights count as calls and for streaks, never for scores or booking rates.
+  const real = all.filter((s) => !s.boss);
+  const scored = real.filter((s) => s.call_scores?.overall != null);
   const avg = average(scored.map((s) => s.call_scores!.overall));
-  const booked = all.filter((s) => s.outcome === "meeting_booked").length;
-  const decided = all.filter((s) => s.outcome && s.outcome !== "incomplete").length;
+  const booked = real.filter((s) => s.outcome === "meeting_booked").length;
+  const decided = real.filter((s) => s.outcome && s.outcome !== "incomplete").length;
 
   const dimAverages = RUBRIC_KEYS.map((k) => {
     const vals = scored.map((s) => (s.call_scores!.dimensions as ScoreDimensions)?.[k]?.score).filter((v): v is number => typeof v === "number");

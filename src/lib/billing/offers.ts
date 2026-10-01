@@ -20,6 +20,13 @@ const DAY = 86_400_000;
 /** How long the break-up email's discount stays open. */
 export const COMEBACK_DAYS = 7;
 
+/** The comeback offer runs to the end of the seventh day (UTC), so the date in the email is good all day. */
+export function comebackUntil(sentAt: string | Date) {
+  const d = new Date(new Date(sentAt).getTime() + COMEBACK_DAYS * DAY);
+  d.setUTCHours(23, 59, 59, 0);
+  return d;
+}
+
 type Org = Pick<Organization, "id" | "plan" | "trial_ends_at" | "stripe_subscription_id">;
 
 export async function currentOffer(org: Org, now = Date.now()): Promise<Offer | null> {
@@ -32,7 +39,7 @@ export async function currentOffer(org: Org, now = Date.now()): Promise<Offer | 
   if (org.plan === "trial" || org.plan === "canceled") {
     const { data } = await createAdminClient().from("email_log").select("sent_at").eq("org_id", org.id).eq("kind", "chase_breakup").maybeSingle();
     if (data) {
-      const until = new Date(new Date(data.sent_at).getTime() + COMEBACK_DAYS * DAY);
+      const until = comebackUntil(data.sent_at);
       if (until.getTime() > now) return { id: "comeback20", coupon: "COMEBACK20", percent: 20, until: until.toISOString(), line: "20% off your first three months, from our last email. Applied at checkout." };
     }
   }

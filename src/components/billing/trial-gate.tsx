@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import type { TrialStatus } from "@/lib/billing/trial";
 
 /** Pages that stay usable once a trial ends, so a manager can still buy or manage billing. */
-const OPEN_PATHS = ["/upgrade", "/settings", "/admin"];
+const OPEN_PATHS = ["/upgrade", "/settings", "/admin", "/sessions"];
 
 interface Props {
   status: TrialStatus;

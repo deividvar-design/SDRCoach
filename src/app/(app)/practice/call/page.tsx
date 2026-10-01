@@ -18,12 +18,14 @@ export default async function CallPage({ searchParams }: PageProps<"/practice/ca
   const supabase = await createClient();
   const { data: t } = await supabase.from("targets").select("id, name, title, company, industry, persona_notes, kind, is_archived").eq("id", target).eq("org_id", viewer.org.id).maybeSingle();
   if (!t || t.is_archived) redirect("/practice");
+  // Boss fights are always Level 3, whatever the link said.
+  const effective: Difficulty = t.kind === "boss" ? "cold" : level;
 
   return (
     <CallScreen
       target={t}
-      difficulty={level}
-      level={LEVELS[level]}
+      difficulty={effective}
+      level={LEVELS[effective]}
       voiceConfigured={Boolean(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_AGENT_ID)}
     />
   );

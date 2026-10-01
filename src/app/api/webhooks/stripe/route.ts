@@ -49,6 +49,9 @@ export async function POST(request: Request) {
       if (error) throw new Error(error.message);
     },
     retrieveSubscription: (id) => stripe().subscriptions.retrieve(id),
+    cancelSubscription: async (id) => {
+      await stripe().subscriptions.cancel(id, { prorate: true });
+    },
     notify: async (orgId, kind) => {
       await sendLifecycle(orgId, kind).catch((err) => {
         console.error("lifecycle email failed", kind, err);
