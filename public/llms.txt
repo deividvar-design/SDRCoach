@@ -10,6 +10,7 @@
 - [Pricing](/pricing): per-seat plans and the free trial
 - [Trust and security](/trust): data handling, retention, deletion
 - [Blog](/blog): research-backed guides on cold calling
+- [Can you survive Karen?](/karen): a free three-minute call against our rudest AI prospect, work email only, scored report after
 - [Objection library](/objections): fifteen cold-call objections, each with what it means, three ways to handle it and a worked exchange
 
 ## Facts

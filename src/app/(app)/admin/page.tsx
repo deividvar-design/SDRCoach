@@ -21,7 +21,7 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Internal" title="Admin" description="Every workspace, what it uses and what it costs. Actions here are logged." />
+      <PageHeader eyebrow="Internal" title="Admin" description="Every workspace, what it uses and what it costs. Actions here are logged." actions={<Link href="/admin/leads" className="text-sm underline underline-offset-4">Karen leads</Link>} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label="Workspaces" value={totals.orgs} hint={`${totals.trials} trial, ${totals.paid} paid, ${totals.canceled} canceled`} />

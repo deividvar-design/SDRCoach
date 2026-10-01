@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 
-export function AuthForm({ mode, next, invite, notice }: { mode: "login" | "signup"; next?: string; invite?: string; notice?: { kind: "info" | "error"; text: string } }) {
+export function AuthForm({ mode, next, invite, email, notice }: { mode: "login" | "signup"; next?: string; invite?: string; email?: string; notice?: { kind: "info" | "error"; text: string } }) {
   const action = mode === "login" ? signIn : signUp;
   const [state, formAction, pending] = useActionState<AuthState, FormData>(action, {});
 
@@ -47,7 +47,7 @@ export function AuthForm({ mode, next, invite, notice }: { mode: "login" | "sign
         )}
         <div className="space-y-2">
           <Label htmlFor="email">Work email</Label>
-          <Input id="email" name="email" type="email" autoComplete="email" required placeholder={mode === "signup" && !invite ? "you@company.com" : undefined} />
+          <Input id="email" name="email" type="email" autoComplete="email" required defaultValue={email} placeholder={mode === "signup" && !invite ? "you@company.com" : undefined} />
           {mode === "signup" && !invite && <p className="text-muted-foreground text-xs">Work email only. Personal addresses can’t start a trial.</p>}
         </div>
         <div className="space-y-2">

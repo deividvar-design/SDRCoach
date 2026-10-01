@@ -1,5 +1,8 @@
 import { SITE, absoluteUrl } from "@/lib/site";
 import { TRIAL } from "@/lib/billing/plans";
+import { RUBRIC, type RubricKey } from "@/lib/scoring/rubric";
+import { OUTCOME_TEXT } from "@/lib/domain/session-status";
+import type { ScoreDimensions } from "@/types/database";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -93,6 +96,37 @@ export const templates = {
     const cta = { label: "Invite your reps", href: absoluteUrl("/team") };
     const lines = [`Hi ${p.firstName},`, `${p.orgName} is on the ${p.plan} plan with ${p.seats} seat${p.seats === 1 ? "" : "s"}. Thank you.`, "Invoices, seats and payment details are under Settings → Manage billing."];
     return { subject: `Welcome to ${SITE.name} ${p.plan}`, html: layout("You're all set.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  demoScorecard(p: { firstName: string; email: string; overall: number; outcome: string; outcomeReason: string; dimensions: ScoreDimensions; strengths: string[]; improvements: string[]; coachSummary: string }): Rendered {
+    const cta = { label: "Start a free trial with this address", href: absoluteUrl(`/signup?email=${encodeURIComponent(p.email)}`) };
+    const rows = (Object.keys(RUBRIC) as RubricKey[]).map((k) => ({ label: RUBRIC[k].label, score: p.dimensions[k].score, note: p.dimensions[k].rationale }));
+    const outcome = OUTCOME_TEXT[p.outcome] ?? p.outcome;
+    const html = [
+      `<p style="margin:0 0 12px">Hi ${esc(p.firstName)},</p>`,
+      `<p style="margin:0 0 12px">You called Karen. She ${esc(outcome.toLowerCase())}. ${esc(p.outcomeReason)}</p>`,
+      `<p style="margin:0 0 16px;font-size:32px;font-family:Georgia,'Times New Roman',serif">${p.overall.toFixed(1)}<span style="font-size:14px;color:#8a857a"> / 10 overall</span></p>`,
+      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px">${rows.map((r) => `<tr><td style="padding:8px 0;border-top:1px solid #e6e2d8;font-size:14px;width:40%">${esc(r.label)}</td><td style="padding:8px 0;border-top:1px solid #e6e2d8;font-size:14px;font-weight:600;width:10%">${r.score}</td><td style="padding:8px 0;border-top:1px solid #e6e2d8;font-size:13px;color:#8a857a">${esc(r.note)}</td></tr>`).join("")}</table>`,
+      `<p style="margin:0 0 6px;font-weight:600">What worked</p>${p.strengths.map((x) => `<p style="margin:0 0 6px">${esc(x)}</p>`).join("")}`,
+      `<p style="margin:12px 0 6px;font-weight:600">What to fix first</p>${p.improvements.map((x) => `<p style="margin:0 0 6px">${esc(x)}</p>`).join("")}`,
+      `<p style="margin:16px 0 0;color:#3b3833">${esc(p.coachSummary)}</p>`,
+      `<p style="margin:16px 0 0;font-size:13px;color:#8a857a">Karen is one of the prospects in ${esc(SITE.name)}. Reps dial prospects built from their own targets, at three levels, and every call is scored like this one. Ten calls are free.</p>`,
+    ].join("");
+    const text = [
+      `Hi ${p.firstName},`,
+      `You called Karen. She ${outcome.toLowerCase()}. ${p.outcomeReason}`,
+      `Overall: ${p.overall.toFixed(1)} / 10`,
+      ...rows.map((r) => `${r.label}: ${r.score}. ${r.note}`),
+      "",
+      "What worked:",
+      ...p.strengths,
+      "",
+      "What to fix first:",
+      ...p.improvements,
+      "",
+      p.coachSummary,
+    ];
+    return { subject: `Your call with Karen: ${p.overall.toFixed(1)} / 10`, html: layout("Here's how it went.", html, cta), text: textOf(text, cta) };
   },
 
   paymentFailed(p: { firstName: string; orgName: string }): Rendered {

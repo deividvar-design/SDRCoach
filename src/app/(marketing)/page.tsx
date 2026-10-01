@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BookOpen, GraduationCap, MessageSquareText, Mic, Target, TrendingUp, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LEVEL_LIST } from "@/lib/domain/levels";
+import { BOSS_PERSONAS } from "@/content/boss-personas";
 import { SITE } from "@/lib/site";
 import { TRIAL } from "@/lib/billing/plans";
 import { SampleCall } from "@/components/marketing/sample-call";
@@ -86,6 +87,25 @@ export default function HomePage() {
         <p className="text-muted-foreground mt-6 max-w-2xl text-sm">
           Reps are nudged up a level after three calls averaging seven or better. Nothing is locked, because the point is confidence on the real dial, not a badge.
         </p>
+      </Section>
+
+      <Section className="border-t">
+        <Eyebrow>Then there's Karen</Eyebrow>
+        <H2>Boss fights, for when Level 3 stops being scary.</H2>
+        <div className="mt-10 grid gap-4 md:grid-cols-3">
+          {BOSS_PERSONAS.map((b) => (
+            <div key={b.name} className="bg-card rounded-2xl border p-6">
+              <div className="text-muted-foreground text-xs">{b.title}</div>
+              <h3 className="font-display mt-2 text-2xl">{b.name}</h3>
+              <p className="text-signal mt-3 text-sm">“{b.objections[0]}”</p>
+              <p className="text-muted-foreground mt-3 text-sm">{b.persona_notes.split(". ").slice(0, 2).join(". ")}.</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 flex flex-wrap items-center gap-4">
+          <Button size="lg" variant="signal" asChild><Link href="/karen">Try to survive Karen, no account needed</Link></Button>
+          <p className="text-muted-foreground text-sm">Three minutes, a work email, and a scored report after. Nobody books her. Composure is the win.</p>
+        </div>
       </Section>
 
       <Section className="border-t">

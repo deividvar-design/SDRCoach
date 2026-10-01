@@ -104,6 +104,28 @@ export type UsageEvent = {
 };
 export type AdminAction = { id: string; admin_email: string; org_id: string | null; action: string; payload: Json | null; created_at: string };
 export type Feedback = { id: string; org_id: string | null; user_id: string | null; email: string; name: string | null; role: string | null; page: string | null; user_agent: string | null; body: string; reply_ok: boolean; created_at: string };
+export type DemoCall = {
+  id: string;
+  email: string;
+  domain: string;
+  ip: string | null;
+  newsletter: boolean;
+  status: "created" | "live" | "ended" | "scoring" | "scored" | "failed";
+  elevenlabs_conversation_id: string | null;
+  prompt_hash: string | null;
+  started_at: string | null;
+  ended_at: string | null;
+  duration_seconds: number | null;
+  outcome: CallOutcome | null;
+  outcome_reason: string | null;
+  overall: number | null;
+  score: { dimensions: ScoreDimensions; strengths: string[]; improvements: string[]; coach_summary: string } | null;
+  transcript: TranscriptTurn[] | null;
+  error: string | null;
+  email_sent_at: string | null;
+  created_at: string;
+};
+
 export type EmailLog = { id: string; org_id: string; user_id: string | null; kind: string; sent_at: string };
 
 export type Profile = {
@@ -255,6 +277,7 @@ export type Database = {
         Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
+      demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "created_at">>;
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
       admin_actions: Table<AdminAction, Insert<AdminAction, "id" | "org_id" | "payload" | "created_at">>;
       email_log: Table<EmailLog, Insert<EmailLog, "id" | "user_id" | "sent_at">>;
