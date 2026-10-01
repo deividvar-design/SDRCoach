@@ -15,10 +15,10 @@ const FAQ = [
   { q: "Is there a money-back guarantee?", a: "Yes. If a paid plan isn't working for your team, email us within 30 days of your first payment and we refund it in full, no questions. It covers the first payment on a new subscription." },
   { q: "Can we pay by invoice?", a: `Yes, on annual plans. Email ${SALES_EMAIL} with the plan and seat count and we send a Stripe invoice with 30-day payment terms. Monthly and quarterly plans are card only.` },
   { q: "What counts as a call?", a: "A practice call that connects to the AI prospect. Failed dials and calls under ten seconds are not counted." },
-  { q: "What happens when a rep uses their allowance?", a: "Calls keep working and are billed at the overage rate at the end of the month. Managers can cap overage per team." },
+  { q: "What happens when a rep uses their allowance?", a: "Calls keep working. Calls beyond the allowance are added to your next invoice at the plan's overage rate, and the Settings page shows the running count." },
   { q: "Do unused calls roll over?", a: "No. Allowances reset monthly. Annual plans are billed up front with a 20% discount." },
   { q: "Which currency will we be charged in?", a: "Euros or US dollars, your choice at checkout. European companies see euro prices by default. Prices exclude VAT; EU companies with a VAT number are reverse-charged." },
-  { q: "Can we use our own call recordings?", a: "Yes, on Team and above. Upload transcripts from Gong, Chorus or your dialer and prospects start sounding like your market within minutes." },
+  { q: "Can we use our own call recordings?", a: "Yes, on every plan. Upload transcripts from Gong, Chorus or your dialer and prospects start sounding like your market within minutes. Starter holds 30 sources, Team 100." },
   { q: "Is our data used to train models?", a: "No. Your transcripts and recordings are used only to ground your own team's prospects and grading." },
   { q: "Why work email only?", a: "100 Dials is built for teams. The trial creates a workspace for your company domain, so one person can start and invite the rest." },
 ];

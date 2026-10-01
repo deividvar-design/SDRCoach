@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 const STEPS = [
-  { icon: Target, title: "Add who you're calling", body: "Real accounts from this quarter's list, or one of six built-in personas. Pick a voice, add the pains and objections, and each one becomes a live prospect." },
+  { icon: Target, title: "Add who you're calling", body: "Real accounts from this quarter's list, or one of six built-in personas and three boss fights. Pick a voice, add the pains and objections, and each one becomes a live prospect." },
   { icon: Mic, title: "Dial", body: "A real, interruptible voice call. Level 1 is friendly. Level 3 tries to hang up on you. The prospect decides how it ends, and says why." },
   { icon: TrendingUp, title: "Get coached, when you want it", body: "Every call keeps its transcript, stats and outcome. Ask for the review and the coach scores six skills, tags every objection and names the one thing to change next time." },
 ];

@@ -18,6 +18,7 @@
 - Free trial: 10 calls over 14 days, work email required, no card.
 - Pricing per seat per month: Starter $59 / €55 (40 calls), Team $159 / €149 (100 calls); 20% off annual. Charged in EUR or USD, VAT excluded. 30-day money-back guarantee on the first payment.
 - Scoring rubric: opener, reason for call, discovery, objection handling, value proposition, close.
+- Knowledge sources that ground the prospects: 10 on trial, 30 on Starter, 100 on Team. Call recordings, transcripts and replay on every plan.
 - Objection taxonomy: sixteen types tagged on every reviewed call with how the rep handled them.
 - Customer data is never used to train models.
 

@@ -16,18 +16,19 @@ export interface KnowledgeState {
 
 const KIND = z.enum(["call_transcript", "script", "playbook", "objection_sheet"]);
 const MAX_BYTES = 8 * 1024 * 1024;
-const MAX_SOURCES = { trial: 10, paid: 100 };
+/** Sources a workspace can hold, by plan. The pricing page states these numbers; keep them in sync. */
+const MAX_SOURCES: Record<string, number> = { trial: 10, starter: 30, team: 100, enterprise: 250 };
 const MAX_PER_DAY = 20;
 
 /** Digests run on the strongest model; cap how many sources a workspace can hold and add per day. */
 async function checkCaps(supabase: Awaited<ReturnType<typeof createClient>>, orgId: string, plan: string, adding: number): Promise<string | null> {
-  const cap = plan === "trial" ? MAX_SOURCES.trial : MAX_SOURCES.paid;
+  const cap = MAX_SOURCES[plan] ?? MAX_SOURCES.starter!;
   const since = new Date(Date.now() - 86_400_000).toISOString();
   const [{ count: total }, { count: today }] = await Promise.all([
     supabase.from("knowledge_sources").select("id", { count: "exact", head: true }).eq("org_id", orgId),
     supabase.from("knowledge_sources").select("id", { count: "exact", head: true }).eq("org_id", orgId).gt("created_at", since),
   ]);
-  if ((total ?? 0) + adding > cap) return plan === "trial" ? `Trial workspaces can hold ${cap} sources. Remove one, or upgrade for more.` : `This workspace can hold ${cap} sources. Remove one first.`;
+  if ((total ?? 0) + adding > cap) return plan === "trial" || plan === "starter" ? `${plan === "trial" ? "Trial" : "Starter"} workspaces can hold ${cap} sources. Remove one, or upgrade for more.` : `This workspace can hold ${cap} sources. Remove one first.`;
   if ((today ?? 0) + adding > MAX_PER_DAY) return `You can add ${MAX_PER_DAY} sources a day. Try again tomorrow.`;
   return null;
 }
