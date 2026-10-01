@@ -3,6 +3,8 @@ import { Target as TargetIcon } from "lucide-react";
 import { requireViewer } from "@/lib/auth";
 import { canManage } from "@/lib/domain/roles";
 import { LEVEL_LIST } from "@/lib/domain/levels";
+import { loadAllowance } from "@/lib/billing/allowance";
+import { dateFormatter } from "@/lib/tz";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
@@ -30,6 +32,8 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
 
   const noContext = !viewer.org.product_description && !viewer.org.company_description;
   const isManager = canManage(viewer.membership.role);
+  const [allowance, fmtDate] = await Promise.all([loadAllowance(viewer.org, { userId: viewer.userId, isManager: true }), dateFormatter()]);
+  const exhausted = allowance?.kind === "paid" && allowance.left <= 0;
 
   return (
     <div className="space-y-8">
@@ -51,8 +55,25 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
           )}
         </div>
       )}
+      {exhausted && allowance && (
+        <div className="border-signal/40 bg-signal/5 flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="font-medium">This month's included calls are used up.</div>
+            <p className="text-muted-foreground text-sm">
+              All {allowance.included} calls for the team have been made. Dialing resumes {allowance.resetsAt ? `on ${fmtDate(allowance.resetsAt)}` : "next period"}.
+              {isManager ? " Adding a seat raises the allowance immediately." : " Ask your manager to add a seat if the team needs more now."}
+            </p>
+          </div>
+          {isManager && (
+            <Button variant="outline" asChild>
+              <Link href="/settings">Add seats</Link>
+            </Button>
+          )}
+        </div>
+      )}
       <PracticeSetup
         targets={targets}
+        blocked={exhausted}
         levels={LEVEL_LIST}
         initialTargetId={typeof target === "string" ? target : targets[0]!.id}
         initialDifficulty={difficulty === "inbound" || difficulty === "cold" ? difficulty : "warm"}

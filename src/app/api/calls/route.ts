@@ -7,6 +7,8 @@ import { mintConversationToken, agentId } from "@/lib/elevenlabs/client";
 import { buildPersonaPrompt, firstMessage } from "@/lib/prompts/persona";
 import { pickGatekeeper, rollGatekeeper, rollMood } from "@/lib/domain/moods";
 import { loadTrialStatus } from "@/lib/billing/usage";
+import { loadAllowance } from "@/lib/billing/allowance";
+import { dateFormatter } from "@/lib/tz";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sweepStaleSessions } from "@/lib/calls/sweep";
 import { finalizeCall, hashPrompt } from "@/lib/calls/finalize";
@@ -62,6 +64,17 @@ export async function POST(request: Request) {
       { error: trial.reason === "calls" ? "Your team has used all its trial calls." : trial.reason === "subscription" ? "Your team's subscription has ended." : "Your team's trial has ended.", code: "trial_exhausted" },
       { status: 402 },
     );
+  }
+  // Paid plans: the included calls are a hard stop. No overage; dialing resumes when the month resets or seats are added.
+  if (!trial.onTrial) {
+    const allowance = await loadAllowance(viewer.org, { userId: viewer.userId, isManager: true });
+    if (allowance && allowance.left <= 0) {
+      const fmt = await dateFormatter();
+      return NextResponse.json(
+        { error: `Your team has used all ${allowance.included} included calls for this month. Dialing resumes ${allowance.resetsAt ? `on ${fmt(allowance.resetsAt)}` : "next period"}, or sooner if a manager adds seats.`, code: "allowance_exhausted" },
+        { status: 402 },
+      );
+    }
   }
   if ((todayCount ?? 0) >= DAILY_CALL_CAP) return NextResponse.json({ error: "Your team has reached today's call limit. Try again tomorrow." }, { status: 429 });
 

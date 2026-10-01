@@ -29,11 +29,14 @@ export function PracticeSetup({
   levels,
   initialTargetId,
   initialDifficulty,
+  blocked = false,
 }: {
   targets: TargetOption[];
   levels: LevelSpec[];
   initialTargetId: string;
   initialDifficulty: Difficulty;
+  /** The workspace has no included calls left this month. */
+  blocked?: boolean;
 }) {
   const [targetId, setTargetId] = useState(initialTargetId);
   const [difficulty, setDifficulty] = useState<Difficulty>(initialDifficulty);
@@ -104,8 +107,8 @@ export function PracticeSetup({
         <form action="/practice/call" method="get">
           <input type="hidden" name="target" value={targetId} />
           <input type="hidden" name="difficulty" value={effective} />
-          <Button type="submit" size="lg" className="w-full">
-            <Phone /> Dial
+          <Button type="submit" size="lg" className="w-full" disabled={blocked}>
+            <Phone /> {blocked ? "No calls left this month" : "Dial"}
           </Button>
         </form>
         <p className="text-muted-foreground text-center text-xs">Headset recommended.</p>

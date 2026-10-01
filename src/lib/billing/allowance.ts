@@ -11,7 +11,7 @@ export interface Allowance {
   kind: "trial" | "paid";
   used: number;
   included: number;
-  /** Never negative; `over` carries the excess on paid plans. */
+  /** Never negative. Dialing stops at zero; `over` only exceeds zero in a race between two simultaneous dials. */
   left: number;
   over: number;
   /** ISO date the allowance renews or the trial ends, null when unknown. */
@@ -21,19 +21,31 @@ export interface Allowance {
 
 type Org = Pick<Organization, "id" | "plan" | "seat_limit" | "trial_call_limit" | "trial_ends_at" | "billing_interval" | "current_period_end">;
 
-/** The current billing window on a paid plan, derived from the period end and the interval length. */
-export function periodWindow(org: Pick<Org, "billing_interval" | "current_period_end">): { start: Date; end: Date; months: number } | null {
+/**
+ * The current allowance month on a paid plan. Allowances are per seat per month whatever the billing period, so the
+ * window is one month long, stepping back from the period end until it covers now. Resets at the window's end.
+ */
+export function periodWindow(org: Pick<Org, "billing_interval" | "current_period_end">, now = Date.now()): { start: Date; end: Date; months: number } | null {
   if (!org.current_period_end) return null;
   const end = new Date(org.current_period_end);
-  const months = org.billing_interval ? INTERVALS[org.billing_interval].months : 1;
-  const start = new Date(end);
-  start.setUTCMonth(start.getUTCMonth() - months);
-  return { start, end, months };
+  const monthBefore = (d: Date) => {
+    const x = new Date(d);
+    x.setUTCMonth(x.getUTCMonth() - 1);
+    return x;
+  };
+  let winEnd = end;
+  for (let i = 0; i < 24; i++) {
+    const candidate = monthBefore(winEnd);
+    if (candidate.getTime() <= now) break;
+    winEnd = candidate;
+  }
+  return { start: monthBefore(winEnd), end: winEnd, months: 1 };
 }
 
 /**
  * How many practice calls remain: the team pool for managers and trials, the viewer's own seat share for reps.
  * Trials count voice usage rows so deleting calls never refunds them; paid plans count connected sessions.
+ * The team pool is what the call route enforces: at zero, nobody in the workspace can dial until it resets.
  */
 export async function loadAllowance(org: Org, viewer: { userId: string; isManager: boolean }): Promise<Allowance | null> {
   const db = createAdminClient();

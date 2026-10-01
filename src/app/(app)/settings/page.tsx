@@ -81,12 +81,12 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
           <p className="text-muted-foreground mb-4 text-sm">
             <span className="text-foreground tabular">{allowance.used}</span> of <span className="tabular">{allowance.included}</span>{" "}
             {allowance.kind === "trial" ? "trial calls used" : "included calls used this period"}
-            {allowance.over > 0 ? `, ${allowance.over} over the allowance` : ""}
+            {allowance.kind === "paid" && allowance.left === 0 ? ", dialing paused" : ""}
             {allowance.resetsAt ? `. ${allowance.kind === "trial" ? "Trial ends" : "Resets"} ${fmtDate(allowance.resetsAt)}.` : "."}
           </p>
           <Progress value={allowance.included > 0 ? Math.min(100, Math.round((allowance.used / allowance.included) * 100)) : 100} className="h-1.5 max-w-md" />
           {allowance.kind === "paid" && (
-            <p className="text-muted-foreground mt-3 text-xs">Calls beyond the allowance are billed at the plan's overage rate.</p>
+            <p className="text-muted-foreground mt-3 text-xs">Calls are pooled across seats and reset monthly. When they run out, dialing pauses until the reset. Adding a seat under Manage billing raises the allowance straight away.</p>
           )}
         </section>
       )}

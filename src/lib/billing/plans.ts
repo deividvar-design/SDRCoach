@@ -18,7 +18,6 @@ export interface Plan {
   /** Null on plans that are sold by conversation. */
   prices: Record<Currency, PriceTable> | null;
   callsPerSeat: number | null;
-  overagePerCall: Record<Currency, number> | null;
   minSeats: number;
   features: string[];
   cta: string;
@@ -32,7 +31,6 @@ export const PLANS: Plan[] = [
     tagline: "For one rep or a small team getting on the phone.",
     prices: { usd: { month: 59, quarter: 53, year: 47 }, eur: { month: 55, quarter: 49, year: 44 } },
     callsPerSeat: 40,
-    overagePerCall: { usd: 1.5, eur: 1.4 },
     minSeats: 1,
     features: [
       "Live AI prospects at all three levels",
@@ -52,9 +50,8 @@ export const PLANS: Plan[] = [
     tagline: "For managers who coach with data.",
     prices: { usd: { month: 159, quarter: 143, year: 127 }, eur: { month: 149, quarter: 134, year: 119 } },
     callsPerSeat: 100,
-    overagePerCall: { usd: 1.2, eur: 1.1 },
     minSeats: 3,
-    features: ["Everything in Starter", "100 calls per seat a month instead of 40", "Lower overage rate", "Up to 100 knowledge sources instead of 30", "Priority support, same-day reply on working days"],
+    features: ["Everything in Starter", "100 calls per seat a month instead of 40", "Up to 100 knowledge sources instead of 30", "Priority support, same-day reply on working days"],
     cta: "Start free trial",
     highlight: true,
   },
@@ -64,7 +61,6 @@ export const PLANS: Plan[] = [
     tagline: "For sales orgs with security and scale needs.",
     prices: null,
     callsPerSeat: null,
-    overagePerCall: null,
     minSeats: 25,
     features: ["Everything in Team", "Volume pricing and a custom call allowance", "SAML single sign-on, set up with you", "Custom personas built with your enablement team", "Dedicated onboarding and a named contact", "Security review, DPA and invoice billing"],
     cta: "Talk to sales",

@@ -101,7 +101,7 @@ export function PlanGrid({
                 )}
               </div>
               <div className="text-muted-foreground mt-1 text-xs">
-                {p.callsPerSeat && p.overagePerCall ? `${p.callsPerSeat} calls per seat per month, then ${formatMoney(p.overagePerCall[currency], currency)} a call` : "Volume pricing, custom call allowance"}
+                {p.callsPerSeat ? `${p.callsPerSeat} calls per seat per month, pooled across the team` : "Volume pricing, custom call allowance"}
                 {p.minSeats > 1 ? `, from ${p.minSeats} seats` : ", from a single seat"}
               </div>
               <ul className="mt-6 flex-1 space-y-2.5 text-sm">
