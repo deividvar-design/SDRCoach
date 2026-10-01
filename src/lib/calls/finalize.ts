@@ -46,7 +46,7 @@ export async function finalizeCall(sessionId: string) {
     .update({ status: "scoring", scoring_started_at: new Date().toISOString() })
     .eq("id", sessionId)
     .in("status", ["ended", "live", "failed", "collected"])
-    .select("*, targets(name, title, company, pain_points, objections), profiles(full_name), organizations(name, company_description, product_description, ideal_customer_profile)")
+    .select("*, targets(name, title, company, pain_points, objections, kind), profiles(full_name), organizations(name, company_description, product_description, ideal_customer_profile)")
     .maybeSingle();
   if (!claimed) return;
 

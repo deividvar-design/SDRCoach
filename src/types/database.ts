@@ -52,7 +52,7 @@ export type CallMetrics = {
   interruptions_by_rep: number;
 };
 
-export type TargetKind = "real" | "practice";
+export type TargetKind = "real" | "practice" | "boss";
 
 export type ScoreMoment = {
   t_ms: number;

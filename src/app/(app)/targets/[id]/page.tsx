@@ -34,7 +34,7 @@ export default async function TargetPage({ params }: PageProps<"/targets/[id]">)
     <div className="space-y-8">
       <Button variant="ghost" size="sm" asChild><Link href="/targets"><ArrowLeft /> Targets</Link></Button>
       <PageHeader
-        eyebrow={`${target.kind === "practice" ? "Practice persona" : "Real account"}${target.is_archived ? ", archived" : ""}`}
+        eyebrow={`${target.kind === "boss" ? "Boss fight" : target.kind === "practice" ? "Practice persona" : "Real account"}${target.is_archived ? ", archived" : ""}`}
         title={target.name}
         description={`${target.title}, ${target.company}${target.industry ? `, ${target.industry}` : ""}`}
         actions={

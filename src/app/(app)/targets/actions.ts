@@ -27,7 +27,7 @@ const targetSchema = z.object({
   industry: z.string().max(120).optional(),
   company_size: z.string().max(60).optional(),
   persona_notes: z.string().max(2000, "Persona notes: keep it under 2,000 characters").optional(),
-  kind: z.enum(["real", "practice"]).default("real"),
+  kind: z.enum(["real", "practice", "boss"]).default("real"),
   voice_id: z.string().optional(),
 });
 

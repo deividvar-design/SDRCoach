@@ -18,7 +18,7 @@ export default async function TargetsPage({ searchParams }: PageProps<"/targets"
   const viewer = await requireViewer();
   const isManager = canManage(viewer.membership.role);
   // Archived targets exist only for managers. A rep asking for them gets the normal list.
-  const filter = kind === "practice" ? "practice" : kind === "real" ? "real" : kind === "archived" && isManager ? "archived" : "all";
+  const filter = kind === "practice" ? "practice" : kind === "real" ? "real" : kind === "boss" ? "boss" : kind === "archived" && isManager ? "archived" : "all";
   const supabase = await createClient();
   const { data: rows } = await supabase
     .from("targets")
@@ -30,8 +30,8 @@ export default async function TargetsPage({ searchParams }: PageProps<"/targets"
   const live = (rows ?? []).filter((t) => !t.is_archived);
   const archived = (rows ?? []).filter((t) => t.is_archived);
   const targets = filter === "archived" ? archived : live.filter((t) => filter === "all" || t.kind === filter);
-  const counts = { all: live.length, real: live.filter((t) => t.kind === "real").length, practice: live.filter((t) => t.kind === "practice").length, archived: archived.length };
-  const tabs = isManager && archived.length > 0 ? (["all", "real", "practice", "archived"] as const) : (["all", "real", "practice"] as const);
+  const counts = { all: live.length, real: live.filter((t) => t.kind === "real").length, practice: live.filter((t) => t.kind === "practice").length, boss: live.filter((t) => t.kind === "boss").length, archived: archived.length };
+  const tabs = isManager && archived.length > 0 ? (["all", "real", "practice", "boss", "archived"] as const) : (["all", "real", "practice", "boss"] as const);
 
   return (
     <div className="space-y-8">
@@ -76,7 +76,7 @@ export default async function TargetsPage({ searchParams }: PageProps<"/targets"
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <Badge variant={t.kind === "practice" ? "outline" : "secondary"}>{t.kind === "practice" ? "Practice" : "Real"}</Badge>
+                  <Badge variant={t.kind === "boss" ? "destructive" : t.kind === "practice" ? "outline" : "secondary"}>{t.kind === "boss" ? "Boss fight" : t.kind === "practice" ? "Practice" : "Real"}</Badge>
                   {isManager && !t.is_archived && <ArchiveButton id={t.id} name={t.name} archived={false} />}
                 </div>
               </div>

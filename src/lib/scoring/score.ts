@@ -57,7 +57,7 @@ export interface ScoreInput {
   turns: TranscriptTurn[];
   metrics: CallMetrics;
   difficulty: Difficulty;
-  prospect: { name: string; title: string; company: string; pain_points?: string[]; objections?: string[] };
+  prospect: { name: string; title: string; company: string; pain_points?: string[]; objections?: string[]; kind?: string };
   company: { name: string; company_description: string | null; product_description: string | null; ideal_customer_profile: string | null };
   repName: string;
   orgPlaybook: KnowledgeDigest[];
@@ -96,7 +96,8 @@ export async function scoreCall(input: ScoreInput) {
     input.prospect.pain_points?.length && `Known pains: ${input.prospect.pain_points.join("; ")}`,
     input.prospect.objections?.length && `Objections this prospect tends to raise: ${input.prospect.objections.join("; ")}`,
   ].filter(Boolean);
-  const personaBlock = persona.length ? `\nAbout the prospect: ${persona.join(". ")}.` : "";
+  const bossNote = input.prospect.kind === "boss" ? " This prospect is a deliberately hostile boss-fight persona. Grade composure, brevity and technique under pressure; a refusal or a hang-up is the expected outcome and must not lower any score by itself." : "";
+  const personaBlock = persona.length || bossNote ? `\nAbout the prospect: ${persona.join(". ")}.${bossNote}` : "";
 
   // Static first (cacheable across every call), then the per-call context.
   const staticSystem = `You are an elite SDR coach grading a simulated cold call. Grade only the rep. The prospect's behaviour is not under review.

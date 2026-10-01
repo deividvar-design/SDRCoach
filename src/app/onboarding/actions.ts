@@ -9,6 +9,7 @@ import { validateBusinessEmail } from "@/lib/email/business";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { after } from "next/server";
 import { PRACTICE_PERSONAS } from "@/content/practice-personas";
+import { BOSS_PERSONAS } from "@/content/boss-personas";
 import { isAdminEmail } from "@/lib/auth";
 import { track } from "@vercel/analytics/server";
 import { draftWorkspace, fetchSiteText, normaliseSite, type WorkspaceDraft } from "@/lib/onboarding/draft";
@@ -51,9 +52,10 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
   const db = process.env.SDRCOACH_DEMO === "1" ? supabase : createAdminClient();
   const { data: orgId, error } = await db.rpc("create_organization", { p_name: parsed.data.name, p_slug: slug, p_user_id: user.id, p_trial_domain: check.domain });
   if (!error && orgId) {
-    await db.from("targets").insert(
-      PRACTICE_PERSONAS.map((p) => ({ ...p, pain_points: [...p.pain_points], objections: [...p.objections], org_id: orgId, created_by: user.id, kind: "practice" as const })),
-    );
+    await db.from("targets").insert([
+      ...PRACTICE_PERSONAS.map((p) => ({ ...p, pain_points: [...p.pain_points], objections: [...p.objections], org_id: orgId, created_by: user.id, kind: "practice" as const })),
+      ...BOSS_PERSONAS.map((p) => ({ ...p, pain_points: [...p.pain_points], objections: [...p.objections], org_id: orgId, created_by: user.id, kind: "boss" as const })),
+    ]);
     if (process.env.SDRCOACH_DEMO !== "1") after(() => sendLifecycle(orgId, "welcome").catch((err) => reportError(err, { where: "welcome_email", orgId })));
     await track("workspace_created", { with_site: Boolean(site) }).catch(() => {});
   }

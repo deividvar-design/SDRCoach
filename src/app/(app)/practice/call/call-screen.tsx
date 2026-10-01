@@ -22,7 +22,7 @@ interface TargetCard {
   company: string;
   industry: string | null;
   persona_notes: string | null;
-  kind: "real" | "practice";
+  kind: "real" | "practice" | "boss";
 }
 
 interface Props {
@@ -273,6 +273,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
           <div className="absolute top-5 left-5 flex items-center gap-2">
             <Badge variant="secondary">L{level.level} {level.name}</Badge>
             {target.kind === "practice" && <Badge variant="outline">Practice persona</Badge>}
+            {target.kind === "boss" && <Badge variant="destructive">Boss fight</Badge>}
           </div>
 
           <div className="relative mb-6 grid place-items-center">

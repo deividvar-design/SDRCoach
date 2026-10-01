@@ -31,6 +31,7 @@ export function TargetEditForm({ target }: { target: Target }) {
           <Select id="kind" name="kind" defaultValue={target.kind}>
             <option value="real">Real account</option>
             <option value="practice">Practice persona</option>
+            <option value="boss">Boss fight (hostile, always Level 3)</option>
           </Select>
         </div>
         <VoiceSelect defaultValue={target.voice_id} />

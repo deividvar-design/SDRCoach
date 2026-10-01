@@ -17,7 +17,7 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
   const viewer = await requireViewer();
   const supabase = await createClient();
 
-  const { data: targets } = await supabase.from("targets").select("id, name, title, company, industry").eq("org_id", viewer.org.id).eq("is_archived", false).order("name");
+  const { data: targets } = await supabase.from("targets").select("id, name, title, company, industry, kind").eq("org_id", viewer.org.id).eq("is_archived", false).order("name");
 
   if (!targets?.length) {
     return (

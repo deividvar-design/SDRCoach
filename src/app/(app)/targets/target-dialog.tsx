@@ -63,6 +63,7 @@ export function TargetDialog() {
             <Select id="kind" name="kind" defaultValue="real">
               <option value="real">Real account (someone the team is actually calling)</option>
               <option value="practice">Practice persona</option>
+              <option value="boss">Boss fight (hostile, always Level 3)</option>
             </Select>
           </div>
           <VoiceSelect />

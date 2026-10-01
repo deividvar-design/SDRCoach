@@ -73,10 +73,12 @@ export async function POST(request: Request) {
   }
 
   const repName = viewer.profile.full_name ?? "the rep";
-  // Dice, rolled once per call so the same target is never the same person twice.
-  const mood = rollMood(parsed.data.difficulty);
-  const gatekeeper = rollGatekeeper(parsed.data.difficulty) ? pickGatekeeper(target.voice_id) : null;
-  const prompt = buildPersonaPrompt({ target, difficulty: parsed.data.difficulty, org: viewer.org, repName, mood, gatekeeper, ttsModel: process.env.ELEVENLABS_TTS_MODEL });
+  // Boss fights are always Level 3; nobody gets a warm Karen.
+  const difficulty = target.kind === "boss" ? "cold" : parsed.data.difficulty;
+  // Dice, rolled once per call so the same target is never the same person twice. No gatekeeper on a boss fight: the boss answers.
+  const mood = rollMood(difficulty);
+  const gatekeeper = target.kind !== "boss" && rollGatekeeper(difficulty) ? pickGatekeeper(target.voice_id) : null;
+  const prompt = buildPersonaPrompt({ target, difficulty, org: viewer.org, repName, mood, gatekeeper, ttsModel: process.env.ELEVENLABS_TTS_MODEL });
 
   // Sessions are server-owned: reps cannot insert or update rows themselves (migration 0012).
   const { data: session, error } = await createAdminClient()
@@ -85,7 +87,7 @@ export async function POST(request: Request) {
       org_id: viewer.org.id,
       user_id: viewer.userId,
       target_id: target.id,
-      difficulty: parsed.data.difficulty,
+      difficulty,
       elevenlabs_agent_id: agentId(),
       status: "created",
       prompt_hash: hashPrompt(prompt),
@@ -102,7 +104,7 @@ export async function POST(request: Request) {
     token,
     overrides: {
       prompt,
-      firstMessage: firstMessage({ target, difficulty: parsed.data.difficulty, gatekeeper }),
+      firstMessage: firstMessage({ target, difficulty, gatekeeper }),
       voiceId: target.voice_id,
     },
     prospect: { name: target.name, title: target.title, company: target.company },
