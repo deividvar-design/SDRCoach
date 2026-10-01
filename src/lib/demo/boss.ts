@@ -123,10 +123,15 @@ export async function finalizeDemo(id: string) {
       .eq("id", id);
     await track("demo_scored", { outcome, overall: Math.round(score.overall * 10) / 10 }).catch(() => {});
 
+    // The score is saved either way; a mail failure (unverified domain, provider outage) must not mark the call failed.
     if (emailConfigured()) {
-      const mail = templates.demoScorecard({ firstName: repName, email: demo.email, overall: score.overall, outcome, outcomeReason, dimensions: score.dimensions, strengths: score.strengths, improvements: score.improvements, coachSummary: score.coach_summary });
-      await sendMail({ to: demo.email, ...mail });
-      await db.from("demo_calls").update({ email_sent_at: new Date().toISOString() }).eq("id", id);
+      try {
+        const mail = templates.demoScorecard({ firstName: repName, email: demo.email, overall: score.overall, outcome, outcomeReason, dimensions: score.dimensions, strengths: score.strengths, improvements: score.improvements, coachSummary: score.coach_summary });
+        await sendMail({ to: demo.email, ...mail });
+        await db.from("demo_calls").update({ email_sent_at: new Date().toISOString() }).eq("id", id);
+      } catch (err) {
+        reportError(err, { where: "demo_scorecard_email", extra: { demoId: id } });
+      }
     }
   } catch (err) {
     reportError(err, { where: "demo_finalize", extra: { demoId: id } });
