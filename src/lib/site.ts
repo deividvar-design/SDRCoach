@@ -23,10 +23,6 @@ export const SITE = {
     privacyEmail: "privacy@100dials.com",
     securityEmail: "security@100dials.com",
   },
-  social: {
-    linkedin: "https://www.linkedin.com/company/100dials",
-    x: "https://x.com/100dials",
-  },
   legalUpdated: "2026-09-26",
   /** Bumped when marketing pages change materially; the sitemap reports it instead of "now". */
   contentUpdated: "2026-10-01",

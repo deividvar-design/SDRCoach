@@ -20,7 +20,6 @@ export function organizationLd(): Ld {
     name: SITE.name,
     url: SITE.url,
     logo: absoluteUrl("/opengraph-image"),
-    sameAs: [SITE.social.linkedin, SITE.social.x],
     contactPoint: [{ "@type": "ContactPoint", email: SITE.company.email, contactType: "sales" }],
   };
 }

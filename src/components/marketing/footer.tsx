@@ -35,8 +35,6 @@ export function MarketingFooter() {
       <div className="text-muted-foreground mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-6 pb-8 text-xs">
         <span>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</span>
         <span className="flex gap-4">
-          <a href={SITE.social.linkedin} rel="noopener noreferrer" target="_blank" className="hover:underline">LinkedIn</a>
-          <a href={SITE.social.x} rel="noopener noreferrer" target="_blank" className="hover:underline">X</a>
           <a href={`mailto:${SITE.company.email}`} className="hover:underline">{SITE.company.email}</a>
         </span>
       </div>

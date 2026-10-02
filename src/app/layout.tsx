@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: SITE.description,
   applicationName: SITE.name,
   openGraph: { type: "website", siteName: SITE.name, locale: "en_US", url: SITE.url },
-  twitter: { card: "summary_large_image", site: "@100dials" },
+  twitter: { card: "summary_large_image" },
   robots: INDEXABLE ? { index: true, follow: true } : { index: false, follow: false },
   alternates: { types: { "application/rss+xml": `${SITE.url}/blog/rss.xml` } },
 };
