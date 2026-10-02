@@ -6,7 +6,7 @@ export const metadata = { robots: { index: false, follow: false } };
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
-      <aside className="relative hidden flex-col justify-between overflow-hidden border-r bg-sidebar p-10 lg:flex">
+      <aside className="grain relative hidden flex-col justify-between overflow-hidden border-r bg-sidebar p-10 lg:flex">
         <Link href="/" className="flex items-center gap-2">
           <Logo descriptor />
         </Link>
@@ -20,7 +20,9 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
             close, before the real one picks up.
           </p>
         </div>
-        <div className="text-muted-foreground text-xs">© {new Date().getFullYear()} 100 Dials</div>
+        <div className="text-muted-foreground relative z-10 text-xs">© {new Date().getFullYear()} 100 Dials</div>
+        <div className="pointer-events-none absolute -right-40 -bottom-40 size-[560px] rounded-full bg-primary/12 blur-3xl" />
+        <div className="pointer-events-none absolute -top-32 -left-24 size-[360px] rounded-full bg-signal/10 blur-3xl" />
       </aside>
       <main className="flex items-center justify-center p-6">
         <div className="w-full max-w-sm">{children}</div>
