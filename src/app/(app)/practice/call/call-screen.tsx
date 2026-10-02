@@ -293,7 +293,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
             {target.title}, {target.company}
           </p>
           {(stage === "live" || stage === "ending") && (
-            <div className="bg-background/80 mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-sm tabular" aria-live="off">
+            <div className="bg-background/80 mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 dial text-sm" aria-live="off">
               {stage === "live" ? (
                 <>
                   <span className="bg-signal size-2 rounded-full live-pulse" />

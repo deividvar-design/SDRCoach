@@ -11,6 +11,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
           <Logo descriptor />
         </Link>
         <div className="relative z-10 max-w-md space-y-4">
+          <p className="dial text-muted-foreground text-xs">DIAL 001/100</p>
           <p className="font-display text-4xl text-balance">
             Every rep’s first 100 cold calls, without burning 100 real prospects.
           </p>
@@ -20,7 +21,6 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
           </p>
         </div>
         <div className="text-muted-foreground text-xs">© {new Date().getFullYear()} 100 Dials</div>
-        <div className="pointer-events-none absolute -right-40 -bottom-40 size-[520px] rounded-full bg-primary/10 blur-3xl" />
       </aside>
       <main className="flex items-center justify-center p-6">
         <div className="w-full max-w-sm">{children}</div>

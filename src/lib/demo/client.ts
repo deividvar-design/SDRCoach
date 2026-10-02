@@ -1,7 +1,7 @@
 /**
  * In-memory stand-in for the Supabase client, enabled with SDRCOACH_DEMO=1.
  * Supports the query shapes the app uses (select with embedded relations, eq/neq/in/is,
- * order, limit, single/maybeSingle, count head, insert/update/upsert/delete, rpc, auth, storage).
+ * order, limit, range, single/maybeSingle, count head, insert/update/upsert/delete, rpc, auth, storage).
  * Purely for screenshots and UI work without a database. Not a test double for RLS.
  */
 import { DEMO_USER, INVITES, KNOWLEDGE, MEMBERSHIPS, ORG, PROFILES, SCORES, SESSIONS, TARGETS, TRANSCRIPTS, USAGE } from "./fixtures";
@@ -96,6 +96,7 @@ class Query implements PromiseLike<{ data: unknown; error: null; count: number |
   private wantCount = false;
   private orders: { col: string; asc: boolean; nullsFirst: boolean }[] = [];
   private max: number | null = null;
+  private offset = 0;
   private mode: "select" | "insert" | "update" | "upsert" | "delete" = "select";
   private payload: Row | Row[] | null = null;
   private one: "single" | "maybe" | null = null;
@@ -125,6 +126,7 @@ class Query implements PromiseLike<{ data: unknown; error: null; count: number |
   lte(col: string, val: string | number) { this.filters.push((r) => (r[col] as string | number) <= val); return this; }
   order(col: string, opts?: { ascending?: boolean; nullsFirst?: boolean }) { this.orders.push({ col, asc: opts?.ascending ?? true, nullsFirst: opts?.nullsFirst ?? false }); return this; }
   limit(n: number) { this.max = n; return this; }
+  range(from: number, to: number) { this.offset = from; this.max = to - from + 1; return this; }
   single() { this.one = "single"; return this; }
   maybeSingle() { this.one = "maybe"; return this; }
 
@@ -158,7 +160,7 @@ class Query implements PromiseLike<{ data: unknown; error: null; count: number |
       });
     }
     const count = affected.length;
-    if (this.max != null) affected = affected.slice(0, this.max);
+    if (this.offset || this.max != null) affected = affected.slice(this.offset, this.max != null ? this.offset + this.max : undefined);
 
     if (this.mode !== "select" && !this.returning) return { data: null, error: null, count: null };
     if (this.head) return { data: null, error: null, count };

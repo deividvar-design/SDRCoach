@@ -23,11 +23,11 @@ export function DialsLeft({ allowance, isManager, formatDate }: { allowance: All
   const body = (
     <>
       <div className="text-muted-foreground flex items-baseline justify-between text-xs">
-        <span>{title}</span>
+        <span className="shrink-0 whitespace-nowrap">{title}</span>
         {sub && <span className="truncate pl-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">{sub}</span>}
       </div>
       <div className="mt-1 flex items-baseline gap-1.5">
-        <span className={cn("tabular text-xl leading-none font-medium", low && "text-signal")}>{left}</span>
+        <span className={cn("dial text-xl leading-none font-medium", low && "text-signal")}>{left}</span>
         <span className="text-muted-foreground text-xs">of {included}</span>
       </div>
       <Progress value={pct} className="mt-2 h-1" indicatorClassName={low ? "bg-signal" : undefined} />
