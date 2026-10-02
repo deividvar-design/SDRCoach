@@ -12,8 +12,8 @@ export function Section({ children, className, id }: { children: React.ReactNode
   );
 }
 
-export function Eyebrow({ children }: { children: React.ReactNode }) {
-  return <p className="text-muted-foreground text-xs">{children}</p>;
+export function Eyebrow({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <p className={cn("text-muted-foreground text-xs", className)}>{children}</p>;
 }
 
 export function H2({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -27,11 +27,11 @@ export function ProofSection() {
         <Eyebrow>{PROOF.quotes.length > 0 ? "Results" : "What every call leaves behind"}</Eyebrow>
         <H2>Numbers a manager can act on, after every dial.</H2>
       </div>
-      <ul className="mt-10 grid gap-6 md:grid-cols-3">
+      <ul className="mt-10 grid gap-x-10 gap-y-8 md:grid-cols-3">
         {PROOF.stats.map((s) => (
-          <li key={s.label} className="bg-card rounded-2xl border p-6">
-            <div className="text-5xl font-semibold tracking-tight">{s.value}</div>
-            <div className="mt-2 font-medium">{s.label}</div>
+          <li key={s.label} className="border-t pt-5">
+            <div className="font-display text-6xl leading-none md:text-7xl">{s.value}</div>
+            <div className="mt-3 font-medium">{s.label}</div>
             <p className="text-muted-foreground mt-1 text-sm">{s.detail}</p>
           </li>
         ))}
