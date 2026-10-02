@@ -6,7 +6,7 @@ import { TRIAL } from "@/lib/billing/plans";
 
 export function Section({ children, className, id }: { children: React.ReactNode; className?: string; id?: string }) {
   return (
-    <section id={id} className={cn("mx-auto w-full max-w-6xl px-6 py-16 md:py-24", className)}>
+    <section id={id} className={cn("mx-auto w-full max-w-6xl px-6 py-11 md:py-16", className)}>
       {children}
     </section>
   );
@@ -17,7 +17,7 @@ export function Eyebrow({ children, className }: { children: React.ReactNode; cl
 }
 
 export function H2({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <h2 className={cn("font-display mt-3 text-4xl text-balance md:text-5xl", className)}>{children}</h2>;
+  return <h2 className={cn("font-display mt-3 text-4xl leading-[1.05] text-balance md:text-6xl", className)}>{children}</h2>;
 }
 
 export function ProofSection() {
@@ -56,8 +56,8 @@ export function ProofSection() {
 export function CtaBand({ title = "Ten free calls. Then decide.", body = "Work email, no card. Your first prospect picks up in under two minutes." }: { title?: string; body?: string }) {
   return (
     <Section>
-      <div className="bg-primary text-primary-foreground paper-grain rounded-3xl px-8 py-14 text-center md:px-16">
-        <h2 className="font-display text-4xl text-balance md:text-5xl">{title}</h2>
+      <div className="stage text-background rounded-3xl px-8 py-14 text-center md:px-16">
+        <h2 className="font-display text-5xl text-balance md:text-6xl">{title}</h2>
         <p className="mx-auto mt-4 max-w-md text-balance opacity-80">{body}</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>

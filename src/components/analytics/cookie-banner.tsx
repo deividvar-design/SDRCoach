@@ -28,13 +28,12 @@ export function CookieBanner() {
   };
 
   return (
-    <div role="dialog" aria-live="polite" aria-label="Cookie choices" className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-xl md:inset-x-auto md:right-6 md:left-auto">
-      <div className="bg-popover text-popover-foreground rounded-2xl border p-5 shadow-2xl">
-        <div className="font-medium">Cookies</div>
-        <p className="text-muted-foreground mt-1 text-sm">
-          We use one cookie to keep you signed in. With your OK we also use analytics to see which pages and features get used. No ads, nothing sold. <Link href="/cookies" className="underline underline-offset-4">Details</Link>
+    <div role="dialog" aria-live="polite" aria-label="Cookie choices" className="bg-popover text-popover-foreground fixed inset-x-0 bottom-0 z-50 border-t">
+      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-2.5 md:px-6">
+        <p className="text-muted-foreground text-xs md:text-sm">
+          One cookie keeps you signed in. With your OK, analytics show which pages get used. No ads, nothing sold. <Link href="/cookies" className="underline underline-offset-4">Details</Link>
         </p>
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="flex gap-2">
           <Button size="sm" onClick={() => choose(true)}>Accept analytics</Button>
           <Button size="sm" variant="outline" onClick={() => choose(false)}>Only necessary</Button>
         </div>

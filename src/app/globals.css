@@ -189,9 +189,21 @@
     animation: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: calc(var(--i, 0) * 45ms);
   }
+  /* Marketing site: one hot signal colour, darker muted text for AA, larger body. The app keeps its own tokens. */
+  .marketing {
+    --signal: #ff4a1c;
+    --signal-foreground: #fffaf5;
+    --muted-foreground: oklch(0.42 0.012 60);
+  }
+  /* Dial counter: the one graphic device, used sparingly. */
+  .dial {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+  }
   /* Ink panels on the marketing site: the call stage and the boss-fight band. */
   .stage {
-    background: oklch(0.2 0.01 60);
+    background: #1c1b19;
     background-image: radial-gradient(oklch(1 0 0 / 5%) 0.5px, transparent 0.5px);
     background-size: 22px 22px;
   }
@@ -221,12 +233,19 @@
   .ticker:hover .ticker-track {
     animation-play-state: paused;
   }
+  .ink-full {
+    background: #0c0b0a;
+  }
+  /* Transcript lines land one by one; when motion is reduced they are simply there. */
+  .line-in {
+    animation: rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
   @keyframes ticker {
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .live-pulse, .ring-speaking, .dial-ring, .enter, .page-enter, .heat-in, .wave-bar, .ticker-track { animation: none; }
+    .live-pulse, .ring-speaking, .dial-ring, .enter, .page-enter, .heat-in, .wave-bar, .ticker-track, .line-in { animation: none; }
     .score-fill { width: var(--w, 0%); animation: none; }
     .ticker-track { white-space: normal; flex-wrap: wrap; width: auto; }
   }

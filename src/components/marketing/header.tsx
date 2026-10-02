@@ -8,13 +8,10 @@ import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 
-const NAV = [
-  { href: "/for-managers", label: "For managers" },
-  { href: "/for-enablement", label: "For enablement" },
+const NAV: { href: string; label: string; hot?: boolean }[] = [
+  { href: "/#how-it-works", label: "Product" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/objections", label: "Objections" },
-  { href: "/blog", label: "Blog" },
-  { href: "/trust", label: "Trust" },
+  { href: "/karen", label: "Fight Karen", hot: true },
 ];
 
 export function MarketingHeader() {
@@ -26,7 +23,7 @@ export function MarketingHeader() {
         <Link href="/" aria-label="100 Dials home"><Logo descriptor /></Link>
         <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
           {NAV.map((n) => (
-            <Link key={n.href} href={n.href} className={cn("rounded-md px-3 py-1.5 text-sm transition-colors", pathname.startsWith(n.href) ? "text-foreground bg-accent" : "text-muted-foreground hover:text-foreground")}>
+            <Link key={n.href} href={n.href} className={cn("rounded-md px-3 py-1.5 text-sm transition-colors", n.hot ? "text-signal font-medium hover:underline underline-offset-4" : !n.href.includes("#") && pathname.startsWith(n.href) ? "text-foreground bg-accent" : "text-muted-foreground hover:text-foreground")}>
               {n.label}
             </Link>
           ))}

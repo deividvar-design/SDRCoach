@@ -1,9 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Pause, Play, RotateCcw } from "lucide-react";
 import { cn, formatDuration } from "@/lib/utils";
 import { SAMPLE_CALL } from "@/content/sample-call";
+
+const MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+function subscribeMotion(cb: () => void) {
+  const mq = window.matchMedia(MOTION_QUERY);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+function useReducedMotion() {
+  return useSyncExternalStore(subscribeMotion, () => window.matchMedia(MOTION_QUERY).matches, () => false);
+}
 
 /**
  * The hero's call stage: a scripted Level 3 call on an ink panel. Turns land on their timestamps, the waveform
@@ -19,6 +29,7 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
   const startedAt = useRef(0);
   const audio = useRef<HTMLAudioElement | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
     if (!playing) return;
@@ -77,6 +88,11 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
       setDone(false);
       setClock(0);
     }
+    if (reduced && !audioSrc) {
+      setClock(endsAt);
+      setDone(true);
+      return;
+    }
     setPlaying(true);
     audio.current?.play().catch(() => {});
   }
@@ -93,42 +109,44 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
     if (audio.current) audio.current.currentTime = 0;
   }
 
-  const visible = turns.filter((t) => t.t <= clock);
+  // Never an empty card: before play the first exchange is already there, dimmed. Reduced motion shows the whole call.
+  const visible = reduced ? turns : clock === 0 && !playing ? turns.slice(0, 2) : turns.filter((t) => t.t <= clock);
   const current = visible.at(-1);
   const prospectSpeaking = playing && current?.role === "prospect";
   const repSpeaking = playing && current?.role === "rep";
   const started = clock > 0 || playing;
+  const idle = !started && !done;
   const firstName = prospect.name.split(" ")[0];
 
   return (
     <div ref={cardRef} className="stage text-background relative overflow-hidden rounded-3xl">
       {audioSrc && <audio ref={audio} src={audioSrc} preload="none" />}
 
-      {/* Header: who, level, clock */}
-      <div className="flex items-center justify-between gap-4 px-6 pt-6">
+      {/* Header: who is on the line, the dial counter, and a timer you can read from across the room */}
+      <div className="grid gap-5 px-6 pt-6 md:grid-cols-[1fr_auto] md:items-end md:px-8 md:pt-8">
         <div className="flex items-center gap-4">
           <div className="relative grid place-items-center">
-            {prospectSpeaking && <span className="bg-signal/40 ring-speaking absolute size-14 rounded-full" />}
-            <div className={cn("bg-background text-foreground relative grid size-12 place-items-center rounded-full text-sm font-medium transition-transform", prospectSpeaking && "scale-105")}>RL</div>
+            {prospectSpeaking && <span className="bg-signal/40 ring-speaking absolute size-16 rounded-full" />}
+            <div className={cn("bg-background text-foreground relative grid size-14 place-items-center rounded-full font-medium transition-transform", prospectSpeaking && "scale-105")}>RL</div>
           </div>
           <div>
-            <div className="font-display text-xl leading-tight">{prospect.name}</div>
-            <div className="text-background/60 text-xs">{prospect.title}, {prospect.company}</div>
+            <div className="font-display text-2xl leading-tight">{prospect.name}</div>
+            <div className="text-background/60 text-sm">{prospect.title}, {prospect.company}</div>
+            <div className="dial text-background/60 mt-1 text-[11px]">LEVEL 03 · COLD · DIAL 037/100</div>
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-background/60 text-[11px]">Level 3, cold</div>
-          <div className="mt-0.5 flex items-center justify-end gap-2 font-mono text-sm tabular">
-            {playing && <span className="bg-signal size-1.5 rounded-full live-pulse" />}
-            <span className={cn(playing ? "text-signal" : "text-background/60")}>{playing ? "LIVE" : done ? "ENDED" : "READY"}</span>
-            <span>{formatDuration(Math.floor(clock / 1000))}</span>
-          </div>
+        <div className="flex items-baseline gap-3 md:justify-end">
+          <span className={cn("dial text-xs", playing ? "text-signal" : "text-background/50")}>
+            {playing && <span className="bg-signal mr-2 inline-block size-1.5 rounded-full live-pulse align-middle" />}
+            {playing ? "LIVE" : done ? "ENDED" : "READY"}
+          </span>
+          <span className="dial text-5xl leading-none md:text-7xl">{formatDuration(Math.floor(clock / 1000))}</span>
         </div>
       </div>
 
       {/* Waveform: moves for whoever is talking, flat when nobody is */}
-      <div className="mt-5 flex h-10 items-center gap-[3px] px-6" aria-hidden>
-        {Array.from({ length: 48 }, (_, i) => (
+      <div className="mt-6 flex h-12 items-center gap-[3px] px-6 md:px-8" aria-hidden>
+        {Array.from({ length: 96 }, (_, i) => (
           <span
             key={i}
             className={cn("wave-bar w-1 rounded-full", prospectSpeaking ? "bg-signal" : repSpeaking ? "bg-background/70" : "bg-background/20")}
@@ -140,17 +158,16 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
       {/* Body: transcript, then the scorecard */}
       <div className="mt-4 border-t border-white/10">
         {!done ? (
-          <div ref={listRef} className="h-[300px] space-y-3 overflow-y-auto px-6 py-5">
-            {visible.length === 0 && <p className="text-background/50 text-sm">The prospect picks up as soon as it starts.</p>}
+          <div ref={listRef} className={cn("h-[320px] space-y-3 overflow-y-auto px-6 py-5 md:px-8", idle && "opacity-60")}>
             {visible.map((t, i) => (
-              <div key={i} className={cn("animate-in fade-in slide-in-from-bottom-1 max-w-[88%] duration-300", t.role === "rep" ? "ml-auto" : "")}>
+              <div key={i} className={cn("line-in max-w-[80%]", t.role === "rep" ? "ml-auto" : "")}>
                 <div className={cn("text-[10px] uppercase tracking-wider", t.role === "rep" ? "text-background/50 text-right" : "text-signal")}>{t.role === "rep" ? rep : firstName}</div>
                 <p className={cn("mt-1 rounded-2xl px-4 py-2.5 text-sm leading-relaxed", t.role === "rep" ? "bg-background text-foreground rounded-tr-sm" : "bg-white/10 rounded-tl-sm")}>{t.text}</p>
               </div>
             ))}
           </div>
         ) : (
-          <div className="animate-in fade-in h-[300px] overflow-y-auto px-6 py-5 duration-500">
+          <div className="line-in h-[320px] overflow-y-auto px-6 py-5 md:px-8">
             <div className="flex items-end justify-between gap-4">
               <div>
                 <div className="text-background/60 text-xs">Coach's score</div>
@@ -183,8 +200,8 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-between border-t border-white/10 px-6 py-3">
-        <p className="text-background/50 text-xs">{done ? "Reviewed and scored." : started ? (prospectSpeaking ? `${firstName} is speaking` : `${rep} is speaking`) : "A scripted Level 3 call, shown as text. Yours speak."}</p>
+      <div className="flex items-center justify-between border-t border-white/10 px-6 py-3 md:px-8">
+        <p className="text-background/50 text-xs">{done ? "Reviewed and scored." : started ? (prospectSpeaking ? `${firstName} is speaking` : `${rep} is speaking`) : "A scripted Level 3 call, as text. Yours talk back."}</p>
         <div className="flex gap-1.5">
           {started && !playing && (
             <button type="button" onClick={reset} aria-label="Restart" className="text-background/70 hover:text-background grid size-9 cursor-pointer place-items-center rounded-full hover:bg-white/10"><RotateCcw className="size-4" /></button>
