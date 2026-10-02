@@ -4,6 +4,7 @@ import { loadTrialStatus } from "@/lib/billing/usage";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/shell/page-header";
 import { PlanGrid } from "@/components/billing/plan-grid";
+import { Guarantee } from "@/components/billing/guarantee";
 import { openBillingPortal, startCheckout } from "./actions";
 import { Button } from "@/components/ui/button";
 import { stripeConfigured } from "@/lib/billing/stripe";
@@ -84,8 +85,9 @@ export default async function UpgradePage({ searchParams }: PageProps<"/upgrade"
           </Button>
         </div>
       )}
+      {!subscribed && <Guarantee />}
       <p className="text-muted-foreground text-sm">
-        Secure card checkout by Stripe. Change seats, switch plans, update your card or cancel any time from Settings. Not working for the team? Email us within 30 days of your first payment and we refund it in full.
+        Secure card checkout by Stripe. Change seats, switch plans, update your card or cancel any time from Settings.
       </p>
     </div>
   );

@@ -4,6 +4,7 @@ import { SALES_EMAIL, TRIAL } from "@/lib/billing/plans";
 import { viewerCurrency } from "@/lib/billing/currency-server";
 import { CtaBand } from "@/components/marketing/sections";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
+import { Guarantee } from "@/components/billing/guarantee";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -38,6 +39,7 @@ export default async function PricingPage() {
         </section>
 
         <PlanGrid marketing currency={currency} />
+        <Guarantee className="mx-auto mt-8 max-w-3xl" />
 
         <section className="mx-auto mt-20 max-w-3xl">
           <h2 className="font-display text-3xl">Questions</h2>
