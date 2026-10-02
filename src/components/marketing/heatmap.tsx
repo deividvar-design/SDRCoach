@@ -15,14 +15,15 @@ const RANKED: (keyof typeof OBJECTIONS)[] = ["send_email", "already_have_solutio
 function cell(score: number) {
   // Weak scores burn hot; strong ones fade to paper. Same hue, one axis.
   const t = Math.max(0, Math.min(1, (8.5 - score) / 4.5));
-  return { background: `color-mix(in oklch, var(--signal) ${Math.round(t * 85)}%, var(--card))`, color: t > 0.5 ? "var(--signal-foreground)" : "var(--foreground)" };
+  // Ink on every cell: #1c1b19 on full signal orange is 5:1, so the hot cells stay readable.
+  return { background: `color-mix(in oklch, var(--signal) ${Math.round(t * 80)}%, var(--card))`, color: "var(--foreground)" };
 }
 
 export function Heatmap() {
   // Weakest skill first, judged across the example team.
   const order = RUBRIC_KEYS.map((k, i) => ({ k, i, avg: REPS.reduce((n, r) => n + (r.scores[i] ?? 0), 0) / REPS.length })).sort((a, b) => a.avg - b.avg);
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+    <div className="grid items-start gap-4 lg:grid-cols-[1.4fr_1fr]">
       <div className="bg-card overflow-hidden rounded-2xl border">
         <div className="flex items-center justify-between border-b px-4 py-2.5">
           <span className="text-sm font-medium">Skills by rep</span>
@@ -42,7 +43,7 @@ export function Heatmap() {
                   <td className="px-3 py-2 font-medium">{RUBRIC[k].label}</td>
                   {REPS.map((r) => (
                     <td key={r.name} className="p-1">
-                      <div className={cn("dial rounded-md px-2 py-2 text-right text-[11px]")} style={cell(r.scores[i] ?? 0)}>{(r.scores[i] ?? 0).toFixed(1)}</div>
+                      <div className={cn("dial rounded-md px-2 py-2 text-right text-xs font-medium")} style={cell(r.scores[i] ?? 0)}>{(r.scores[i] ?? 0).toFixed(1)}</div>
                     </td>
                   ))}
                 </tr>

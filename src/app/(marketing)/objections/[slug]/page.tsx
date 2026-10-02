@@ -89,7 +89,7 @@ export default async function ObjectionPage({ params }: PageProps<"/objections/[
             {related.map((p) => (
               <li key={p.slug}>
                 <Link href={`/objections/${p.slug}`} className="bg-card block h-full rounded-2xl border p-4 hover:shadow-md">
-                  <div className="font-display text-lg leading-tight">“{p.phrasings[0] ?? p.label}”</div>
+                  <div className="font-display text-2xl leading-tight">“{p.phrasings[0] ?? p.label}”</div>
                   <div className="text-muted-foreground mt-2 text-xs">{p.label}</div>
                 </Link>
               </li>

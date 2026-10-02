@@ -84,7 +84,7 @@ export default async function BlogPost({ params }: PageProps<"/blog/[slug]">) {
             {related.map((p) => (
               <li key={p.slug}>
                 <Link href={`/blog/${p.slug}`} className="bg-card block h-full rounded-2xl border p-4 hover:shadow-md">
-                  <div className="font-display text-lg leading-tight">{p.title}</div>
+                  <div className="font-display text-2xl leading-tight">{p.title}</div>
                   <div className="text-muted-foreground mt-2 text-xs">{p.readingMinutes} min</div>
                 </Link>
               </li>

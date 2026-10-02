@@ -1,36 +1,42 @@
-/** Scripted Level 3 call for the homepage player. Timings in ms from call start. */
+import { BOSS_PERSONAS } from "@/content/boss-personas";
+
+/**
+ * Scripted boss fight for the homepage player: Karen, as text. Timings in ms from call start.
+ * Nobody books her. The rep's win is staying composed and getting the letter in her file.
+ */
+const karen = BOSS_PERSONAS[0];
+
 export const SAMPLE_CALL = {
-  prospect: { name: "Rebecca Lindqvist", title: "VP Operations", company: "Halvorsen Freight" },
+  prospect: { name: karen.name, title: karen.title, company: karen.company },
   rep: "Sam",
-  level: 3,
+  label: "BOSS FIGHT · KAREN · DIAL 037/100",
   audioSrc: null as string | null,
   turns: [
-    { t: 0, role: "prospect", text: "Lindqvist." },
-    { t: 1400, role: "rep", text: "Rebecca, it's Sam from Brightline. I know you weren't expecting this. The reason I'm calling: your fleet passed four hundred trucks last year, and most ops leads at that size are fighting fuel spend they can't see. Fair to take thirty seconds?" },
-    { t: 11500, role: "prospect", text: "Thirty seconds. Go." },
-    { t: 13200, role: "rep", text: "When you look at fuel cost per mile right now, how much of it is idle time?" },
-    { t: 18000, role: "prospect", text: "No idea, honestly. Fuel's up fourteen percent and I can't tell the board which depots are the problem." },
-    { t: 24500, role: "rep", text: "That's most of the conversations we have. What are you using to track it today?" },
-    { t: 28500, role: "prospect", text: "Samsara on half the trucks, spreadsheets on the rest. And I've got an insurance renewal in six weeks, so I've got bigger fires." },
-    { t: 36000, role: "rep", text: "Understood. I'm not going to fix that on a cold call. Fifteen minutes Thursday at ten, I show you the depot view on a fleet your size, and you tell me if it's worth going further." },
-    { t: 45000, role: "prospect", text: "Not this quarter. I've got the renewal." },
-    { t: 48000, role: "rep", text: "Fifteen minutes, and if it's not useful for the renewal conversation you never hear from me again. Thursday at ten, or is Friday better?" },
-    { t: 55500, role: "prospect", text: "Thursday at ten. Send me an invite." },
-    { t: 58000, role: "rep", text: "Done. Talk Thursday." },
+    { t: 0, role: "prospect", text: "Whitlock. I don't take cold calls, so you can start by telling me who gave you permission to ring this number." },
+    { t: 3200, role: "rep", text: "Karen, it's Sam from Brightline. Nobody gave it to me, I looked you up. You have three supplier contracts renewing this quarter, and that's the only reason I'm calling. Thirty seconds, then you decide." },
+    { t: 13500, role: "prospect", text: "Do you have any idea who you're speaking to? Twenty-two years in procurement. I'm making a note of this." },
+    { t: 20000, role: "rep", text: "Noted. Then you know what a renewal costs when a vendor misses service levels and blames your team for it." },
+    { t: 26500, role: "prospect", text: "That is not an answer, that is a sales line. Are you an approved vendor? No. Then why are we talking?" },
+    { t: 33500, role: "rep", text: "We're not approved, and I'm not asking for a contract. I'm asking for ten minutes before your vendor audit, so the comparison sits in your file instead of theirs." },
+    { t: 42500, role: "prospect", text: "I'll need that in writing from your director before I waste another minute." },
+    { t: 47000, role: "rep", text: "You'll have it by five today, with the audit checklist attached. If it's unacceptable, bin it. Tuesday at nine for the ten minutes, or should I only send the letter?" },
+    { t: 55500, role: "prospect", text: "Send the letter. I'm not promising anything." },
+    { t: 58000, role: "rep", text: "Understood. Letter by five. Thank you, Karen." },
   ] as { t: number; role: "rep" | "prospect"; text: string }[],
   endsAt: 60000,
   result: {
-    overall: 8.2,
-    outcome: "Meeting booked",
-    outcomeReason: "They knew our fuel numbers and asked for fifteen minutes. Fine.",
-    coach: "You earned the meeting in the first thirty seconds with a reason for calling she couldn't brush off. One thing: when she mentioned the insurance renewal, slow down and ask. That was the real trigger.",
+    overall: 7.6,
+    outcome: "No meeting. She took the letter.",
+    outcomeTone: "neutral" as "success" | "neutral",
+    outcomeReason: "I will read it. That is not a yes.",
+    coach: "You never argued and you never apologised, and that is why she was still on the line at a minute. One thing: when she asked who approved the call, answer in one sentence and get back to the renewal. You spent eight seconds defending the dial.",
     dimensions: [
-      ["Opener", 8.8],
-      ["Reason for call", 8.6],
-      ["Discovery", 7.4],
-      ["Objection handling", 7.9],
-      ["Value proposition", 8.3],
-      ["Close", 8.7],
+      ["Opener", 7.2],
+      ["Reason for call", 8.1],
+      ["Discovery", 6.4],
+      ["Objection handling", 8.4],
+      ["Value proposition", 7.0],
+      ["Close", 7.3],
     ] as [string, number][],
   },
 };

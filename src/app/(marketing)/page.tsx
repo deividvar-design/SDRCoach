@@ -31,15 +31,16 @@ export default function HomePage() {
 
       {/* 1. Hero */}
       <Section className="pt-10 md:pt-14">
-        <div className="max-w-5xl">
+        <div>
           <div className="enter" style={{ "--enter-delay": "60ms" } as React.CSSProperties}><Eyebrow>Cold call training for SDR teams</Eyebrow></div>
-          <h1 className="font-display enter mt-4 text-[3.6rem] leading-[0.98] text-balance md:text-[6.5rem] xl:text-[8rem]" style={{ "--enter-delay": "0ms" } as React.CSSProperties}>
-            Karen's on the line. You have three minutes.
+          <h1 className="font-display enter mt-4 text-[3.6rem] leading-[0.98] md:text-[6.5rem] xl:text-[7.5rem]" style={{ "--enter-delay": "0ms" } as React.CSSProperties}>
+            <span className="block">Karen's on the line.</span>
+            <span className="block">You have three minutes.</span>
           </h1>
-          <div className="enter mt-8 flex flex-wrap items-center gap-3" style={{ "--enter-delay": "140ms" } as React.CSSProperties}>
-            <Button size="lg" variant="signal" asChild><Link href="/karen">Pick up</Link></Button>
-            <Button size="lg" variant="outline" asChild><Link href="/signup">Start free trial</Link></Button>
-            <p className="text-muted-foreground text-sm">{TRIAL.calls} free calls, {TRIAL.days} days, no card, work email only.</p>
+          <div className="enter mt-8 flex flex-wrap items-center gap-4" style={{ "--enter-delay": "140ms" } as React.CSSProperties}>
+            <Button size="xl" variant="signal" asChild><Link href="/karen">Pick up</Link></Button>
+            <Button size="xl" variant="outline" asChild><Link href="/signup">Start free trial</Link></Button>
+            <p className="text-muted-foreground w-full text-sm md:w-auto">{TRIAL.calls} free calls, {TRIAL.days} days, no card, work email only.</p>
           </div>
         </div>
         <div className="enter mt-10" style={{ "--enter-delay": "240ms" } as React.CSSProperties}>
@@ -112,7 +113,7 @@ export default function HomePage() {
               ].map(([k, v]) => (
                 <div key={k} className="py-3">
                   <dt className="text-background/60 text-xs">{k}</dt>
-                  <dd className="font-display mt-1 text-xl leading-snug">{v}</dd>
+                  <dd className="font-display mt-1 text-2xl leading-snug">{v}</dd>
                 </div>
               ))}
             </dl>

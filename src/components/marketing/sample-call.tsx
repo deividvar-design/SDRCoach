@@ -16,12 +16,12 @@ function useReducedMotion() {
 }
 
 /**
- * The hero's call stage: a scripted Level 3 call on an ink panel. Turns land on their timestamps, the waveform
+ * The hero's call stage: a scripted boss fight on an ink panel. Turns land on their timestamps, the waveform
  * moves while the prospect speaks, and the scorecard fills in at the end. With `audioSrc` set the transcript
  * follows the audio clock instead of the wall clock.
  */
 export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
-  const { prospect, rep, turns, endsAt, result, audioSrc } = SAMPLE_CALL;
+  const { prospect, rep, turns, endsAt, result, audioSrc, label } = SAMPLE_CALL;
   const [playing, setPlaying] = useState(false);
   const [clock, setClock] = useState(0);
   const [done, setDone] = useState(false);
@@ -109,14 +109,17 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
     if (audio.current) audio.current.currentTime = 0;
   }
 
-  // Never an empty card: before play the first exchange is already there, dimmed. Reduced motion shows the whole call.
-  const visible = reduced ? turns : clock === 0 && !playing ? turns.slice(0, 2) : turns.filter((t) => t.t <= clock);
-  const current = visible.at(-1);
+  // Never an empty card: the first four lines are on screen from the start, lit up as the call reaches them.
+  // Reduced motion shows the whole call.
+  const SEED = 4;
+  const reached = turns.filter((t) => t.t <= clock);
+  const visible = reduced ? turns : turns.slice(0, Math.max(SEED, reached.length));
+  const current = reached.at(-1);
   const prospectSpeaking = playing && current?.role === "prospect";
   const repSpeaking = playing && current?.role === "rep";
   const started = clock > 0 || playing;
-  const idle = !started && !done;
   const firstName = prospect.name.split(" ")[0];
+  const initials = prospect.name.split(" ").map((w) => w[0]).join("");
 
   return (
     <div ref={cardRef} className="stage text-background relative overflow-hidden rounded-3xl">
@@ -127,12 +130,12 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
         <div className="flex items-center gap-4">
           <div className="relative grid place-items-center">
             {prospectSpeaking && <span className="bg-signal/40 ring-speaking absolute size-16 rounded-full" />}
-            <div className={cn("bg-background text-foreground relative grid size-14 place-items-center rounded-full font-medium transition-transform", prospectSpeaking && "scale-105")}>RL</div>
+            <div className={cn("bg-background text-foreground relative grid size-14 place-items-center rounded-full font-medium transition-transform", prospectSpeaking && "scale-105")}>{initials}</div>
           </div>
           <div>
             <div className="font-display text-2xl leading-tight">{prospect.name}</div>
             <div className="text-background/60 text-sm">{prospect.title}, {prospect.company}</div>
-            <div className="dial text-background/60 mt-1 text-[11px]">LEVEL 03 · COLD · DIAL 037/100</div>
+            <div className="dial text-background/60 mt-1 text-[11px]">{label}</div>
           </div>
         </div>
         <div className="flex items-baseline gap-3 md:justify-end">
@@ -158,16 +161,16 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
       {/* Body: transcript, then the scorecard */}
       <div className="mt-4 border-t border-white/10">
         {!done ? (
-          <div ref={listRef} className={cn("h-[320px] space-y-3 overflow-y-auto px-6 py-5 md:px-8", idle && "opacity-60")}>
+          <div ref={listRef} className="max-h-[360px] space-y-3 overflow-y-auto px-6 py-5 md:px-8">
             {visible.map((t, i) => (
-              <div key={i} className={cn("line-in max-w-[80%]", t.role === "rep" ? "ml-auto" : "")}>
+              <div key={i} className={cn("max-w-[80%] transition-opacity duration-500", t.role === "rep" ? "ml-auto" : "", !reduced && t.t > clock ? "opacity-30" : "line-in")}>
                 <div className={cn("text-[10px] uppercase tracking-wider", t.role === "rep" ? "text-background/50 text-right" : "text-signal")}>{t.role === "rep" ? rep : firstName}</div>
                 <p className={cn("mt-1 rounded-2xl px-4 py-2.5 text-sm leading-relaxed", t.role === "rep" ? "bg-background text-foreground rounded-tr-sm" : "bg-white/10 rounded-tl-sm")}>{t.text}</p>
               </div>
             ))}
           </div>
         ) : (
-          <div className="line-in h-[320px] overflow-y-auto px-6 py-5 md:px-8">
+          <div className="line-in px-6 py-5 md:px-8">
             <div className="flex items-end justify-between gap-4">
               <div>
                 <div className="text-background/60 text-xs">Coach's score</div>
@@ -177,7 +180,7 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
                 </div>
               </div>
               <div className="text-right">
-                <span className="bg-success/20 text-success rounded-full px-2.5 py-1 text-xs font-medium">{result.outcome}</span>
+                <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", result.outcomeTone === "success" ? "bg-success/20 text-success" : "bg-white/10 text-background")}>{result.outcome}</span>
                 <div className="text-background/60 mt-1.5 max-w-[16rem] text-xs italic">“{result.outcomeReason}”</div>
               </div>
             </div>
@@ -201,7 +204,7 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
 
       {/* Controls */}
       <div className="flex items-center justify-between border-t border-white/10 px-6 py-3 md:px-8">
-        <p className="text-background/50 text-xs">{done ? "Reviewed and scored." : started ? (prospectSpeaking ? `${firstName} is speaking` : `${rep} is speaking`) : "A scripted Level 3 call, as text. Yours talk back."}</p>
+        <p className="text-background/50 text-xs">{done ? "Reviewed and scored." : started ? (prospectSpeaking ? `${firstName} is speaking` : `${rep} is speaking`) : "A scripted boss fight, as text. Yours talk back."}</p>
         <div className="flex gap-1.5">
           {started && !playing && (
             <button type="button" onClick={reset} aria-label="Restart" className="text-background/70 hover:text-background grid size-9 cursor-pointer place-items-center rounded-full hover:bg-white/10"><RotateCcw className="size-4" /></button>

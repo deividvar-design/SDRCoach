@@ -40,7 +40,7 @@ export function ProofSection() {
       <div className="mt-6 grid gap-6 md:grid-cols-3">
         {PROOF.quotes.map((q) => (
           <figure key={q.quote} className="flex flex-col rounded-2xl border p-6">
-            <blockquote className="font-display flex-1 text-xl leading-snug">“{q.quote}”</blockquote>
+            <blockquote className="font-display flex-1 text-2xl leading-snug">“{q.quote}”</blockquote>
             <figcaption className="text-muted-foreground mt-5 text-sm">
               <div className="text-foreground font-medium">{q.name}</div>
               {q.company}
