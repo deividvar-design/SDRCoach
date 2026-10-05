@@ -24,6 +24,7 @@
 
 ## Recent posts
 
+- [Cold call scorecard template: six skills and how to weight them](/blog/cold-call-scorecard-template): the six skills, the weights, and a 0 to 10 anchor per skill so two managers agree
 - [AI cold call practice software: what to look for and what to ignore](/blog/ai-cold-call-practice-software): the four things that decide whether reps improve, and the features to ignore
 
 ## Objection library
