@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/marketing/legal";
 import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Privacy policy", description: "How 100 Dials collects, uses and protects personal data.", alternates: { canonical: "/privacy" } };
+export const metadata: Metadata = { title: "Privacy policy", description: "How 100 Dials collects, uses and protects personal data.", alternates: { canonical: "/privacy" }, openGraph: { url: "/privacy" } };
 
 export default function PrivacyPage() {
   const c = SITE.company;

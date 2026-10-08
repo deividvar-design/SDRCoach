@@ -6,7 +6,7 @@ import { ChallengeForm } from "./challenge-form";
 export const metadata: Metadata = {
   title: "Can you survive Karen? A cold call you will not forget",
   description: "Dial Karen Whitlock, Head of Procurement, the rudest prospect we could build. Three minutes, no account, a scored report after. Work email only.",
-  alternates: { canonical: "/karen" },
+  alternates: { canonical: "/karen" }, openGraph: { url: "/karen" },
 };
 
 export default function KarenPage() {

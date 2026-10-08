@@ -3,7 +3,7 @@ import { LegalPage } from "@/components/marketing/legal";
 import { SITE } from "@/lib/site";
 import { TRIAL } from "@/lib/billing/plans";
 
-export const metadata: Metadata = { title: "Terms of service", description: "The agreement between 100 Dials and customers using the service.", alternates: { canonical: "/terms" } };
+export const metadata: Metadata = { title: "Terms of service", description: "The agreement between 100 Dials and customers using the service.", alternates: { canonical: "/terms" }, openGraph: { url: "/terms" } };
 
 export default function TermsPage() {
   const c = SITE.company;

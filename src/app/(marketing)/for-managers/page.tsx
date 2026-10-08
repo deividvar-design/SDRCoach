@@ -8,7 +8,7 @@ import { JsonLd, faqLd } from "@/components/seo/json-ld";
 export const metadata: Metadata = {
   title: "For sales managers",
   description: "Ramp new SDRs in days, see every rep's weakest skill and the objections the team fumbles, assign practice before the real outreach starts, and get a Monday digest of the floor.",
-  alternates: { canonical: "/for-managers" },
+  alternates: { canonical: "/for-managers" }, openGraph: { url: "/for-managers" },
 };
 
 const FAQ: [string, string][] = [

@@ -7,7 +7,7 @@ import { CtaBand, Eyebrow, Section } from "@/components/marketing/sections";
 export const metadata: Metadata = {
   title: "Blog: cold calling, backed by data",
   description: "Research-backed guides on cold-call openers, objection handling, talk ratio and SDR coaching. Short, specific, and practisable.",
-  alternates: { canonical: "/blog" },
+  alternates: { canonical: "/blog" }, openGraph: { url: "/blog" },
 };
 
 export default function BlogIndex() {

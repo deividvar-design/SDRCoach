@@ -9,7 +9,7 @@ import { Guarantee } from "@/components/billing/guarantee";
 export const metadata: Metadata = {
   title: "Pricing",
   description: "Simple per-seat pricing with a monthly call allowance. Free trial: 10 calls, 14 days, no card, work email required.",
-  alternates: { canonical: "/pricing" },
+  alternates: { canonical: "/pricing" }, openGraph: { url: "/pricing" },
 };
 
 const FAQ = [

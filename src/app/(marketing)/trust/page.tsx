@@ -6,7 +6,7 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Trust & security",
   description: "How 100 Dials handles your call recordings, transcripts and team data: EU hosting, per-tenant isolation, no model training on your data, and deletion on request.",
-  alternates: { canonical: "/trust" },
+  alternates: { canonical: "/trust" }, openGraph: { url: "/trust" },
 };
 
 const PILLARS = [

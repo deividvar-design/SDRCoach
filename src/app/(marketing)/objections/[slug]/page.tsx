@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: PageProps<"/objections/[slug]
     title: page.title,
     description: page.description,
     alternates: { canonical: `/objections/${page.slug}` },
-    openGraph: { type: "article", modifiedTime: page.updated, tags: ["objection handling", page.label] },
+    openGraph: { type: "article", url: `/objections/${page.slug}`, modifiedTime: page.updated, tags: ["objection handling", page.label] },
   };
 }
 

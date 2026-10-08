@@ -14,7 +14,7 @@ import { JsonLd, organizationLd, softwareLd } from "@/components/seo/json-ld";
 export const metadata: Metadata = {
   title: { absolute: "100 Dials: Cold Call Coach for SDR teams" },
   description: "Reps dial realistic AI prospects built from your own targets. Every call ends with the prospect's decision and a transcript; a scored coach's review is one click away. Managers see where the team struggles and what prospects push back on. Free trial, work email only.",
-  alternates: { canonical: "/" },
+  alternates: { canonical: "/" }, openGraph: { url: "/" },
 };
 
 const STEPS = [

@@ -7,7 +7,7 @@ import { JsonLd, breadcrumbLd } from "@/components/seo/json-ld";
 export const metadata: Metadata = {
   title: "Cold call objections: what to say to each one",
   description: "Fifteen cold-call objections, from 'send me an email' to 'we're not a fit', each with what it really means, three ways to handle it, a worked exchange and the mistakes that lose the call.",
-  alternates: { canonical: "/objections" },
+  alternates: { canonical: "/objections" }, openGraph: { url: "/objections" },
 };
 
 export default function ObjectionIndex() {

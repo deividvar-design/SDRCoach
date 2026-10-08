@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "For sales enablement",
   description: "Turn your call library into a training ground. Ground AI prospects in your real transcripts, grade every rep on one rubric, and measure skill week over week.",
-  alternates: { canonical: "/for-enablement" },
+  alternates: { canonical: "/for-enablement" }, openGraph: { url: "/for-enablement" },
 };
 
 export default function ForEnablementPage() {
