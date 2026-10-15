@@ -7,7 +7,8 @@ import { track } from "@vercel/analytics/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { validateBusinessEmail } from "@/lib/email/business";
 import { checkDemoLimits } from "@/lib/demo/boss";
-import { DEMO_COOKIE, clientIp } from "@/lib/demo/session";
+import { DEMO_COOKIE, clientIp, currentDemo } from "@/lib/demo/session";
+import { newShareSlug } from "@/lib/demo/share";
 
 export interface ChallengeState {
   error?: string;
@@ -39,10 +40,31 @@ export async function challengeKaren(_prev: ChallengeState, formData: FormData):
   }
   if (limit) return { error: LIMIT_MESSAGES[limit] ?? "Try again later." };
 
-  const { data: demo, error } = await db.from("demo_calls").insert({ email, domain: check.domain, ip, newsletter: parsed.data.newsletter === "on" }).select("id").single();
+  const { data: demo, error } = await db.from("demo_calls").insert({ email, domain: check.domain, ip, newsletter: parsed.data.newsletter === "on", share_slug: newShareSlug() }).select("id").single();
   if (error || !demo) return { error: "Something went wrong. Try again in a minute." };
 
   await track("demo_started", { domain: check.domain }).catch(() => {});
   (await cookies()).set(DEMO_COOKIE, demo.id, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 3 * 60 * 60 });
   redirect("/karen/call");
+}
+
+export interface LeaderboardState {
+  error?: string;
+  joined?: boolean;
+}
+
+/** Opt in to the public leaderboard with a first name and, optionally, a company. Only the browser that made the call can. */
+export async function joinLeaderboard(_prev: LeaderboardState, formData: FormData): Promise<LeaderboardState> {
+  const parsed = z
+    .object({ display_name: z.string().trim().min(1, "Add a first name").max(30), display_company: z.string().trim().max(40).optional() })
+    .safeParse({ display_name: formData.get("display_name"), display_company: formData.get("display_company") || undefined });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const demo = await currentDemo();
+  if (!demo || demo.status !== "scored") return { error: "Finish a call first." };
+  const { error } = await createAdminClient()
+    .from("demo_calls")
+    .update({ display_name: parsed.data.display_name.split(/\s+/)[0], display_company: parsed.data.display_company || null, leaderboard_opt_in: true })
+    .eq("id", demo.id);
+  if (error) return { error: "Could not save that. Try again." };
+  return { joined: true };
 }

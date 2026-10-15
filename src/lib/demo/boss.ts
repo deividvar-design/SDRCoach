@@ -13,6 +13,7 @@ import { reportError } from "@/lib/sentry";
 import { track } from "@vercel/analytics/server";
 import type { CallOutcome, DemoCall, TranscriptTurn } from "@/types/database";
 import { absoluteUrl } from "@/lib/site";
+import { newShareSlug } from "./share";
 
 /** The public demo always dials Karen. */
 export const KAREN = { ...BOSS_PERSONAS[0], pain_points: [...BOSS_PERSONAS[0].pain_points], objections: [...BOSS_PERSONAS[0].objections], kind: "boss" as const };
@@ -149,6 +150,7 @@ export async function finalizeDemo(id: string) {
         score: { dimensions: score.dimensions, strengths: score.strengths, improvements: score.improvements, coach_summary: score.coach_summary },
         transcript: turns,
         error: null,
+        share_slug: demo.share_slug ?? newShareSlug(),
       })
       .eq("id", id);
     await track("demo_scored", { outcome, overall: Math.round(score.overall * 10) / 10 }).catch(() => {});
@@ -158,7 +160,8 @@ export async function finalizeDemo(id: string) {
       const { data: claimedMail } = await db.from("demo_calls").update({ email_sent_at: new Date().toISOString() }).eq("id", id).is("email_sent_at", null).select("id").maybeSingle();
       if (claimedMail) {
         try {
-          const mail = templates.demoScorecard({ firstName: repName, email: demo.email, overall: score.overall, outcome, outcomeReason, dimensions: score.dimensions, strengths: score.strengths, improvements: score.improvements, coachSummary: score.coach_summary, unsubscribeUrl: unsubscribeUrl(id) });
+          const { data: fresh } = await db.from("demo_calls").select("share_slug").eq("id", id).maybeSingle();
+          const mail = templates.demoScorecard({ firstName: repName, email: demo.email, overall: score.overall, outcome, outcomeReason, dimensions: score.dimensions, strengths: score.strengths, improvements: score.improvements, coachSummary: score.coach_summary, unsubscribeUrl: unsubscribeUrl(id), shareUrl: fresh?.share_slug ? absoluteUrl(`/karen/score/${fresh.share_slug}`) : null });
           await sendMail({ to: demo.email, ...mail });
         } catch (err) {
           reportError(err, { where: "demo_scorecard_email", extra: { demoId: id } });

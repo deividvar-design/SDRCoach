@@ -6,6 +6,9 @@ import { RUBRIC, type RubricKey } from "@/lib/scoring/rubric";
 import { Eyebrow, Section } from "@/components/marketing/sections";
 import { Button } from "@/components/ui/button";
 import { ResultPoller } from "./result-poller";
+import { LeaderboardForm } from "./leaderboard-form";
+import { ShareButton } from "../share-button";
+import { survivedLabel } from "@/lib/demo/share";
 
 export const metadata = { title: "Your call with Karen", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -65,6 +68,21 @@ export default async function KarenResultPage() {
               </div>
             </div>
             <p className="text-muted-foreground mt-8 text-sm">The full report, with the coach's notes on every skill, is in your inbox{demo.email_sent_at ? "" : " shortly"}.</p>
+            {demo.share_slug && (
+              <div className="bg-card mt-8 rounded-2xl border p-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <div className="font-medium">You lasted {survivedLabel(demo.duration_seconds)}. Tell someone.</div>
+                    <div className="text-muted-foreground text-sm">Your scorecard has a public page. It shows the time, the score and one line from the coach, nothing else.</div>
+                  </div>
+                  <ShareButton path={`/karen/score/${demo.share_slug}`} survived={survivedLabel(demo.duration_seconds)} score={Number(demo.overall ?? 0)} />
+                </div>
+                <div className="mt-5 border-t pt-5">
+                  <div className="mb-3 text-sm font-medium">Put yourself on this month's <Link href="/karen/leaderboard" className="underline underline-offset-4">leaderboard</Link></div>
+                  <LeaderboardForm joined={demo.leaderboard_opt_in} name={demo.display_name} />
+                </div>
+              </div>
+            )}
             <div className="bg-card mt-10 flex flex-col gap-4 rounded-2xl border p-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="font-medium">Karen is one of the easy ones.</div>

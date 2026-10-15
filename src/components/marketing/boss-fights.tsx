@@ -1,17 +1,22 @@
 import Link from "next/link";
 import { BOSS_PERSONAS } from "@/content/boss-personas";
 import { Button } from "@/components/ui/button";
+import { COUNTER_MIN } from "@/lib/demo/share-constants";
 import { H2 } from "./sections";
 
 /** Full-black fight card. Karen headlines; the other two share the undercard. */
-export function BossFights() {
+/** `hangUps` is this month's real count; the line only renders once it clears the threshold. */
+export function BossFights({ hangUps = 0 }: { hangUps?: number }) {
   const [karen, ...others] = BOSS_PERSONAS;
   return (
     <section className="ink-full text-background">
       <div className="mx-auto w-full max-w-6xl px-6 py-14 md:py-20">
-        <div>
-          <p className="dial text-signal text-xs">BOSS FIGHTS</p>
-          <H2>Then there's Karen.</H2>
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="dial text-signal text-xs">BOSS FIGHTS</p>
+            <H2>Then there's Karen.</H2>
+          </div>
+          {hangUps >= COUNTER_MIN && <p className="dial text-background/70 text-sm">KAREN HAS HUNG UP ON {hangUps.toLocaleString("en-GB")} REPS THIS MONTH</p>}
         </div>
 
         <div className="mt-10 grid gap-3 md:grid-cols-3 md:grid-rows-2">

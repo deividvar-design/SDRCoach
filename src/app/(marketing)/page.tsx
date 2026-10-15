@@ -11,6 +11,7 @@ import { FounderNote } from "@/components/marketing/founder-note";
 import { CtaBand, Eyebrow, H2, Section } from "@/components/marketing/sections";
 import { JsonLd, organizationLd, softwareLd } from "@/components/seo/json-ld";
 import { HERO_COPY, heroVariant } from "@/lib/marketing/hero";
+import { karenHangUpsThisMonth } from "@/lib/demo/share";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -27,7 +28,7 @@ const STEPS = [
 
 
 export default async function HomePage() {
-  const variant = await heroVariant();
+  const [variant, hangUps] = await Promise.all([heroVariant(), karenHangUpsThisMonth().catch(() => 0)]);
   const hero = HERO_COPY[variant];
   return (
     <>
@@ -79,7 +80,7 @@ export default async function HomePage() {
       </Section>
 
       {/* 4. Boss fights */}
-      <BossFights />
+      <BossFights hangUps={hangUps} />
 
       {/* 5. For the manager */}
       <Section>
