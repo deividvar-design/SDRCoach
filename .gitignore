@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Design-skill inspector output (screenshots and reports), regenerated on every run.
+.taste-skill/
