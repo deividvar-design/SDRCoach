@@ -30,7 +30,9 @@
   --input: oklch(0.86 0.01 80);
   --ring: oklch(0.2 0.01 60);
   --signal: #ff4a1c;
-  --signal-foreground: #fffaf5;
+  --signal-foreground: #1c1b19;
+  /* Orange for small text on paper or the grey rung: 5:1 and 4.6:1, where the signal itself is 3.1:1. */
+  --signal-ink: #bd3510;
   --success: oklch(0.6 0.15 150);
   --warning: oklch(0.72 0.15 75);
   --sidebar: oklch(0.955 0.008 85);
@@ -59,6 +61,7 @@
   --ring: oklch(0.94 0.008 85);
   --signal: oklch(0.72 0.19 40);
   --signal-foreground: oklch(0.16 0.02 40);
+  --signal-ink: oklch(0.78 0.17 40);
   --success: oklch(0.72 0.15 150);
   --warning: oklch(0.8 0.14 75);
   --sidebar: oklch(0.15 0.006 60);
@@ -88,6 +91,7 @@
   --color-paper: #f7f5f0;
   --color-ink: #1c1b19;
   --color-signal: var(--signal);
+  --color-signal-ink: var(--signal-ink);
   --color-signal-foreground: var(--signal-foreground);
   --color-live: var(--signal);
   --color-success: var(--success);

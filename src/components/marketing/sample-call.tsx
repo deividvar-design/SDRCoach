@@ -122,7 +122,7 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
   const initials = prospect.name.split(" ").map((w) => w[0]).join("");
 
   return (
-    <div ref={cardRef} className="stage text-paper relative overflow-hidden rounded-3xl">
+    <div ref={cardRef} className="stage text-paper relative overflow-hidden rounded-3xl" data-ui>
       {audioSrc && <audio ref={audio} src={audioSrc} preload="none" />}
 
       {/* Header: who is on the line, the dial counter, and a timer you can read from across the room */}
@@ -135,7 +135,7 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
           <div>
             <div className="font-display text-2xl leading-tight">{prospect.name}</div>
             <div className="text-paper/60 text-sm">{prospect.title}, {prospect.company}</div>
-            <div className="dial text-paper/60 mt-1 text-[11px]">{label}</div>
+            <div className="dial text-paper/60 mt-1 text-[13px]">{label}</div>
           </div>
         </div>
         <div className="flex items-baseline gap-3 md:justify-end">
@@ -164,8 +164,8 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
           <div ref={listRef} className="max-h-[360px] space-y-3 overflow-y-auto px-6 py-5 md:px-8">
             {visible.map((t, i) => (
               <div key={i} className={cn("max-w-[80%] transition-opacity duration-500", t.role === "rep" ? "ml-auto" : "", !reduced && t.t > clock ? "opacity-30" : "line-in")}>
-                <div className={cn("text-[10px] uppercase tracking-wider", t.role === "rep" ? "text-paper/50 text-right" : "text-signal")}>{t.role === "rep" ? rep : firstName}</div>
-                <p className={cn("mt-1 rounded-2xl px-4 py-2.5 text-sm leading-relaxed", t.role === "rep" ? "bg-paper text-foreground rounded-tr-sm" : "bg-white/10 rounded-tl-sm")}>{t.text}</p>
+                <div className={cn("text-[13px]", t.role === "rep" ? "text-paper/60 text-right" : "text-signal")}>{t.role === "rep" ? rep : firstName}</div>
+                <p className={cn("mt-1 rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed", t.role === "rep" ? "bg-paper text-foreground rounded-tr-sm" : "bg-white/10 rounded-tl-sm")}>{t.text}</p>
               </div>
             ))}
           </div>
@@ -204,7 +204,7 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
 
       {/* Controls */}
       <div className="flex items-center justify-between border-t border-white/10 px-6 py-3 md:px-8">
-        <p className="text-paper/50 text-xs">{done ? "Reviewed and scored." : started ? (prospectSpeaking ? `${firstName} is speaking` : `${rep} is speaking`) : "A scripted boss fight, as text. Yours talk back."}</p>
+        <p className="text-paper/60 text-sm">{done ? "Reviewed and scored." : started ? (prospectSpeaking ? `${firstName} is speaking` : `${rep} is speaking`) : "A scripted boss fight, as text. Yours talk back."}</p>
         <div className="flex gap-1.5">
           {started && !playing && (
             <button type="button" onClick={reset} aria-label="Restart" className="text-paper/70 hover:text-paper grid size-9 cursor-pointer place-items-center rounded-full hover:bg-white/10"><RotateCcw className="size-4" /></button>

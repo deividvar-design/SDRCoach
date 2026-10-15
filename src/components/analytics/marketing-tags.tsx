@@ -12,7 +12,6 @@ const IDS = {
   apollo: process.env.NEXT_PUBLIC_APOLLO_APP_ID,
   meta: process.env.NEXT_PUBLIC_META_PIXEL_ID,
   linkedin: process.env.NEXT_PUBLIC_LINKEDIN_PARTNER_ID,
-  gtag: process.env.NEXT_PUBLIC_GTAG_ID,
 };
 
 let loaded = false;
@@ -63,18 +62,6 @@ function loadTags() {
     script("https://snap.licdn.com/li.lms-analytics/insight.min.js");
   }
 
-  if (IDS.gtag) {
-    const layer = (w.dataLayer as unknown[] | undefined) ?? [];
-    w.dataLayer = layer;
-    const gtag = (...args: unknown[]) => {
-      // gtag reads `arguments`, so the array must be the arguments object, not a copy.
-      layer.push(args);
-    };
-    w.gtag = gtag;
-    gtag("js", new Date());
-    gtag("config", IDS.gtag);
-    script(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(IDS.gtag)}`);
-  }
 }
 
 export function MarketingTags() {

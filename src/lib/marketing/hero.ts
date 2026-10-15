@@ -9,15 +9,13 @@ export type HeroVariant = "ramp" | "karen";
 export const HERO_COOKIE = "hero";
 export const HERO_VARIANTS: HeroVariant[] = ["ramp", "karen"];
 
-export const HERO_COPY: Record<HeroVariant, { eyebrow: string; headline: string[]; sub: string; large: boolean }> = {
+export const HERO_COPY: Record<HeroVariant, { headline: string[]; sub: string; large: boolean }> = {
   ramp: {
-    eyebrow: "SDR ramp, on the phone",
     headline: ["Your new SDR will quit or get fired", "before they survive a hard call."],
     sub: "Karen fixes that in 14 days.",
     large: false,
   },
   karen: {
-    eyebrow: "SDR ramp, on the phone",
     headline: ["Karen's on the line.", "You have three minutes."],
     sub: "New reps get their hard calls in here, before they get them on your pipeline.",
     large: true,

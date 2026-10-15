@@ -24,7 +24,7 @@ export function ChallengeForm() {
     <form action={action} className="bg-card space-y-4 rounded-2xl border p-6">
       <div className="space-y-2">
         <Label htmlFor="email">Work email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@company.com" required autoFocus />
+        <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@company.com" spellCheck={false} required />
       </div>
       <div className="flex items-start gap-2">
         <Checkbox id="newsletter" name="newsletter" className="mt-0.5" />
@@ -34,7 +34,7 @@ export function ChallengeForm() {
       <Button type="submit" size="lg" variant="signal" className="w-full" disabled={pending}>
         {pending ? "Checking…" : "Call Karen"}
       </Button>
-      <p className="text-muted-foreground text-xs leading-relaxed">
+      <p className="text-muted-foreground text-[13px] leading-relaxed">
         Work email only, one call per person, three minutes max. We send your scorecard to this address and may follow up about 100 Dials. Unsubscribe in one click. The call is recorded and scored. See the <Link href="/privacy" className="underline underline-offset-4">privacy policy</Link>.
       </p>
     </form>

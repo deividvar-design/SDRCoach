@@ -23,26 +23,26 @@ export function Heatmap() {
   // Weakest skill first, judged across the example team.
   const order = RUBRIC_KEYS.map((k, i) => ({ k, i, avg: REPS.reduce((n, r) => n + (r.scores[i] ?? 0), 0) / REPS.length })).sort((a, b) => a.avg - b.avg);
   return (
-    <div className="grid items-start gap-4 lg:grid-cols-[1.4fr_1fr]">
+    <div className="grid items-start gap-4 lg:grid-cols-[1.4fr_1fr]" data-ui>
       <div className="bg-card overflow-hidden rounded-2xl border">
         <div className="flex items-center justify-between border-b px-4 py-2.5">
           <span className="text-sm font-medium">Skills by rep</span>
-          <span className="dial text-muted-foreground text-[11px]">EXAMPLE DATA</span>
+          <span className="text-muted-foreground text-[13px]">Example data</span>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[520px] text-xs">
+        <div>
+          <table className="w-full text-xs">
             <thead>
               <tr>
                 <th className="text-muted-foreground px-3 py-2 text-left font-normal">Weakest first</th>
-                {REPS.map((r) => <th key={r.name} className="text-muted-foreground px-2 py-2 text-right font-normal">{r.name}</th>)}
+                {REPS.map((r, j) => <th key={r.name} className={cn("text-muted-foreground px-2 py-2 text-right font-normal", j >= 3 && "hidden sm:table-cell")}>{r.name}</th>)}
               </tr>
             </thead>
             <tbody>
               {order.map(({ k, i }) => (
                 <tr key={k} className="border-t">
                   <td className="px-3 py-2 font-medium">{RUBRIC[k].label}</td>
-                  {REPS.map((r) => (
-                    <td key={r.name} className="p-1">
+                  {REPS.map((r, j) => (
+                    <td key={r.name} className={cn("p-1", j >= 3 && "hidden sm:table-cell")}>
                       <div className={cn("dial rounded-md px-2 py-2 text-right text-xs font-medium")} style={cell(r.scores[i] ?? 0)}>{(r.scores[i] ?? 0).toFixed(1)}</div>
                     </td>
                   ))}
@@ -55,15 +55,14 @@ export function Heatmap() {
       <div className="bg-card rounded-2xl border">
         <div className="flex items-center justify-between border-b px-4 py-2.5">
           <span className="text-sm font-medium">What the team loses on</span>
-          <span className="dial text-muted-foreground text-[11px]">RANKED</span>
         </div>
         <ol className="divide-y">
           {RANKED.map((k, i) => (
             <li key={k} className="flex gap-3 px-4 py-3">
-              <span className="dial text-signal pt-0.5 text-xs">0{i + 1}</span>
+              <span className="dial text-signal-ink pt-0.5 text-[13px]">{i + 1}</span>
               <div>
                 <div className="text-sm font-medium">{OBJECTIONS[k].label}</div>
-                <div className="text-muted-foreground mt-0.5 text-xs">{OBJECTIONS[k].coaching}</div>
+                <div className="text-muted-foreground mt-0.5 text-sm">{OBJECTIONS[k].coaching}</div>
               </div>
             </li>
           ))}

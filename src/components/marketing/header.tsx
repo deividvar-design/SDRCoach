@@ -23,7 +23,7 @@ export function MarketingHeader() {
         <Link href="/" aria-label="100 Dials home"><Logo descriptor /></Link>
         <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
           {NAV.map((n) => (
-            <Link key={n.href} href={n.href} className={cn("rounded-md px-3 py-1.5 text-sm transition-colors", n.hot ? "text-signal font-medium hover:underline underline-offset-4" : !n.href.includes("#") && pathname.startsWith(n.href) ? "text-foreground bg-accent" : "text-muted-foreground hover:text-foreground")}>
+            <Link key={n.href} href={n.href} className={cn("rounded-md px-3 py-1.5 text-sm transition-colors", n.hot ? "text-signal-ink font-medium hover:underline underline-offset-4" : !n.href.includes("#") && pathname.startsWith(n.href) ? "text-foreground bg-accent" : "text-muted-foreground hover:text-foreground")}>
               {n.label}
             </Link>
           ))}

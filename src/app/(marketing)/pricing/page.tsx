@@ -34,8 +34,7 @@ export default async function PricingPage() {
       <JsonLd data={faqLd(FAQ)} />
       <div className="mx-auto w-full max-w-6xl px-6 pb-8">
         <section className="py-16 text-center">
-          <p className="text-muted-foreground text-xs">Pricing</p>
-          <h1 className="font-display mt-3 text-5xl text-balance md:text-6xl">Cheaper than one rep who never ramps.</h1>
+          <h1 className="font-display text-5xl text-balance md:text-7xl">Cheaper than one rep who never ramps.</h1>
           <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-balance">
             Per seat, with a monthly call allowance. A new SDR gets their hard calls in before they get them on real prospects. Start with {TRIAL.calls} free calls over {TRIAL.days} days, no card, work email required.
           </p>
@@ -50,7 +49,7 @@ export default async function PricingPage() {
             {FAQ.map((f) => (
               <div key={f.q} className="grid gap-2 py-5 md:grid-cols-[1fr_1.6fr]">
                 <dt className="font-medium">{f.q}</dt>
-                <dd className="text-muted-foreground text-sm">{f.a}</dd>
+                <dd className="text-muted-foreground">{f.a}</dd>
               </div>
             ))}
           </dl>

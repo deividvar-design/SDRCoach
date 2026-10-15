@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CALLBACK_ENABLED, DIAL_CODES, SIGNUP_REASONS } from "@/lib/marketing/signup-intent";
 import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 
-const selectClass = "border-input bg-background h-9 w-full rounded-md border px-3 text-sm shadow-xs focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none";
+const selectClass = "border-input bg-background text-foreground h-9 w-full rounded-md border px-3 text-sm shadow-xs focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none";
 
 export function AuthForm({ mode, next, invite, email, notice }: { mode: "login" | "signup"; next?: string; invite?: string; email?: string; notice?: { kind: "info" | "error"; text: string } }) {
   const action = mode === "login" ? signIn : signUp;

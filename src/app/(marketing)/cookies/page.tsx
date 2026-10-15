@@ -33,14 +33,13 @@ export default function CookiesPage() {
       </table>
 
       <h2>Marketing and visitor identification (with consent)</h2>
-      <p>If you choose "Accept all", we also load tags that tell us which campaigns bring visitors, and one that identifies the company a visitor works at from their network address. None of them run if you choose "Only necessary". Each provider sets its own cookies and has its own policy.</p>
+      <p>If you choose “Accept all”, we also load tags that tell us which campaigns bring visitors, and one that identifies the company a visitor works at from their network address. None of them run if you choose “Only necessary”. Each provider sets its own cookies and has its own policy.</p>
       <table>
         <thead><tr><th>Provider</th><th>Purpose</th><th>Duration</th></tr></thead>
         <tbody>
           <tr><td>Apollo.io website visitors</td><td>Identifies the visiting company, not the person, so we know which companies read about us</td><td>Up to 12 months</td></tr>
           <tr><td>Meta pixel</td><td>Measures whether our ads on Facebook and Instagram brought you here</td><td>Up to 3 months</td></tr>
           <tr><td>LinkedIn Insight tag</td><td>Measures whether our LinkedIn ads brought you here</td><td>Up to 6 months</td></tr>
-          <tr><td>Google tag</td><td>Measures whether our Google ads and search listings brought you here</td><td>Up to 24 months</td></tr>
         </tbody>
       </table>
 

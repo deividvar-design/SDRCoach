@@ -17,7 +17,7 @@ export function Eyebrow({ children, className }: { children: React.ReactNode; cl
 }
 
 export function H2({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <h2 className={cn("font-display mt-3 text-4xl leading-[1.05] text-balance md:text-6xl", className)}>{children}</h2>;
+  return <h2 className={cn("font-display text-4xl leading-[1.05] text-balance md:text-6xl", className)}>{children}</h2>;
 }
 
 export function ProofSection() {
@@ -63,7 +63,7 @@ export function CtaBand({ title = "Ten free calls. Then decide.", body = "Work e
           <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>
           <Button size="lg" variant="outline" className="border-paper/30 bg-transparent text-paper hover:bg-paper/10" asChild><Link href="/pricing">See pricing</Link></Button>
         </div>
-        <p className="mt-4 text-xs opacity-60">{TRIAL.calls} calls, {TRIAL.days} days, work email only</p>
+        <p className="mt-4 text-sm opacity-70">{TRIAL.calls} calls, {TRIAL.days} days, work email only</p>
       </div>
     </Section>
   );

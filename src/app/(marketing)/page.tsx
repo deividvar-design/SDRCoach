@@ -8,7 +8,7 @@ import { BossFights } from "@/components/marketing/boss-fights";
 import { Ladder } from "@/components/marketing/ladder";
 import { Heatmap } from "@/components/marketing/heatmap";
 import { FounderNote } from "@/components/marketing/founder-note";
-import { CtaBand, Eyebrow, H2, Section } from "@/components/marketing/sections";
+import { CtaBand, H2, Section } from "@/components/marketing/sections";
 import { JsonLd, organizationLd, softwareLd } from "@/components/seo/json-ld";
 import { HERO_COPY, heroVariant } from "@/lib/marketing/hero";
 import { karenHangUpsThisMonth } from "@/lib/demo/share";
@@ -37,15 +37,14 @@ export default async function HomePage() {
       {/* 1. Hero. Two headlines under test; the variant travels with the signup event. */}
       <Section className="pt-10 md:pt-14" data-hero={variant}>
         <div>
-          <div className="enter" style={{ "--enter-delay": "60ms" } as React.CSSProperties}><Eyebrow>{hero.eyebrow}</Eyebrow></div>
-          <h1 className={cn("font-display enter mt-4 leading-[0.98]", hero.large ? "text-[3.6rem] md:text-[6.5rem] xl:text-[7.5rem]" : "text-[3rem] md:text-[5rem] xl:text-[5.75rem]")} style={{ "--enter-delay": "0ms" } as React.CSSProperties}>
-            {hero.headline.map((line) => <span key={line} className="block">{line}</span>)}
+          <h1 className={cn("font-display enter mt-4 leading-[0.98]", hero.large ? "text-[3.4rem] md:text-[5.5rem] xl:text-[7.5rem]" : "text-[2.75rem] md:text-[4.25rem] xl:text-[5.75rem]")} style={{ "--enter-delay": "0ms" } as React.CSSProperties}>
+            {hero.headline.map((line, i) => <span key={line} className="md:block">{i > 0 ? " " : ""}{line}</span>)}
           </h1>
           <p className={cn("font-display enter mt-5 max-w-3xl text-balance", hero.large ? "text-2xl text-muted-foreground md:text-3xl" : "text-signal text-3xl md:text-5xl")} style={{ "--enter-delay": "90ms" } as React.CSSProperties}>{hero.sub}</p>
           <div className="enter mt-8 flex flex-wrap items-center gap-4" style={{ "--enter-delay": "140ms" } as React.CSSProperties}>
             <Button size="xl" variant="signal" asChild><Link href="/karen">Pick up</Link></Button>
             <Button size="xl" variant="outline" asChild><Link href="/signup">Start free trial</Link></Button>
-            <p className="text-muted-foreground w-full text-sm md:w-auto">{TRIAL.calls} free calls, {TRIAL.days} days, no card, work email only.</p>
+            <p className="text-muted-foreground w-full md:w-auto">{TRIAL.calls} free calls, {TRIAL.days} days, no card, work email only.</p>
           </div>
         </div>
         <div className="enter mt-10" style={{ "--enter-delay": "240ms" } as React.CSSProperties}>
@@ -55,15 +54,11 @@ export default async function HomePage() {
 
       {/* 2. How it works */}
       <Section id="how-it-works" className="border-t">
-        <Eyebrow>How it works</Eyebrow>
         <H2>Three steps between a new rep and a booked meeting.</H2>
         <ol className="mt-10 grid gap-8 md:grid-cols-3">
-          {STEPS.map((s, i) => (
+          {STEPS.map((s) => (
             <li key={s.title} className="border-t pt-5">
-              <div className="flex items-center justify-between">
-                <s.icon className="text-signal size-5" />
-                <span className="dial text-muted-foreground text-xs">STEP 0{i + 1}</span>
-              </div>
+              <s.icon className="text-signal-ink size-5" />
               <h3 className="mt-4 text-lg font-medium">{s.title}</h3>
               <p className="text-muted-foreground text-body mt-2">{s.body}</p>
             </li>
@@ -73,10 +68,9 @@ export default async function HomePage() {
 
       {/* 3. The ladder */}
       <Section className="border-t">
-        <Eyebrow>Three levels</Eyebrow>
         <H2>It gets harder. That is the point.</H2>
         <div className="mt-10"><Ladder /></div>
-        <p className="text-muted-foreground mt-5 max-w-2xl text-sm">Reps are nudged up a level after three calls averaging seven or better. Nothing is locked.</p>
+        <p className="text-muted-foreground mt-5 max-w-2xl">Reps are nudged up a level after three calls averaging seven or better. Nothing is locked.</p>
       </Section>
 
       {/* 4. Boss fights */}
@@ -86,7 +80,6 @@ export default async function HomePage() {
       <Section>
         <div className="grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:items-end">
           <div>
-            <Eyebrow>For the manager</Eyebrow>
             <H2>Coach the pattern, not the call.</H2>
           </div>
           <p className="text-muted-foreground text-body max-w-xl">
@@ -101,15 +94,14 @@ export default async function HomePage() {
       <Section className="border-t">
         <div className="grid items-center gap-10 md:grid-cols-2">
           <div>
-            <Eyebrow>Grounded in your calls</Eyebrow>
             <H2>Prospects that sound like your market, not like a chatbot.</H2>
             <p className="text-muted-foreground text-body mt-5">
               Upload transcripts from Gong, Chorus or your dialer. 100 Dials extracts how your buyers talk, the objections they actually raise and the phrasing they use, then puts it in the prospect's mouth. The coach grades against your playbook, not a generic one.
             </p>
             <Button className="mt-6" variant="outline" asChild><Link href="/for-enablement">How enablement teams use it</Link></Button>
           </div>
-          <div className="stage text-paper rounded-2xl p-6 md:p-8">
-            <div className="dial text-paper/60 mb-4 flex items-center gap-2 text-[11px]"><BookOpen className="size-3.5" /> DIGEST FROM UPLOADED CALLS</div>
+          <div className="stage text-paper rounded-2xl p-6 md:p-8" data-ui>
+            <div className="text-paper/60 mb-4 flex items-center gap-2 text-sm"><BookOpen className="size-4" /> Digest from uploaded calls</div>
             <dl className="divide-y divide-white/10">
               {[
                 ["Objection, in their words", "“We already run Samsara on half the trucks.”"],
@@ -117,7 +109,7 @@ export default async function HomePage() {
                 ["What booked meetings", "A reason for calling tied to fleet growth in the first twenty seconds."],
               ].map(([k, v]) => (
                 <div key={k} className="py-3">
-                  <dt className="text-paper/60 text-xs">{k}</dt>
+                  <dt className="text-paper/60 text-sm">{k}</dt>
                   <dd className="font-display mt-1 text-2xl leading-snug">{v}</dd>
                 </div>
               ))}

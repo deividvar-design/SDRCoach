@@ -13,7 +13,6 @@ export function BossFights({ hangUps = 0 }: { hangUps?: number }) {
       <div className="mx-auto w-full max-w-6xl px-6 py-14 md:py-20">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="dial text-signal text-xs">BOSS FIGHTS</p>
             <H2>Then there's Karen.</H2>
           </div>
           {hangUps >= COUNTER_MIN && <p className="dial text-paper/70 text-sm">KAREN HAS HUNG UP ON {hangUps.toLocaleString("en-GB")} REPS THIS MONTH</p>}
@@ -26,7 +25,7 @@ export function BossFights({ hangUps = 0 }: { hangUps?: number }) {
             <div className="mt-auto flex flex-wrap items-end justify-between gap-6 pt-10">
               <div>
                 <div className="font-display text-3xl">{karen.name}</div>
-                <div className="text-paper/60 dial mt-1 text-xs">{karen.title.toUpperCase()}, {karen.company.toUpperCase()}</div>
+                <div className="text-paper/60 mt-1 text-sm">{karen.title}, {karen.company}</div>
               </div>
               <Button size="lg" variant="signal" asChild><Link href="/karen">Try to survive Karen</Link></Button>
             </div>
@@ -36,12 +35,12 @@ export function BossFights({ hangUps = 0 }: { hangUps?: number }) {
               <p className="font-display text-2xl leading-snug md:text-3xl">“{b.objections[0]}”</p>
               <div className="mt-auto pt-6">
                 <div className="font-display text-2xl">{b.name}</div>
-                <div className="text-paper/60 dial mt-1 text-[11px]">{b.title.toUpperCase()}</div>
+                <div className="text-paper/60 mt-1 text-sm">{b.title}</div>
               </div>
             </article>
           ))}
         </div>
-        <p className="text-paper/50 mt-6 text-sm">Three minutes, a work email, a scored report after. No account needed.</p>
+        <p className="text-paper/60 mt-6">Three minutes, a work email, a scored report after. No account needed.</p>
       </div>
     </section>
   );
