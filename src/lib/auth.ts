@@ -42,10 +42,13 @@ export const requireViewer = cache(async (): Promise<Viewer> => {
 const DEFAULT_ADMIN_EMAILS = ["deividvar@gmail.com"];
 
 /** Internal console: allowlisted emails only. Non-admins get a 404 so the route stays invisible. */
+export function adminEmails() {
+  return [...DEFAULT_ADMIN_EMAILS, ...(process.env.ADMIN_EMAILS ?? "").split(",")].map((e) => e.trim().toLowerCase()).filter(Boolean);
+}
+
 export function isAdminEmail(email: string | null | undefined) {
   if (!email) return false;
-  const list = [...DEFAULT_ADMIN_EMAILS, ...(process.env.ADMIN_EMAILS ?? "").split(",")].map((e) => e.trim().toLowerCase()).filter(Boolean);
-  return list.includes(email.toLowerCase());
+  return adminEmails().includes(email.toLowerCase());
 }
 
 export async function requireAdmin() {

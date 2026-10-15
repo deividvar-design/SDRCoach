@@ -4,7 +4,10 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { sweepStaleSessions } from "@/lib/calls/sweep";
-import { orgManagers } from "@/lib/email/lifecycle";
+import { orgManagers, orgOwner } from "@/lib/email/lifecycle";
+import { adminEmails } from "@/lib/auth";
+import { reasonLabel } from "@/lib/marketing/signup-intent";
+import { absoluteUrl } from "@/lib/site";
 import { buildWeeklyDigest } from "@/lib/stats/weekly-digest";
 import { comebackUntil } from "@/lib/billing/offers";
 import { emailConfigured, sendMail } from "@/lib/email/send";
@@ -16,6 +19,29 @@ export const maxDuration = 300;
 
 const DAY = 86_400_000;
 
+/** Internal alert, once per workspace, to every admin address. Logged like a lifecycle email so it never repeats. */
+async function sendStalledAlert(db: ReturnType<typeof createAdminClient>, orgId: string, createdAt: string) {
+  if (!emailConfigured()) return { sent: false };
+  const { error: logErr } = await db.from("email_log").insert({ org_id: orgId, kind: "stalled_alert" });
+  if (logErr) return { sent: false };
+  const [owner, { data: org }] = await Promise.all([orgOwner(orgId), db.from("organizations").select("name, trial_domain").eq("id", orgId).single()]);
+  if (!owner || !org) return { sent: false };
+  const { data: profile } = await db.from("profiles").select("full_name, signup_reason, signup_goal, hero_variant").eq("id", owner.userId).maybeSingle();
+  const mail = templates.stalledTrial({
+    name: profile?.full_name ?? owner.firstName,
+    email: owner.email,
+    orgName: org.name,
+    domain: org.trial_domain,
+    reason: reasonLabel(profile?.signup_reason),
+    goal: profile?.signup_goal ?? null,
+    variant: profile?.hero_variant ?? null,
+    signedUp: formatDate(createdAt),
+    adminUrl: absoluteUrl("/admin/signups"),
+  });
+  await Promise.all(adminEmails().map((to) => sendMail({ to, ...mail })));
+  return { sent: true };
+}
+
 function authorized(header: string | null, secret: string) {
   const a = Buffer.from(header ?? "");
   const b = Buffer.from(`Bearer ${secret}`);
@@ -24,7 +50,8 @@ function authorized(header: string | null, secret: string) {
 
 /**
  * Daily (Vercel cron). Emails first, then the sweep, so a slow transcript fetch never starves the mail:
- *  - day-1 and day-3 nudges for trial workspaces that have not made a call
+ *  - quick-start emails on days two to four, each skipped once the step is done
+ *  - an internal stalled-trial alert when a workspace has not dialed by day three
  *  - three-days-left note to trial workspaces without a subscription
  *  - trial-ended notice for workspaces whose 14 days ran out in the last two weeks
  *  - repair of sessions stuck between states
@@ -38,20 +65,40 @@ export async function GET(request: Request) {
 
   const db = createAdminClient();
   const now = Date.now();
-  const results = { nudged_day1: 0, nudged: 0, three_days: 0, ended: 0, chased: 0, demo_followups: 0, digests: 0, swept: { failed: 0, finalized: 0 } };
+  const results = { quick: 0, stalled: 0, three_days: 0, ended: 0, chased: 0, demo_followups: 0, digests: 0, swept: { failed: 0, finalized: 0 } };
 
   const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at, stripe_subscription_id").eq("plan", "trial").is("stripe_subscription_id", null).gt("trial_ends_at", new Date(now - 30 * DAY).toISOString()).limit(1000);
   for (const org of trials ?? []) {
     const ageDays = (now - new Date(org.created_at).getTime()) / DAY;
     const daysLeft = Math.ceil((new Date(org.trial_ends_at).getTime() - now) / DAY);
-    // The cron runs once a day, so "a day old" means anything past twenty hours; the day-3 email is a separate kind.
-    if ((ageDays >= 0.85 && ageDays < 3) || (ageDays >= 3 && ageDays < 10)) {
-      const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null);
+    // Quick start, days two to four. Each step is skipped once the workspace has done that thing. Day one is the
+    // welcome email, sent when the workspace is created.
+    const calls = () => db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null);
+    if (ageDays >= 1.85 && ageDays < 3) {
+      const { count } = await db.from("targets").select("id", { count: "exact", head: true }).eq("org_id", org.id).eq("kind", "real");
       if ((count ?? 0) === 0) {
-        const kind = ageDays < 3 ? "nudge_day1" : "nudge_day3";
-        const r = await sendLifecycle(org.id, kind).catch((err) => (reportError(err, { where: `cron_${kind}`, orgId: org.id }), { sent: false }));
-        if (r.sent) results[kind === "nudge_day1" ? "nudged_day1" : "nudged"] += 1;
+        const r = await sendLifecycle(org.id, "quick_day2").catch((err) => (reportError(err, { where: "cron_quick_day2", orgId: org.id }), { sent: false }));
+        if (r.sent) results.quick += 1;
       }
+    }
+    if (ageDays >= 2.85 && ageDays < 4) {
+      const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).eq("status", "scored");
+      if ((count ?? 0) === 0) {
+        const r = await sendLifecycle(org.id, "quick_day3").catch((err) => (reportError(err, { where: "cron_quick_day3", orgId: org.id }), { sent: false }));
+        if (r.sent) results.quick += 1;
+      }
+    }
+    if (ageDays >= 3.85 && ageDays < 5) {
+      const { count } = await db.from("memberships").select("id", { count: "exact", head: true }).eq("org_id", org.id);
+      if ((count ?? 0) <= 1) {
+        const r = await sendLifecycle(org.id, "quick_day4").catch((err) => (reportError(err, { where: "cron_quick_day4", orgId: org.id }), { sent: false }));
+        if (r.sent) results.quick += 1;
+      }
+    }
+    // Stalled: three days in and nobody has dialed. One internal email with everything needed to call them.
+    if (ageDays >= 2.85 && ageDays < 10 && (await calls()).count === 0) {
+      const r = await sendStalledAlert(db, org.id, org.created_at).catch((err) => (reportError(err, { where: "cron_stalled_alert", orgId: org.id }), { sent: false }));
+      if (r.sent) results.stalled += 1;
     }
     if (daysLeft > 0 && daysLeft <= 3 && !org.stripe_subscription_id) {
       const { count } = await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null);

@@ -2,9 +2,11 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { emailConfigured, sendMail } from "./send";
 import { templates } from "./templates";
+import { absoluteUrl } from "@/lib/site";
 import { PLANS } from "@/lib/billing/plans";
+import { KAREN } from "@/lib/demo/boss";
 
-export type LifecycleKind = "welcome" | "nudge_day1" | "nudge_day3" | "three_days_left" | "two_calls_left" | "trial_ended" | "chase_1" | "chase_feedback" | "chase_breakup" | "subscription_started" | "payment_failed" | "subscription_canceled" | `weekly_digest:${string}`;
+export type LifecycleKind = "welcome" | "quick_day2" | "quick_day3" | "quick_day4" | "nudge_day1" | "nudge_day3" | "three_days_left" | "two_calls_left" | "trial_ended" | "chase_1" | "chase_feedback" | "chase_breakup" | "subscription_started" | "payment_failed" | "subscription_canceled" | `weekly_digest:${string}`;
 
 /** Owner's address and first name. */
 export async function orgOwner(orgId: string) {
@@ -48,8 +50,14 @@ export async function sendLifecycle(orgId: string, kind: LifecycleKind, opts: { 
   }
 
   const base = { firstName: owner.firstName, orgName: org.name };
+  // The welcome button dials this workspace's own copy of Karen.
+  const karen = kind === "welcome" ? await db.from("targets").select("id").eq("org_id", orgId).eq("kind", "boss").eq("name", KAREN.name).limit(1).maybeSingle() : null;
+  const karenHref = absoluteUrl(karen?.data?.id ? `/practice?target=${karen.data.id}` : "/practice");
   const mail =
-    kind === "welcome" ? templates.welcome(base)
+    kind === "welcome" ? templates.welcome({ ...base, karenHref })
+    : kind === "quick_day2" ? templates.quickDay2(base)
+    : kind === "quick_day3" ? templates.quickDay3(base)
+    : kind === "quick_day4" ? templates.quickDay4(base)
     : kind === "nudge_day1" ? templates.nudgeDay1(base)
     : kind === "nudge_day3" ? templates.nudge(base)
     : kind === "three_days_left" ? templates.threeDaysLeft({ ...base, calls: opts.trial?.calls ?? 0, daysLeft: opts.trial?.daysLeft ?? 3 })

@@ -36,15 +36,66 @@ export const templates = {
     return { subject: `Feedback from ${p.name} at ${p.orgName}`, html: layout("Someone wrote in.", html), text: textOf([p.body, "", ...meta]) };
   },
 
-  welcome(p: { firstName: string; orgName: string }): Rendered {
-    const cta = { label: "Make your first call", href: absoluteUrl("/practice") };
+  /** Day 1 of the quick start, sent the moment the workspace exists: one button, Karen. */
+  welcome(p: { firstName: string; orgName: string; karenHref: string }): Rendered {
+    const cta = { label: "Dial Karen", href: p.karenHref };
     const lines = [
       `Hi ${p.firstName},`,
-      `Your workspace for ${p.orgName} is ready. You have ${TRIAL.calls} free calls over ${TRIAL.days} days.`,
-      "Start with a Level 1 persona. Nail the opener and the ask. Then try Level 3, where the prospect tries to hang up on you.",
-      "Invite your reps from the Team page whenever you like.",
+      `Your workspace for ${p.orgName} is ready, and Karen is waiting. Head of Procurement, twenty-two years in, does not take cold calls.`,
+      "Two minutes on the phone with her tells you more about a rep than a week of shadowing. Nobody books her. Staying composed is the win, and the coach scores exactly that.",
+      `You have ${TRIAL.calls} free calls over ${TRIAL.days} days. Spend the first one on her.`,
     ];
-    return { subject: `Your ${SITE.name} workspace is ready`, html: layout("Your first prospect is waiting.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+    return { subject: "Karen is waiting", html: layout("Dial Karen.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  /** Day 2: a prospect from their own list. Suppressed once a real target exists. */
+  quickDay2(p: { firstName: string; orgName: string }): Rendered {
+    const cta = { label: "Build a prospect", href: absoluteUrl("/targets") };
+    const lines = [
+      `Hi ${p.firstName},`,
+      "Pick one account from this quarter's list. Name, title, what they would push back on. Two minutes.",
+      `From then on ${p.orgName}'s reps dial your market, in its own words, instead of ours.`,
+    ];
+    return { subject: "Build a prospect from your real list", html: layout("Your market, not ours.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  /** Day 3: the coach review. Suppressed once any call has been scored. */
+  quickDay3(p: { firstName: string; orgName: string }): Rendered {
+    const cta = { label: "Request the review", href: absoluteUrl("/sessions") };
+    const lines = [
+      `Hi ${p.firstName},`,
+      "Open any call and ask for the coach's review. Six skills scored from the transcript, every objection tagged as handled or missed, and the one thing to change on the next dial.",
+      "It takes about a minute and it is the part reps come back for.",
+    ];
+    return { subject: "Request the coach review", html: layout("Get the call scored.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  /** Day 4: the team view. Suppressed once a second member has joined. */
+  quickDay4(p: { firstName: string; orgName: string }): Rendered {
+    const cta = { label: "Open the team view", href: absoluteUrl("/team") };
+    const lines = [
+      `Hi ${p.firstName},`,
+      "Invite one rep. The team page shows the weakest skill on the floor and the objection the team keeps losing, so the next one-to-one has an agenda before you open the call list.",
+      "Invites take a name and an email. The rep is dialing inside five minutes.",
+    ];
+    return { subject: "Open the team view", html: layout("Coach the pattern, not the call.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  /** Internal: a trial that has not dialed by the end of day three. Everything needed to pick up the phone. */
+  stalledTrial(p: { name: string; email: string; orgName: string; domain: string | null; reason: string | null; goal: string | null; variant: string | null; signedUp: string; adminUrl: string }): Rendered {
+    const rows: [string, string][] = [
+      ["Name", p.name],
+      ["Email", p.email],
+      ["Company", p.orgName],
+      ["Domain", p.domain ?? "—"],
+      ["Why here", p.reason ?? "—"],
+      ["Worth paying for", p.goal ?? "—"],
+      ["Headline variant", p.variant ?? "—"],
+      ["Signed up", p.signedUp],
+    ];
+    const html = `<p style="margin:0 0 12px">Three days in, no call. Worth a phone call from you.</p><table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse">${rows.map(([k, v]) => `<tr><td style="padding:6px 16px 6px 0;font-size:13px;color:#8a857a;vertical-align:top">${esc(k)}</td><td style="padding:6px 0;font-size:14px">${esc(v)}</td></tr>`).join("")}</table>`;
+    const cta = { label: "Open signups", href: p.adminUrl };
+    return { subject: `Stalled trial: ${p.orgName} (${p.name})`, html: layout("A trial stalled.", html, cta), text: textOf(["Three days in, no call.", ...rows.map(([k, v]) => `${k}: ${v}`)], cta) };
   },
 
   invite(p: { inviterName: string; orgName: string; role: string; link: string }): Rendered {
