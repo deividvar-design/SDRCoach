@@ -18,7 +18,7 @@ export default function BlogIndex() {
       <Section className="pt-14 md:pt-20">
         <Eyebrow>Blog</Eyebrow>
         <h1 className="font-display mt-4 text-5xl text-balance md:text-6xl">Cold calling, with the data attached.</h1>
-        <p className="text-muted-foreground mt-4 max-w-2xl text-lg">Short guides on what actually books meetings, written for reps and the people who coach them. Every post ends with something you can practise today.</p>
+        <p className="text-muted-foreground mt-4 max-w-2xl text-lg">Short guides on what actually books meetings, written for reps and the people who coach them. Every post ends with something you can dial today.</p>
       </Section>
 
       {first && (
@@ -50,7 +50,7 @@ export default function BlogIndex() {
         </ul>
       </Section>
 
-      <CtaBand title="Read it, then dial it." body="Every technique here works better after ten practice calls. Ten are free." />
+      <CtaBand title="Read it, then dial it." body="Every technique here works better after ten ramp calls. Ten are free." />
     </>
   );
 }

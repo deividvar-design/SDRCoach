@@ -38,7 +38,7 @@ export default function ObjectionIndex() {
         </ul>
       </Section>
 
-      <CtaBand title="Hear them said out loud." body="An AI prospect raises these on every practice call and the coach tags how you handled each one. Ten calls are free." />
+      <CtaBand title="Hear them said out loud." body="An AI prospect raises these on every ramp call and the coach tags how you handled each one. Ten calls are free." />
     </>
   );
 }

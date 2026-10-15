@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { PROOF } from "@/content/proof";
 import { TRIAL } from "@/lib/billing/plans";
 
-export function Section({ children, className, id }: { children: React.ReactNode; className?: string; id?: string }) {
+export function Section({ children, className, id, ...rest }: { children: React.ReactNode; className?: string; id?: string } & Record<`data-${string}`, string>) {
   return (
-    <section id={id} className={cn("mx-auto w-full max-w-6xl px-6 py-11 md:py-16", className)}>
+    <section id={id} className={cn("mx-auto w-full max-w-6xl px-6 py-11 md:py-16", className)} {...rest}>
       {children}
     </section>
   );

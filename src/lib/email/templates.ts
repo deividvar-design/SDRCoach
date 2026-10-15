@@ -49,7 +49,7 @@ export const templates = {
 
   invite(p: { inviterName: string; orgName: string; role: string; link: string }): Rendered {
     const cta = { label: "Accept invite", href: p.link };
-    const lines = [`${p.inviterName} invited you to join ${p.orgName} on ${SITE.name} as a ${p.role}.`, "Practice cold calls against AI prospects and get a scored coaching report after every call.", "The link works for 7 days."];
+    const lines = [`${p.inviterName} invited you to join ${p.orgName} on ${SITE.name} as a ${p.role}.`, "Dial AI prospects built from your team's targets and get a scored coaching report after every call.", "The link works for 7 days."];
     return { subject: `${p.inviterName} invited you to ${p.orgName} on ${SITE.name}`, html: layout(`Join ${p.orgName}.`, lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
   },
 

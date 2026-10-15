@@ -10,10 +10,12 @@ import { Heatmap } from "@/components/marketing/heatmap";
 import { FounderNote } from "@/components/marketing/founder-note";
 import { CtaBand, Eyebrow, H2, Section } from "@/components/marketing/sections";
 import { JsonLd, organizationLd, softwareLd } from "@/components/seo/json-ld";
+import { HERO_COPY, heroVariant } from "@/lib/marketing/hero";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: { absolute: "100 Dials: Cold Call Coach for SDR teams" },
-  description: "Reps dial realistic AI prospects built from your own targets. Every call ends with the prospect's decision and a transcript; a scored coach's review is one click away. Managers see where the team struggles and what prospects push back on. Free trial, work email only.",
+  title: { absolute: "100 Dials: Ramp new SDRs in 14 days, on the phone" },
+  description: "New reps get their hard calls in before they get them on your pipeline. They dial realistic AI prospects built from your own targets, every call ends with the prospect's decision and a transcript, and the coach scores six skills. Managers see where the team struggles. Free trial, work email only.",
   alternates: { canonical: "/" }, openGraph: { url: "/" },
 };
 
@@ -24,19 +26,21 @@ const STEPS = [
 ];
 
 
-export default function HomePage() {
+export default async function HomePage() {
+  const variant = await heroVariant();
+  const hero = HERO_COPY[variant];
   return (
     <>
       <JsonLd data={[organizationLd(), softwareLd()]} />
 
-      {/* 1. Hero */}
-      <Section className="pt-10 md:pt-14">
+      {/* 1. Hero. Two headlines under test; the variant travels with the signup event. */}
+      <Section className="pt-10 md:pt-14" data-hero={variant}>
         <div>
-          <div className="enter" style={{ "--enter-delay": "60ms" } as React.CSSProperties}><Eyebrow>Cold call training for SDR teams</Eyebrow></div>
-          <h1 className="font-display enter mt-4 text-[3.6rem] leading-[0.98] md:text-[6.5rem] xl:text-[7.5rem]" style={{ "--enter-delay": "0ms" } as React.CSSProperties}>
-            <span className="block">Karen's on the line.</span>
-            <span className="block">You have three minutes.</span>
+          <div className="enter" style={{ "--enter-delay": "60ms" } as React.CSSProperties}><Eyebrow>{hero.eyebrow}</Eyebrow></div>
+          <h1 className={cn("font-display enter mt-4 leading-[0.98]", hero.large ? "text-[3.6rem] md:text-[6.5rem] xl:text-[7.5rem]" : "text-[3rem] md:text-[5rem] xl:text-[5.75rem]")} style={{ "--enter-delay": "0ms" } as React.CSSProperties}>
+            {hero.headline.map((line) => <span key={line} className="block">{line}</span>)}
           </h1>
+          <p className={cn("font-display enter mt-5 max-w-3xl text-balance", hero.large ? "text-2xl text-muted-foreground md:text-3xl" : "text-signal text-3xl md:text-5xl")} style={{ "--enter-delay": "90ms" } as React.CSSProperties}>{hero.sub}</p>
           <div className="enter mt-8 flex flex-wrap items-center gap-4" style={{ "--enter-delay": "140ms" } as React.CSSProperties}>
             <Button size="xl" variant="signal" asChild><Link href="/karen">Pick up</Link></Button>
             <Button size="xl" variant="outline" asChild><Link href="/signup">Start free trial</Link></Button>

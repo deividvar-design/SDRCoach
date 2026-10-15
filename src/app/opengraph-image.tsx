@@ -6,5 +6,5 @@ export const size = OG_SIZE;
 export const contentType = "image/png";
 
 export default function OgImage() {
-  return ogCard({ title: "Karen's on the line. You have three minutes.", kicker: "Cold call training for SDR teams", footer: "10 free calls, work email only" });
+  return ogCard({ title: "Karen's on the line. You have three minutes.", kicker: "SDR ramp, on the phone", footer: "10 free calls, work email only" });
 }

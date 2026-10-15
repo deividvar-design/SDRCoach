@@ -7,10 +7,21 @@ function isPublic(pathname: string) {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
+const HERO_COOKIE = "hero";
+
+/** Assigns the homepage headline variant once per browser. Pinned variants (HERO_VARIANT) need no cookie. */
+function assignHero(request: NextRequest, response: NextResponse) {
+  if (process.env.HERO_VARIANT || request.cookies.get(HERO_COOKIE)) return;
+  response.cookies.set(HERO_COOKIE, Math.random() < 0.5 ? "ramp" : "karen", { path: "/", maxAge: 90 * 86_400, sameSite: "lax" });
+}
+
 /** Refreshes the Supabase session cookie and redirects unauthenticated users. */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
-  if (process.env.SDRCOACH_DEMO === "1" && !process.env.VERCEL) return response;
+  if (process.env.SDRCOACH_DEMO === "1" && !process.env.VERCEL) {
+    assignHero(request, response);
+    return response;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -52,5 +63,6 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  assignHero(request, response);
   return response;
 }

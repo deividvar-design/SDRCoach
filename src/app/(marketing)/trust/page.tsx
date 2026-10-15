@@ -68,7 +68,7 @@ export default function TrustPage() {
         <p className="text-muted-foreground mt-4 text-sm">A data processing agreement with standard contractual clauses and the named list of subprocessors is available on request for every plan. Enterprise customers can pin voice and language processing to EU regions.</p>
       </Section>
 
-      <CtaBand title="Try it with a practice persona first." body="No customer data needed for the trial. Upload real calls when you are ready." />
+      <CtaBand title="Try it with a built-in persona first." body="No customer data needed for the trial. Upload real calls when you are ready." />
     </>
   );
 }
