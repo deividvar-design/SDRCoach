@@ -122,7 +122,7 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
   const initials = prospect.name.split(" ").map((w) => w[0]).join("");
 
   return (
-    <div ref={cardRef} className="stage text-background relative overflow-hidden rounded-3xl">
+    <div ref={cardRef} className="stage text-paper relative overflow-hidden rounded-3xl">
       {audioSrc && <audio ref={audio} src={audioSrc} preload="none" />}
 
       {/* Header: who is on the line, the dial counter, and a timer you can read from across the room */}
@@ -130,16 +130,16 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
         <div className="flex items-center gap-4">
           <div className="relative grid place-items-center">
             {prospectSpeaking && <span className="bg-signal/40 ring-speaking absolute size-16 rounded-full" />}
-            <div className={cn("bg-background text-foreground relative grid size-14 place-items-center rounded-full font-medium transition-transform", prospectSpeaking && "scale-105")}>{initials}</div>
+            <div className={cn("bg-paper text-foreground relative grid size-14 place-items-center rounded-full font-medium transition-transform", prospectSpeaking && "scale-105")}>{initials}</div>
           </div>
           <div>
             <div className="font-display text-2xl leading-tight">{prospect.name}</div>
-            <div className="text-background/60 text-sm">{prospect.title}, {prospect.company}</div>
-            <div className="dial text-background/60 mt-1 text-[11px]">{label}</div>
+            <div className="text-paper/60 text-sm">{prospect.title}, {prospect.company}</div>
+            <div className="dial text-paper/60 mt-1 text-[11px]">{label}</div>
           </div>
         </div>
         <div className="flex items-baseline gap-3 md:justify-end">
-          <span className={cn("dial text-xs", playing ? "text-signal" : "text-background/50")}>
+          <span className={cn("dial text-xs", playing ? "text-signal" : "text-paper/50")}>
             {playing && <span className="bg-signal mr-2 inline-block size-1.5 rounded-full live-pulse align-middle" />}
             {playing ? "LIVE" : done ? "ENDED" : "READY"}
           </span>
@@ -152,7 +152,7 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
         {Array.from({ length: 96 }, (_, i) => (
           <span
             key={i}
-            className={cn("wave-bar w-1 rounded-full", prospectSpeaking ? "bg-signal" : repSpeaking ? "bg-background/70" : "bg-background/20")}
+            className={cn("wave-bar w-1 rounded-full", prospectSpeaking ? "bg-signal" : repSpeaking ? "bg-paper/70" : "bg-paper/20")}
             style={{ "--i": i, "--h": `${10 + ((i * 7) % 22)}px`, height: prospectSpeaking || repSpeaking ? undefined : "3px", animationPlayState: prospectSpeaking || repSpeaking ? "running" : "paused" } as React.CSSProperties}
           />
         ))}
@@ -164,8 +164,8 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
           <div ref={listRef} className="max-h-[360px] space-y-3 overflow-y-auto px-6 py-5 md:px-8">
             {visible.map((t, i) => (
               <div key={i} className={cn("max-w-[80%] transition-opacity duration-500", t.role === "rep" ? "ml-auto" : "", !reduced && t.t > clock ? "opacity-30" : "line-in")}>
-                <div className={cn("text-[10px] uppercase tracking-wider", t.role === "rep" ? "text-background/50 text-right" : "text-signal")}>{t.role === "rep" ? rep : firstName}</div>
-                <p className={cn("mt-1 rounded-2xl px-4 py-2.5 text-sm leading-relaxed", t.role === "rep" ? "bg-background text-foreground rounded-tr-sm" : "bg-white/10 rounded-tl-sm")}>{t.text}</p>
+                <div className={cn("text-[10px] uppercase tracking-wider", t.role === "rep" ? "text-paper/50 text-right" : "text-signal")}>{t.role === "rep" ? rep : firstName}</div>
+                <p className={cn("mt-1 rounded-2xl px-4 py-2.5 text-sm leading-relaxed", t.role === "rep" ? "bg-paper text-foreground rounded-tr-sm" : "bg-white/10 rounded-tl-sm")}>{t.text}</p>
               </div>
             ))}
           </div>
@@ -173,22 +173,22 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
           <div className="line-in px-6 py-5 md:px-8">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <div className="text-background/60 text-xs">Coach's score</div>
+                <div className="text-paper/60 text-xs">Coach's score</div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="font-display text-6xl leading-none">{result.overall.toFixed(1)}</span>
-                  <span className="text-background/60">/ 10</span>
+                  <span className="text-paper/60">/ 10</span>
                 </div>
               </div>
               <div className="text-right">
-                <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", result.outcomeTone === "success" ? "bg-success/20 text-success" : "bg-white/10 text-background")}>{result.outcome}</span>
-                <div className="text-background/60 mt-1.5 max-w-[16rem] text-xs italic">“{result.outcomeReason}”</div>
+                <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", result.outcomeTone === "success" ? "bg-success/20 text-success" : "bg-white/10 text-paper")}>{result.outcome}</span>
+                <div className="text-paper/60 mt-1.5 max-w-[16rem] text-xs italic">“{result.outcomeReason}”</div>
               </div>
             </div>
             <dl className="mt-5 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
               {result.dimensions.map(([label, score], i) => (
                 <div key={label}>
                   <div className="flex justify-between text-xs">
-                    <dt className="text-background/80">{label}</dt>
+                    <dt className="text-paper/80">{label}</dt>
                     <dd className="font-mono tabular">{score.toFixed(1)}</dd>
                   </div>
                   <div className="mt-1 h-1 overflow-hidden rounded-full bg-white/10">
@@ -197,20 +197,20 @@ export function SampleCall({ autoStart = false }: { autoStart?: boolean }) {
                 </div>
               ))}
             </dl>
-            <p className="text-background/80 mt-5 text-sm leading-relaxed">{result.coach}</p>
+            <p className="text-paper/80 mt-5 text-sm leading-relaxed">{result.coach}</p>
           </div>
         )}
       </div>
 
       {/* Controls */}
       <div className="flex items-center justify-between border-t border-white/10 px-6 py-3 md:px-8">
-        <p className="text-background/50 text-xs">{done ? "Reviewed and scored." : started ? (prospectSpeaking ? `${firstName} is speaking` : `${rep} is speaking`) : "A scripted boss fight, as text. Yours talk back."}</p>
+        <p className="text-paper/50 text-xs">{done ? "Reviewed and scored." : started ? (prospectSpeaking ? `${firstName} is speaking` : `${rep} is speaking`) : "A scripted boss fight, as text. Yours talk back."}</p>
         <div className="flex gap-1.5">
           {started && !playing && (
-            <button type="button" onClick={reset} aria-label="Restart" className="text-background/70 hover:text-background grid size-9 cursor-pointer place-items-center rounded-full hover:bg-white/10"><RotateCcw className="size-4" /></button>
+            <button type="button" onClick={reset} aria-label="Restart" className="text-paper/70 hover:text-paper grid size-9 cursor-pointer place-items-center rounded-full hover:bg-white/10"><RotateCcw className="size-4" /></button>
           )}
           {playing ? (
-            <button type="button" onClick={pause} aria-label="Pause" className="bg-background text-foreground grid size-9 cursor-pointer place-items-center rounded-full"><Pause className="size-4" /></button>
+            <button type="button" onClick={pause} aria-label="Pause" className="bg-paper text-foreground grid size-9 cursor-pointer place-items-center rounded-full"><Pause className="size-4" /></button>
           ) : (
             <button type="button" onClick={start} aria-label={done ? "Play again" : "Play the example call"} className="bg-signal text-signal-foreground grid size-9 cursor-pointer place-items-center rounded-full"><Play className="size-4" /></button>
           )}

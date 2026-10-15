@@ -47,17 +47,17 @@ export default async function ScorecardPage({ params }: PageProps<"/karen/score/
           {KAREN.name}, {KAREN.title}. <span className="text-foreground">{OUTCOME_TEXT[card.outcome ?? ""] ?? "Ended"}.</span> {card.outcome_reason}
         </p>
 
-        <div className="stage text-background mt-10 grid gap-6 rounded-3xl p-6 md:grid-cols-3 md:p-8">
+        <div className="stage text-paper mt-10 grid gap-6 rounded-3xl p-6 md:grid-cols-3 md:p-8">
           <div>
-            <div className="dial text-background/60 text-[11px]">TIME ON THE LINE</div>
+            <div className="dial text-paper/60 text-[11px]">TIME ON THE LINE</div>
             <div className="dial mt-1 text-5xl md:text-6xl">{survived}</div>
           </div>
           <div>
-            <div className="dial text-background/60 text-[11px]">COACH'S SCORE</div>
-            <div className="font-display mt-1 text-5xl md:text-6xl">{Number(card.overall ?? 0).toFixed(1)}<span className="text-background/60 text-xl"> / 10</span></div>
+            <div className="dial text-paper/60 text-[11px]">COACH'S SCORE</div>
+            <div className="font-display mt-1 text-5xl md:text-6xl">{Number(card.overall ?? 0).toFixed(1)}<span className="text-paper/60 text-xl"> / 10</span></div>
           </div>
           <div>
-            <div className="dial text-background/60 text-[11px]">RESULT</div>
+            <div className="dial text-paper/60 text-[11px]">RESULT</div>
             <div className="font-display mt-1 text-3xl leading-tight">{won ? "Karen gave in." : "Karen won."}</div>
           </div>
         </div>

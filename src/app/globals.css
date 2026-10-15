@@ -84,6 +84,9 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  /* Fixed, theme-independent: the ink panels on the marketing site always carry paper-coloured text. */
+  --color-paper: #f7f5f0;
+  --color-ink: #1c1b19;
   --color-signal: var(--signal);
   --color-signal-foreground: var(--signal-foreground);
   --color-live: var(--signal);

@@ -144,12 +144,12 @@ function Inner({ prospect, maxSeconds, voiceConfigured }: Props) {
           </div>
           <div className="relative mb-6 grid place-items-center">
             {(stage === "dialing" || speaking) && <span className={cn("bg-signal/30 absolute size-32 rounded-full", stage === "dialing" ? "dial-ring" : "ring-speaking")} />}
-            <div className={cn("bg-primary text-primary-foreground relative grid size-32 place-items-center rounded-full text-3xl font-medium transition-transform", speaking && "scale-105")}>{initials(prospect.name)}</div>
+            <div className={cn("bg-primary text-paper relative grid size-32 place-items-center rounded-full text-3xl font-medium transition-transform", speaking && "scale-105")}>{initials(prospect.name)}</div>
           </div>
           <h1 className="font-display text-4xl">{prospect.name}</h1>
           <p className="text-muted-foreground mt-1">{prospect.title}, {prospect.company}</p>
           {(stage === "live" || stage === "ending") && (
-            <div className="bg-background/80 mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-sm tabular">
+            <div className="bg-paper/80 mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-sm tabular">
               {stage === "live" ? (
                 <>
                   <span className="bg-signal size-2 rounded-full live-pulse" />

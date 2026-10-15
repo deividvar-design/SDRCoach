@@ -108,8 +108,8 @@ export default async function HomePage() {
             </p>
             <Button className="mt-6" variant="outline" asChild><Link href="/for-enablement">How enablement teams use it</Link></Button>
           </div>
-          <div className="stage text-background rounded-2xl p-6 md:p-8">
-            <div className="dial text-background/60 mb-4 flex items-center gap-2 text-[11px]"><BookOpen className="size-3.5" /> DIGEST FROM UPLOADED CALLS</div>
+          <div className="stage text-paper rounded-2xl p-6 md:p-8">
+            <div className="dial text-paper/60 mb-4 flex items-center gap-2 text-[11px]"><BookOpen className="size-3.5" /> DIGEST FROM UPLOADED CALLS</div>
             <dl className="divide-y divide-white/10">
               {[
                 ["Objection, in their words", "“We already run Samsara on half the trucks.”"],
@@ -117,7 +117,7 @@ export default async function HomePage() {
                 ["What booked meetings", "A reason for calling tied to fleet growth in the first twenty seconds."],
               ].map(([k, v]) => (
                 <div key={k} className="py-3">
-                  <dt className="text-background/60 text-xs">{k}</dt>
+                  <dt className="text-paper/60 text-xs">{k}</dt>
                   <dd className="font-display mt-1 text-2xl leading-snug">{v}</dd>
                 </div>
               ))}
