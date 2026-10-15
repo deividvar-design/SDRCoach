@@ -13,7 +13,7 @@ export default function CookiesPage() {
         <thead><tr><th>Name</th><th>Purpose</th><th>Duration</th></tr></thead>
         <tbody>
           <tr><td>Session cookie</td><td>Keeps you signed in</td><td>Session, refreshed while active</td></tr>
-          <tr><td><code>cookie-consent</code> (local storage)</td><td>Remembers whether you accepted analytics</td><td>12 months</td></tr>
+          <tr><td><code>cookie-consent</code> (local storage)</td><td>Remembers your cookie choice</td><td>12 months</td></tr>
           <tr><td><code>theme</code> (local storage)</td><td>Light or dark preference if you set one</td><td>Until cleared</td></tr>
           <tr><td><code>tz</code></td><td>Your timezone, so dates and streaks are shown for your day</td><td>12 months</td></tr>
           <tr><td><code>currency</code></td><td>Whether you chose to see prices in euros or dollars</td><td>12 months</td></tr>
@@ -32,8 +32,20 @@ export default function CookiesPage() {
         </tbody>
       </table>
 
+      <h2>Marketing and visitor identification (with consent)</h2>
+      <p>If you choose "Accept all", we also load tags that tell us which campaigns bring visitors, and one that identifies the company a visitor works at from their network address. None of them run if you choose "Only necessary". Each provider sets its own cookies and has its own policy.</p>
+      <table>
+        <thead><tr><th>Provider</th><th>Purpose</th><th>Duration</th></tr></thead>
+        <tbody>
+          <tr><td>Apollo.io website visitors</td><td>Identifies the visiting company, not the person, so we know which companies read about us</td><td>Up to 12 months</td></tr>
+          <tr><td>Meta pixel</td><td>Measures whether our ads on Facebook and Instagram brought you here</td><td>Up to 3 months</td></tr>
+          <tr><td>LinkedIn Insight tag</td><td>Measures whether our LinkedIn ads brought you here</td><td>Up to 6 months</td></tr>
+          <tr><td>Google tag</td><td>Measures whether our Google ads and search listings brought you here</td><td>Up to 24 months</td></tr>
+        </tbody>
+      </table>
+
       <h2>Change your mind</h2>
-      <p>Open <CookieSettingsLink /> at any time. Rejecting analytics removes those cookies on your next page load. You can also block cookies in your browser; the service still works, you will just be signed out more often.</p>
+      <p>Open <CookieSettingsLink /> at any time. Rejecting analytics removes those cookies on your next page load, and the marketing tags stop loading from then on. You can also block cookies in your browser; the service still works, you will just be signed out more often.</p>
     </LegalPage>
   );
 }

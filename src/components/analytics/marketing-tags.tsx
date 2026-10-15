@@ -1,0 +1,92 @@
+"use client";
+
+import { useEffect } from "react";
+import { CONSENT_EVENT, readConsent, type Consent } from "./consent";
+
+/**
+ * Ad pixels and visitor identification, loaded once and only after marketing consent. Each tag is off until its id
+ * is in the environment, so a preview never fires a production pixel. Withdrawing consent takes effect on the next
+ * page load; the scripts cannot be unloaded once they have run.
+ */
+const IDS = {
+  apollo: process.env.NEXT_PUBLIC_APOLLO_APP_ID,
+  meta: process.env.NEXT_PUBLIC_META_PIXEL_ID,
+  linkedin: process.env.NEXT_PUBLIC_LINKEDIN_PARTNER_ID,
+  gtag: process.env.NEXT_PUBLIC_GTAG_ID,
+};
+
+let loaded = false;
+
+function script(src: string, onload?: () => void) {
+  const el = document.createElement("script");
+  el.src = src;
+  el.async = true;
+  el.defer = true;
+  if (onload) el.onload = onload;
+  document.head.appendChild(el);
+}
+
+function loadTags() {
+  if (loaded) return;
+  loaded = true;
+  const w = window as unknown as Record<string, unknown>;
+
+  if (IDS.apollo) {
+    const nocache = Math.random().toString(36).slice(7);
+    script(`https://assets.apollo.io/micro/website-tracker/tracker.iife.js?nocache=${nocache}`, () => {
+      (w.trackingFunctions as { onLoad?: (o: { appId: string }) => void } | undefined)?.onLoad?.({ appId: IDS.apollo! });
+    });
+  }
+
+  if (IDS.meta) {
+    type Fbq = ((...args: unknown[]) => void) & { queue: unknown[][]; loaded: boolean; version: string; callMethod?: (...args: unknown[]) => void; push?: unknown };
+    const fbq = function (...args: unknown[]) {
+      if (fbq.callMethod) fbq.callMethod(...args);
+      else fbq.queue.push(args);
+    } as Fbq;
+    fbq.queue = [];
+    fbq.loaded = true;
+    fbq.version = "2.0";
+    fbq.push = fbq;
+    w.fbq ??= fbq;
+    w._fbq ??= fbq;
+    script("https://connect.facebook.net/en_US/fbevents.js");
+    (w.fbq as Fbq)("init", IDS.meta);
+    (w.fbq as Fbq)("track", "PageView");
+  }
+
+  if (IDS.linkedin) {
+    w._linkedin_partner_id = IDS.linkedin;
+    const ids = (w._linkedin_data_partner_ids as string[] | undefined) ?? [];
+    ids.push(IDS.linkedin);
+    w._linkedin_data_partner_ids = ids;
+    script("https://snap.licdn.com/li.lms-analytics/insight.min.js");
+  }
+
+  if (IDS.gtag) {
+    const layer = (w.dataLayer as unknown[] | undefined) ?? [];
+    w.dataLayer = layer;
+    const gtag = (...args: unknown[]) => {
+      // gtag reads `arguments`, so the array must be the arguments object, not a copy.
+      layer.push(args);
+    };
+    w.gtag = gtag;
+    gtag("js", new Date());
+    gtag("config", IDS.gtag);
+    script(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(IDS.gtag)}`);
+  }
+}
+
+export function MarketingTags() {
+  useEffect(() => {
+    if (!Object.values(IDS).some(Boolean)) return;
+    const apply = (c: Consent | null) => {
+      if (c?.marketing) loadTags();
+    };
+    apply(readConsent());
+    const onChange = (e: Event) => apply((e as CustomEvent<Consent>).detail);
+    window.addEventListener(CONSENT_EVENT, onChange);
+    return () => window.removeEventListener(CONSENT_EVENT, onChange);
+  }, []);
+  return null;
+}

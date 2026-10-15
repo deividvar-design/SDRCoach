@@ -2,6 +2,8 @@
 
 export interface Consent {
   analytics: boolean;
+  /** Ad pixels and visitor identification. Separate from analytics so "only necessary" stays honest. */
+  marketing: boolean;
   at: string;
 }
 
@@ -13,17 +15,19 @@ export function readConsent(): Consent | null {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Consent;
-    // Re-ask after 12 months.
+    const parsed = JSON.parse(raw) as Partial<Consent>;
+    if (!parsed.at) return null;
+    // Re-ask after 12 months, and re-ask anyone who answered before marketing tags existed.
     if (Date.now() - new Date(parsed.at).getTime() > 365 * 86_400_000) return null;
-    return parsed;
+    if (typeof parsed.marketing !== "boolean") return null;
+    return { analytics: Boolean(parsed.analytics), marketing: parsed.marketing, at: parsed.at };
   } catch {
     return null;
   }
 }
 
-export function writeConsent(analytics: boolean) {
-  const value: Consent = { analytics, at: new Date().toISOString() };
+export function writeConsent(analytics: boolean, marketing = analytics) {
+  const value: Consent = { analytics, marketing, at: new Date().toISOString() };
   try {
     localStorage.setItem(KEY, JSON.stringify(value));
   } catch {}

@@ -16,7 +16,12 @@ export interface FoundingOffer {
  */
 export async function foundingOffer(): Promise<FoundingOffer | null> {
   if (!priceCatalog().foundingConfigured) return null;
-  const { count } = await createAdminClient().from("organizations").select("id", { count: "exact", head: true }).not("stripe_subscription_id", "is", null).neq("plan", "canceled");
-  const left = Math.max(0, FOUNDING.teams - (count ?? 0));
-  return left > 0 ? { left, total: FOUNDING.teams, price: FOUNDING.price } : null;
+  try {
+    const { count } = await createAdminClient().from("organizations").select("id", { count: "exact", head: true }).not("stripe_subscription_id", "is", null).neq("plan", "canceled");
+    const left = Math.max(0, FOUNDING.teams - (count ?? 0));
+    return left > 0 ? { left, total: FOUNDING.teams, price: FOUNDING.price } : null;
+  } catch {
+    // Better no founding block than a broken pricing page.
+    return null;
+  }
 }

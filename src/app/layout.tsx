@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeScript } from "@/components/theme/theme-script";
 import { AnalyticsProvider } from "@/components/analytics/provider";
+import { MarketingTags } from "@/components/analytics/marketing-tags";
 import { CookieBanner } from "@/components/analytics/cookie-banner";
 import { INDEXABLE, SITE } from "@/lib/site";
 import "./globals.css";
@@ -45,6 +46,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={null}>
           <AnalyticsProvider />
         </Suspense>
+        {/* Ad pixels and visitor identification: only after "Accept all", only where an id is configured. */}
+        <MarketingTags />
         <CookieBanner />
         {/* Cookieless traffic measurement: pages, referrers, countries, campaigns. Runs without consent because it sets nothing on the device. */}
         <Analytics />
