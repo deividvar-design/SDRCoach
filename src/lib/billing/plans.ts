@@ -22,14 +22,22 @@ export interface Plan {
   features: string[];
   cta: string;
   highlight?: boolean;
+  /** A plan-specific promise, shown under the features. */
+  guarantee?: string;
 }
+
+/**
+ * Founding pricing: the first ten paying teams keep Starter at the launch price for as long as they stay subscribed.
+ * Active only while the founding Stripe prices exist and spots remain; see src/lib/billing/founding.ts.
+ */
+export const FOUNDING = { teams: 10, price: { usd: 47, eur: 44 } as Record<Currency, number> };
 
 export const PLANS: Plan[] = [
   {
     id: "starter",
     name: "Starter",
     tagline: "For one rep or a small team getting on the phone.",
-    prices: { usd: { month: 59, quarter: 53, year: 47 }, eur: { month: 55, quarter: 49, year: 44 } },
+    prices: { usd: { month: 79, quarter: 71, year: 63 }, eur: { month: 75, quarter: 67, year: 59 } },
     callsPerSeat: 40,
     minSeats: 1,
     features: [
@@ -54,6 +62,7 @@ export const PLANS: Plan[] = [
     features: ["Everything in Starter", "100 calls per seat a month instead of 40", "Up to 100 knowledge sources instead of 30", "Priority support, same-day reply on working days"],
     cta: "Start free trial",
     highlight: true,
+    guarantee: "First month refunded if the team report doesn't show you a skill gap you didn't know about.",
   },
   {
     id: "enterprise",

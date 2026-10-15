@@ -5,6 +5,8 @@ import { viewerCurrency } from "@/lib/billing/currency-server";
 import { CtaBand } from "@/components/marketing/sections";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
 import { Guarantee } from "@/components/billing/guarantee";
+import { foundingOffer } from "@/lib/billing/founding";
+import { FOUNDING } from "@/lib/billing/plans";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -15,7 +17,8 @@ export const metadata: Metadata = {
 const FAQ = [
   { q: "Is there a money-back guarantee?", a: "Yes. If a paid plan isn't working for your team, email us within 30 days of your first payment and we refund it in full, no questions. It covers the first payment on a new subscription." },
   { q: "Can we pay by invoice?", a: `Yes, on annual plans. Email ${SALES_EMAIL} with the plan and seat count and we send a Stripe invoice with 30-day payment terms. Monthly and quarterly plans are card only.` },
-  { q: "What counts as a call?", a: "A practice call that connects to the AI prospect. Dials that never connect are not counted." },
+  { q: "What is founding pricing?", a: `The first ${FOUNDING.teams} teams to subscribe keep Starter at $${FOUNDING.price.usd} a seat a month, on any billing period, for as long as they stay subscribed. The counter on the page is the real number of paying teams. When it reaches ${FOUNDING.teams}, Starter is $79.` },
+  { q: "What counts as a call?", a: "A call that connects to the AI prospect. Dials that never connect are not counted." },
   { q: "What happens when the team uses its allowance?", a: "Calls are pooled across seats, so one rep can use more than another. When the pool is empty, dialing pauses until the month resets. Adding a seat raises the pool immediately, and there is never a surprise charge." },
   { q: "Do unused calls roll over?", a: "No. Allowances reset monthly. Annual plans are billed up front with a 20% discount." },
   { q: "Which currency will we be charged in?", a: "Euros or US dollars, your choice at checkout. European companies see euro prices by default. Prices exclude VAT; EU companies with a VAT number are reverse-charged." },
@@ -25,20 +28,20 @@ const FAQ = [
 ];
 
 export default async function PricingPage() {
-  const currency = await viewerCurrency();
+  const [currency, founding] = await Promise.all([viewerCurrency(), foundingOffer()]);
   return (
     <>
       <JsonLd data={faqLd(FAQ)} />
       <div className="mx-auto w-full max-w-6xl px-6 pb-8">
         <section className="py-16 text-center">
           <p className="text-muted-foreground text-xs">Pricing</p>
-          <h1 className="font-display mt-3 text-5xl text-balance md:text-6xl">Cheaper than one burned prospect.</h1>
+          <h1 className="font-display mt-3 text-5xl text-balance md:text-6xl">Cheaper than one rep who never ramps.</h1>
           <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-balance">
-            Per seat, with a monthly call allowance. Start with {TRIAL.calls} free calls over {TRIAL.days} days, no card, work email required.
+            Per seat, with a monthly call allowance. A new SDR gets their hard calls in before they get them on real prospects. Start with {TRIAL.calls} free calls over {TRIAL.days} days, no card, work email required.
           </p>
         </section>
 
-        <PlanGrid marketing currency={currency} />
+        <PlanGrid marketing currency={currency} founding={founding} />
         <Guarantee className="mx-auto mt-8 max-w-3xl" />
 
         <section className="mx-auto mt-20 max-w-3xl">

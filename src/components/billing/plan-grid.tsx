@@ -24,6 +24,7 @@ export function PlanGrid({
   billingReady = false,
   intervals = ["month", "year"],
   currency: initialCurrency = "usd",
+  founding = null,
 }: {
   orgName?: string;
   canBuy?: boolean;
@@ -36,6 +37,8 @@ export function PlanGrid({
   intervals?: BillingInterval[];
   /** Currency to show first, decided server-side from the visitor's country or their earlier choice. */
   currency?: Currency;
+  /** Founding pricing for Starter while spots remain; null hides it. Decided server-side from real subscription counts. */
+  founding?: { left: number; total: number; price: Record<Currency, number> } | null;
 }) {
   const [interval, setInterval] = useState<BillingInterval>("year");
   const [currency, setCurrencyState] = useState<Currency>(initialCurrency);
@@ -82,12 +85,15 @@ export function PlanGrid({
 
       <div className="grid gap-5 lg:grid-cols-3">
         {PLANS.map((p) => {
-          const price = pricePerSeat(p, interval, currency);
+          const listPrice = pricePerSeat(p, interval, currency);
+          const isFounding = Boolean(founding && p.id === "starter");
+          const price = isFounding && founding ? founding.price[currency] : listPrice;
           const subject = encodeURIComponent(`100 Dials ${p.name}${orgName ? ` for ${orgName}` : ""}`);
           const href = p.id === "enterprise" || !marketing ? `mailto:${SALES_EMAIL}?subject=${subject}` : "/signup";
           return (
-            <div key={p.id} className={cn("bg-card relative flex flex-col rounded-2xl border p-6", p.highlight && "border-foreground shadow-lg")}>
+            <div key={p.id} className={cn("bg-card relative flex flex-col rounded-2xl border p-6", p.highlight && "border-foreground shadow-lg", isFounding && "border-signal/60")}>
               {p.highlight && <span className="bg-foreground text-background absolute -top-3 left-6 rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase">Most teams</span>}
+              {isFounding && founding && <span className="bg-signal text-signal-foreground absolute -top-3 left-6 rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase">Founding pricing, {founding.left} of {founding.total} spots left</span>}
               <div className="font-display text-2xl">{p.name}</div>
               <p className="text-muted-foreground mt-1 text-sm">{p.tagline}</p>
               <div className="mt-5 flex items-baseline gap-1">
@@ -97,6 +103,7 @@ export function PlanGrid({
                   <>
                     <span className="font-mono text-4xl font-medium tabular">{formatMoney(price, currency)}</span>
                     <span className="text-muted-foreground text-sm">/ seat / month</span>
+                    {isFounding && listPrice != null && <span className="text-muted-foreground ml-1 font-mono text-sm line-through tabular">{formatMoney(listPrice, currency)}</span>}
                   </>
                 )}
               </div>
@@ -104,6 +111,7 @@ export function PlanGrid({
                 {p.callsPerSeat ? `${p.callsPerSeat} calls per seat per month, pooled across the team` : "Volume pricing, custom call allowance"}
                 {p.minSeats > 1 ? `, from ${p.minSeats} seats` : ", from a single seat"}
               </div>
+              {isFounding && <p className="text-signal mt-2 text-xs font-medium">{formatMoney(price ?? 0, currency)} a seat, locked for as long as you stay subscribed. First {founding?.total} teams only.</p>}
               <ul className="mt-6 flex-1 space-y-2.5 text-sm">
                 {p.features.map((f) => (
                   <li key={f} className="flex gap-2">
@@ -112,6 +120,7 @@ export function PlanGrid({
                   </li>
                 ))}
               </ul>
+              {p.guarantee && <p className="text-muted-foreground mt-4 border-t pt-4 text-xs leading-relaxed"><span className="text-foreground font-medium">Guarantee.</span> {p.guarantee}</p>}
               {checkoutAction && p.id !== "enterprise" && canBuy ? (
                 <form action={checkoutAction} className="mt-6 space-y-3">
                   <input type="hidden" name="plan" value={p.id} />

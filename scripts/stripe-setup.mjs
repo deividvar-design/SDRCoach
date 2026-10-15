@@ -22,7 +22,7 @@ const stripe = new Stripe(key);
 
 // Amounts in cents per seat per month; the script multiplies by the interval. Keep in sync with src/lib/billing/plans.ts.
 const PLANS = [
-  { id: "starter", name: "100 Dials Starter", calls: 40, usd: { monthly: 5900, quarterly: 5300, annual: 4700 }, eur: { monthly: 5500, quarterly: 4900, annual: 4400 } },
+  { id: "starter", name: "100 Dials Starter", calls: 40, usd: { monthly: 7900, quarterly: 7100, annual: 6300 }, eur: { monthly: 7500, quarterly: 6700, annual: 5900 } },
   { id: "team", name: "100 Dials Team", calls: 100, usd: { monthly: 15900, quarterly: 14300, annual: 12700 }, eur: { monthly: 14900, quarterly: 13400, annual: 11900 } },
 ];
 const MONTHS = { monthly: 1, quarterly: 3, annual: 12 };
@@ -40,6 +40,36 @@ function priceParams(product, p, period) {
     nickname: `${p.id} ${period}`,
     metadata: { plan: p.id, interval: INTERVAL_KEY[period] },
   };
+}
+
+// `--founding`: one product, three prices, at the locked launch price. Checkout uses them for Starter while spots remain.
+if (process.argv.includes("--founding")) {
+  const f = { id: "founding", name: "100 Dials Starter, founding pricing", calls: 40, usd: { monthly: 4700, quarterly: 4700, annual: 4700 }, eur: { monthly: 4400, quarterly: 4400, annual: 4400 } };
+  const product = await stripe.products.create({ name: f.name, description: `${f.calls} calls per seat per month, founding price`, tax_code: "txcd_10103001", metadata: { plan: "starter", founding: "true" } });
+  const lines = [];
+  for (const period of ["monthly", "quarterly", "annual"]) {
+    const price = await stripe.prices.create({ ...priceParams(product.id, f, period), metadata: { plan: "starter", interval: INTERVAL_KEY[period], founding: "true" } });
+    lines.push(`STRIPE_PRICE_FOUNDING_${period === "monthly" ? "MONTHLY" : period === "quarterly" ? "QUARTERLY" : "ANNUAL"}=${price.id}`);
+  }
+  console.log(`\nAdd to your environment:\n${lines.join("\n")}\n\nThen in Billing → Customer portal, add the founding prices to the products customers may switch between, or leave them out so a founding team cannot accidentally switch off its price.`);
+  process.exit(0);
+}
+
+// `--reprice starter`: new prices for an existing product at the amounts above. The old prices stay for existing subscriptions.
+if (process.argv.includes("--reprice")) {
+  const id = process.argv[process.argv.indexOf("--reprice") + 1];
+  const p = PLANS.find((x) => x.id === id);
+  if (!p) { console.error(`Unknown plan ${id}`); process.exit(1); }
+  const found = await stripe.products.search({ query: `metadata['plan']:'${p.id}' AND active:'true'` });
+  const product = found.data.find((x) => x.metadata.founding !== "true");
+  if (!product) { console.error(`No active product with metadata plan=${p.id}`); process.exit(1); }
+  const lines = [];
+  for (const period of ["monthly", "quarterly", "annual"]) {
+    const price = await stripe.prices.create(priceParams(product.id, p, period));
+    lines.push(`STRIPE_PRICE_${p.id.toUpperCase()}_${period === "monthly" ? "MONTHLY" : period === "quarterly" ? "QUARTERLY" : "ANNUAL"}=${price.id}`);
+  }
+  console.log(`\nReplace in your environment:\n${lines.join("\n")}\n\nExisting subscriptions keep their old price. Update the customer portal's switchable prices if you want new ones offered there.`);
+  process.exit(0);
 }
 
 // `--eur`: add the euro amount to the prices already in the environment (STRIPE_PRICE_*), then stop.

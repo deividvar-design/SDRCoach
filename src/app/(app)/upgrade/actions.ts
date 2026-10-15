@@ -10,6 +10,7 @@ import { SITE } from "@/lib/site";
 import { PLANS } from "@/lib/billing/plans";
 import { track } from "@vercel/analytics/server";
 import { currentOffer } from "@/lib/billing/offers";
+import { foundingOffer } from "@/lib/billing/founding";
 
 const Body = z.object({
   plan: z.enum(["starter", "team"]),
@@ -27,10 +28,12 @@ export async function startCheckout(formData: FormData) {
   const viewer = await requireManager();
   const minSeats = PLANS.find((p) => p.id === parsed.data.plan)?.minSeats ?? 1;
   if (parsed.data.seats < minSeats) redirect("/upgrade?error=invalid");
-  const price = priceCatalog().priceFor(parsed.data.plan, parsed.data.interval);
+  // Starter checks out at the founding price while spots remain; the plan on the subscription stays "starter".
+  const founding = parsed.data.plan === "starter" ? await foundingOffer() : null;
+  const price = priceCatalog().priceFor(parsed.data.plan, parsed.data.interval, { founding: Boolean(founding) });
   if (!price) redirect("/upgrade?error=price_missing");
   const offer = await currentOffer(viewer.org);
-  await track("checkout_start", { plan: parsed.data.plan, interval: parsed.data.interval, currency: parsed.data.currency, seats: parsed.data.seats, offer: offer?.id ?? "" }).catch(() => {});
+  await track("checkout_start", { plan: parsed.data.plan, interval: parsed.data.interval, currency: parsed.data.currency, seats: parsed.data.seats, offer: offer?.id ?? "", founding: Boolean(founding) }).catch(() => {});
 
   const db = createAdminClient();
   let customer = viewer.org.stripe_customer_id;
@@ -63,7 +66,7 @@ export async function startCheckout(formData: FormData) {
       billing_address_collection: "required",
       tax_id_collection: { enabled: true },
       ...(process.env.STRIPE_AUTOMATIC_TAX === "1" ? { automatic_tax: { enabled: true } } : {}),
-      subscription_data: { metadata: { org_id: viewer.org.id, plan: parsed.data.plan, ...(withOffer && offer ? { offer: offer.id } : {}) } },
+      subscription_data: { metadata: { org_id: viewer.org.id, plan: parsed.data.plan, ...(founding ? { founding: "true" } : {}), ...(withOffer && offer ? { offer: offer.id } : {}) } },
       metadata: { org_id: viewer.org.id, plan: parsed.data.plan },
   });
   try {
