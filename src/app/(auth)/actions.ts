@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { track } from "@vercel/analytics/server";
 import { createClient } from "@/lib/supabase/server";
@@ -8,6 +9,10 @@ import { validateBusinessEmail } from "@/lib/email/business";
 import { safeNext } from "@/lib/safe-next";
 import { isAdminEmail } from "@/lib/auth";
 import { appUrl } from "@/lib/site";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { reportError } from "@/lib/sentry";
+import { HERO_COOKIE, isHeroVariant, pinnedHeroVariant } from "@/lib/marketing/hero";
+import { CALLBACK_ENABLED, SIGNUP_REASONS, toE164 } from "@/lib/marketing/signup-intent";
 
 export interface AuthState {
   error?: string;
@@ -31,14 +36,38 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   redirect(safeNext(formData.get("next")));
 }
 
+const REASON_IDS = SIGNUP_REASONS.map((r) => r.id);
+
 export async function signUp(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const invite = typeof formData.get("invite") === "string" ? String(formData.get("invite")) : "";
   const parsed = credentials
-    .extend({ full_name: z.string().min(2, "Tell us your name") })
-    .safeParse({ email: formData.get("email"), password: formData.get("password"), full_name: formData.get("full_name") });
+    .extend({
+      full_name: z.string().min(2, "Tell us your name"),
+      // Intent is asked of trial starters only; invited reps join a workspace that already has one.
+      signup_reason: invite ? z.string().optional() : z.enum(REASON_IDS as [string, ...string[]], { message: "Tell us why you're here" }),
+      signup_goal: z.string().trim().max(500).optional(),
+      phone: z.string().trim().max(30).optional(),
+      dial_code: z.string().trim().max(6).optional(),
+    })
+    .safeParse({
+      email: formData.get("email"),
+      password: formData.get("password"),
+      full_name: formData.get("full_name"),
+      signup_reason: formData.get("signup_reason") || undefined,
+      signup_goal: formData.get("signup_goal") || undefined,
+      phone: formData.get("phone") || undefined,
+      dial_code: formData.get("dial_code") || undefined,
+    });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  let phone: string | null = null;
+  if (CALLBACK_ENABLED && parsed.data.phone) {
+    phone = toE164(parsed.data.dial_code ?? "+1", parsed.data.phone);
+    if (!phone) return { error: "That phone number doesn't look right. Digits only, without the country code." };
+  }
+  const heroCookie = (await cookies()).get(HERO_COOKIE)?.value;
+  const variant = pinnedHeroVariant() ?? (isHeroVariant(heroCookie) ? heroCookie : null);
 
   const supabase = await createClient();
-  const invite = typeof formData.get("invite") === "string" ? String(formData.get("invite")) : "";
 
   // Trials are for business addresses. Invited teammates are vouched for by their manager,
   // but only when the invite token is real.
@@ -57,7 +86,15 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     },
   });
   if (error) return { error: error.message };
-  await track("signup", { invited: Boolean(invite) }).catch(() => {});
+  await track("signup", { invited: Boolean(invite), variant: variant ?? "", reason: parsed.data.signup_reason ?? "" }).catch(() => {});
+  // The profile row is created by a database trigger on the auth user, so it exists by now.
+  if (data.user && process.env.SDRCOACH_DEMO !== "1") {
+    await createAdminClient()
+      .from("profiles")
+      .update({ signup_reason: parsed.data.signup_reason ?? null, signup_goal: parsed.data.signup_goal || null, phone, hero_variant: variant })
+      .eq("id", data.user.id)
+      .then(({ error: e }) => e && reportError(e, { where: "signup_intent", extra: { userId: data.user?.id } }));
+  }
 
   // Email confirmation off: session exists immediately.
   if (data.session) redirect(invite ? `/invite/${invite}` : "/onboarding");
