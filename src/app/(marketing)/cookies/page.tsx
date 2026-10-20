@@ -40,6 +40,7 @@ export default function CookiesPage() {
           <tr><td>Apollo.io website visitors</td><td>Identifies the visiting company, not the person, so we know which companies read about us</td><td>Up to 12 months</td></tr>
           <tr><td>Meta pixel</td><td>Measures whether our ads on Facebook and Instagram brought you here</td><td>Up to 3 months</td></tr>
           <tr><td>LinkedIn Insight tag</td><td>Measures whether our LinkedIn ads brought you here</td><td>Up to 6 months</td></tr>
+          <tr><td>Google Ads tag</td><td>Measures whether our Google ads brought you here</td><td>Up to 3 months</td></tr>
         </tbody>
       </table>
 

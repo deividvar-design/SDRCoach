@@ -12,6 +12,7 @@ const IDS = {
   apollo: process.env.NEXT_PUBLIC_APOLLO_APP_ID,
   meta: process.env.NEXT_PUBLIC_META_PIXEL_ID,
   linkedin: process.env.NEXT_PUBLIC_LINKEDIN_PARTNER_ID,
+  googleAds: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID,
 };
 
 let loaded = false;
@@ -62,6 +63,17 @@ function loadTags() {
     script("https://snap.licdn.com/li.lms-analytics/insight.min.js");
   }
 
+  if (IDS.googleAds) {
+    // The Google Ads conversion tag (gtag.js), not Tag Manager: it only measures whether a Google ad brought the visit.
+    const dataLayer = ((w.dataLayer as unknown[] | undefined) ??= []);
+    const gtag = (...args: unknown[]) => {
+      dataLayer.push(args);
+    };
+    w.gtag ??= gtag;
+    gtag("js", new Date());
+    gtag("config", IDS.googleAds);
+    script(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(IDS.googleAds)}`);
+  }
 }
 
 export function MarketingTags() {
