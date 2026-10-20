@@ -12,8 +12,9 @@ const IDS = {
   apollo: process.env.NEXT_PUBLIC_APOLLO_APP_ID,
   meta: process.env.NEXT_PUBLIC_META_PIXEL_ID,
   linkedin: process.env.NEXT_PUBLIC_LINKEDIN_PARTNER_ID,
-  googleAds: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID,
 };
+/** The Google Ads tag is already on the page in consent mode (see google-tag.tsx); consent only has to be granted. */
+const GOOGLE_ADS = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
 
 let loaded = false;
 
@@ -24,6 +25,11 @@ function script(src: string, onload?: () => void) {
   el.defer = true;
   if (onload) el.onload = onload;
   document.head.appendChild(el);
+}
+
+function grantGoogleConsent() {
+  const w = window as unknown as { gtag?: (...args: unknown[]) => void };
+  w.gtag?.("consent", "update", { ad_storage: "granted", ad_user_data: "granted", ad_personalization: "granted", analytics_storage: "granted" });
 }
 
 function loadTags() {
@@ -63,24 +69,15 @@ function loadTags() {
     script("https://snap.licdn.com/li.lms-analytics/insight.min.js");
   }
 
-  if (IDS.googleAds) {
-    // The Google Ads conversion tag (gtag.js), not Tag Manager: it only measures whether a Google ad brought the visit.
-    const dataLayer = ((w.dataLayer as unknown[] | undefined) ??= []);
-    const gtag = (...args: unknown[]) => {
-      dataLayer.push(args);
-    };
-    w.gtag ??= gtag;
-    gtag("js", new Date());
-    gtag("config", IDS.googleAds);
-    script(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(IDS.googleAds)}`);
-  }
 }
 
 export function MarketingTags() {
   useEffect(() => {
-    if (!Object.values(IDS).some(Boolean)) return;
+    if (!Object.values(IDS).some(Boolean) && !GOOGLE_ADS) return;
     const apply = (c: Consent | null) => {
-      if (c?.marketing) loadTags();
+      if (!c?.marketing) return;
+      loadTags();
+      if (GOOGLE_ADS) grantGoogleConsent();
     };
     apply(readConsent());
     const onChange = (e: Event) => apply((e as CustomEvent<Consent>).detail);

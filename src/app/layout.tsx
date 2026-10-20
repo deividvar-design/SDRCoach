@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeScript } from "@/components/theme/theme-script";
 import { AnalyticsProvider } from "@/components/analytics/provider";
 import { MarketingTags } from "@/components/analytics/marketing-tags";
+import { GoogleTag } from "@/components/analytics/google-tag";
 import { CookieBanner } from "@/components/analytics/cookie-banner";
 import { INDEXABLE, SITE } from "@/lib/site";
 import "./globals.css";
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} ${display.variable} h-full antialiased`}>
       <head>
         <ThemeScript />
+        <GoogleTag />
         {/* The viewer's timezone, so streaks and dates are computed for their day, not the server's. */}
         <script dangerouslySetInnerHTML={{ __html: 'try{document.cookie="tz="+Intl.DateTimeFormat().resolvedOptions().timeZone+";path=/;max-age=31536000;samesite=lax"}catch(e){}' }} />
       </head>
