@@ -5,6 +5,24 @@ export interface Consent {
   /** Ad pixels and visitor identification. Separate from analytics so "only necessary" stays honest. */
   marketing: boolean;
   at: string;
+  /** True when nothing was chosen and the visitor's region does not require consent first. */
+  implied?: boolean;
+}
+
+/** The middleware stamps "eea" or "row" from the visitor's country. Missing means consent is required. */
+export function consentRequired() {
+  try {
+    return !/(?:^|; )cr=row(?:;|$)/.test(document.cookie);
+  } catch {
+    return true;
+  }
+}
+
+/** The stored choice, else the region's default: nothing in the EEA, UK and Switzerland, everything elsewhere. */
+export function effectiveConsent(): Consent | null {
+  const stored = readConsent();
+  if (stored) return stored;
+  return consentRequired() ? null : { analytics: true, marketing: true, at: "", implied: true };
 }
 
 const KEY = "cookie-consent";

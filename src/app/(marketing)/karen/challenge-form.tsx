@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { challengeKaren, type ChallengeState } from "./actions";
 
-export function ChallengeForm() {
+export function ChallengeForm({ email }: { email?: string }) {
   const [state, action, pending] = useActionState<ChallengeState, FormData>(challengeKaren, {});
 
   if (state.waitlisted) {
@@ -23,8 +23,13 @@ export function ChallengeForm() {
   return (
     <form action={action} className="bg-card space-y-4 rounded-2xl border p-6">
       <div className="space-y-2">
-        <Label htmlFor="email">Work email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@company.com" spellCheck={false} required />
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@company.com" spellCheck={false} required defaultValue={email} />
+        <p className="text-muted-foreground text-xs">Any address works for the call. The scorecard goes there.</p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="company">Company <span className="text-muted-foreground font-normal">(optional)</span></Label>
+        <Input id="company" name="company" autoComplete="organization" placeholder="Where you sell from" maxLength={80} />
       </div>
       <div className="flex items-start gap-2">
         <Checkbox id="newsletter" name="newsletter" className="mt-0.5" />
@@ -35,7 +40,7 @@ export function ChallengeForm() {
         {pending ? "Checking…" : "Call Karen"}
       </Button>
       <p className="text-muted-foreground text-[13px] leading-relaxed">
-        Work email only, one call per person, three minutes max. We send your scorecard to this address and may follow up about 100 Dials. Unsubscribe in one click. The call is recorded and scored. See the <Link href="/privacy" className="underline underline-offset-4">privacy policy</Link>.
+        One call per person, three minutes max. We send your scorecard to this address and may follow up about 100 Dials. Unsubscribe in one click. The call is recorded and scored. See the <Link href="/privacy" className="underline underline-offset-4">privacy policy</Link>.
       </p>
     </form>
   );

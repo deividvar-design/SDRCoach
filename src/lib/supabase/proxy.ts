@@ -1,6 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isAppPath } from "@/lib/routes";
+import { CONSENT_REGION_COOKIE, consentRequiredFor } from "@/lib/consent-region";
+
+/** Tells the browser whether this visitor's country requires consent before non-essential cookies. Set once. */
+function stampRegion(request: NextRequest, response: NextResponse) {
+  if (request.cookies.get(CONSENT_REGION_COOKIE)) return response;
+  const country = request.headers.get("x-vercel-ip-country");
+  response.cookies.set(CONSENT_REGION_COOKIE, consentRequiredFor(country) ? "eea" : "row", { path: "/", maxAge: 180 * 86_400, sameSite: "lax" });
+  return response;
+}
 
 /**
  * Refreshes the Supabase session cookie, sends signed-out visitors of app paths to sign in, and sends signed-in
@@ -8,12 +17,12 @@ import { isAppPath } from "@/lib/routes";
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
-  if (process.env.SDRCOACH_DEMO === "1" && !process.env.VERCEL) return response;
+  if (process.env.SDRCOACH_DEMO === "1" && !process.env.VERCEL) return stampRegion(request, response);
 
   const { pathname } = request.nextUrl;
   // No session cookie and nothing to protect: skip the auth round trip so public pages stay fast and cacheable.
   const hasSessionCookie = request.cookies.getAll().some((c) => c.name.startsWith("sb-"));
-  if (!hasSessionCookie && !isAppPath(pathname)) return response;
+  if (!hasSessionCookie && !isAppPath(pathname)) return stampRegion(request, response);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,5 +62,5 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return response;
+  return stampRegion(request, response);
 }

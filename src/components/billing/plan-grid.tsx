@@ -89,11 +89,11 @@ export function PlanGrid({
           const isFounding = Boolean(founding && p.id === "starter");
           const price = isFounding && founding ? founding.price[currency] : listPrice;
           const subject = encodeURIComponent(`100 Dials ${p.name}${orgName ? ` for ${orgName}` : ""}`);
-          const href = p.id === "enterprise" || !marketing ? `mailto:${SALES_EMAIL}?subject=${subject}` : "/signup";
+          const href = p.id === "enterprise" || !marketing ? `mailto:${SALES_EMAIL}?subject=${subject}` : `/signup?plan=${p.id}&billing=${interval}`;
           return (
             <div key={p.id} className={cn("bg-card relative flex flex-col rounded-2xl border p-6", p.highlight && "border-foreground shadow-lg", isFounding && "border-signal/60")}>
-              {p.highlight && <span className="bg-foreground text-background absolute -top-3 left-6 rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase">Most teams</span>}
-              {isFounding && founding && <span className="bg-signal text-signal-foreground absolute -top-3 left-6 rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase">Founding pricing, {founding.left} of {founding.total} spots left</span>}
+              {p.highlight && <span className="bg-foreground text-background absolute -top-3 left-6 rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase">Recommended</span>}
+              {isFounding && <span className="bg-signal text-signal-foreground absolute -top-3 left-6 rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase">Founding pricing</span>}
               <div className="font-display text-2xl">{p.name}</div>
               <p className="text-muted-foreground mt-1 text-sm">{p.tagline}</p>
               <div className="mt-5 flex items-baseline gap-1">
@@ -103,15 +103,20 @@ export function PlanGrid({
                   <>
                     <span className="font-mono text-4xl font-medium tabular">{formatMoney(price, currency)}</span>
                     <span className="text-muted-foreground text-sm">/ seat / month</span>
-                    {isFounding && listPrice != null && <span className="text-muted-foreground ml-1 font-mono text-sm line-through tabular">{formatMoney(listPrice, currency)}</span>}
+                    {isFounding && listPrice != null && listPrice > (price ?? 0) && <span className="text-muted-foreground ml-1 font-mono text-sm line-through tabular" title={`${meta.label} list price`}>{formatMoney(listPrice, currency)}</span>}
                   </>
                 )}
               </div>
+              {price != null && interval !== "month" && (
+                <div className="text-muted-foreground mt-1 text-xs">
+                  {interval === "year" ? "Billed annually" : "Billed quarterly"}: {formatMoney(price * meta.months, currency)} per seat per {interval === "year" ? "year" : "quarter"}
+                </div>
+              )}
               <div className="text-muted-foreground mt-1 text-xs">
                 {p.callsPerSeat ? `${p.callsPerSeat} calls per seat per month, pooled across the team` : "Volume pricing, custom call allowance"}
                 {p.minSeats > 1 ? `, from ${p.minSeats} seats` : ", from a single seat"}
               </div>
-              {isFounding && <p className="text-signal-ink mt-2 text-[13px] font-medium">{formatMoney(price ?? 0, currency)} a seat, locked for as long as you stay subscribed. First {founding?.total} teams only.</p>}
+              {isFounding && <p className="text-signal-ink mt-2 text-[13px] font-medium">{formatMoney(price ?? 0, currency)} a seat, locked for as long as you stay subscribed. Launch pricing, for a limited number of teams.</p>}
               <ul className="mt-6 flex-1 space-y-2.5 text-[15px]">
                 {p.features.map((f) => (
                   <li key={f} className="flex gap-2">
@@ -120,7 +125,6 @@ export function PlanGrid({
                   </li>
                 ))}
               </ul>
-              {p.guarantee && <p className="text-muted-foreground mt-4 border-t pt-4 text-[13px] leading-relaxed"><span className="text-foreground font-medium">Guarantee.</span> {p.guarantee}</p>}
               {checkoutAction && p.id !== "enterprise" && canBuy ? (
                 <form action={checkoutAction} className="mt-6 space-y-3">
                   <input type="hidden" name="plan" value={p.id} />

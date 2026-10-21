@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { CONSENT_EVENT, readConsent, type Consent } from "./consent";
+import { CONSENT_EVENT, effectiveConsent, type Consent } from "./consent";
 
 /**
  * Ad pixels and visitor identification, loaded once and only after marketing consent. Each tag is off until its id
@@ -79,7 +79,7 @@ export function MarketingTags() {
       loadTags();
       if (GOOGLE_ADS) grantGoogleConsent();
     };
-    apply(readConsent());
+    apply(effectiveConsent());
     const onChange = (e: Event) => apply((e as CustomEvent<Consent>).detail);
     window.addEventListener(CONSENT_EVENT, onChange);
     return () => window.removeEventListener(CONSENT_EVENT, onChange);

@@ -4,6 +4,7 @@ import { demoAgentId, mintConversationToken } from "@/lib/elevenlabs/client";
 import { currentDemo } from "@/lib/demo/session";
 import { demoPrompt, KAREN } from "@/lib/demo/boss";
 import { hashPrompt } from "@/lib/calls/finalize";
+import { logFunnel } from "@/lib/funnel";
 
 /** Mints are a state transition: at most two tokens per demo, so a cookie cannot be used to farm voice minutes. */
 const MAX_MINTS = 2;
@@ -27,6 +28,7 @@ export async function POST() {
     .select("id")
     .maybeSingle();
   if (!claimed) return NextResponse.json({ error: "Try again." }, { status: 409 });
+  await logFunnel("karen_call_started", { email: demo.email, subject: demo.id, dedupeKey: `karen_started:${demo.id}`, meta: { personal: demo.personal_email } });
 
   let token: string;
   try {

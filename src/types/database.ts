@@ -133,6 +133,24 @@ export type DemoCall = {
   display_company: string | null;
   leaderboard_opt_in: boolean;
   shared_at: string | null;
+  /** The company the caller typed, when the address said nothing useful (personal email). */
+  company: string | null;
+  personal_email: boolean;
+  gclid: string | null;
+  gbraid: string | null;
+  wbraid: string | null;
+  created_at: string;
+};
+
+export type FunnelEvent = {
+  id: string;
+  kind: string;
+  reason: string | null;
+  email_domain: string | null;
+  email_hash: string | null;
+  subject: string | null;
+  dedupe_key: string | null;
+  meta: Record<string, unknown>;
   created_at: string;
 };
 
@@ -163,6 +181,11 @@ export type Profile = {
   signup_goal: string | null;
   /** Which homepage headline the signup came from. */
   hero_variant: string | null;
+  gclid: string | null;
+  gbraid: string | null;
+  wbraid: string | null;
+  /** "team:year" style plan the person picked on the pricing page before signing up. */
+  plan_intent: string | null;
   created_at: string;
 }
 
@@ -307,7 +330,8 @@ export type Database = {
         Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
-      demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "followup_sent_at" | "finalize_attempts" | "scoring_started_at" | "mints" | "share_slug" | "display_name" | "display_company" | "leaderboard_opt_in" | "shared_at" | "created_at">>;
+      demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "followup_sent_at" | "finalize_attempts" | "scoring_started_at" | "mints" | "share_slug" | "display_name" | "display_company" | "leaderboard_opt_in" | "shared_at" | "company" | "personal_email" | "gclid" | "gbraid" | "wbraid" | "created_at">>;
+      funnel_events: Table<FunnelEvent, Insert<FunnelEvent, "id" | "reason" | "email_domain" | "email_hash" | "subject" | "dedupe_key" | "meta" | "created_at">>;
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
       admin_actions: Table<AdminAction, Insert<AdminAction, "id" | "org_id" | "payload" | "created_at">>;
       email_log: Table<EmailLog, Insert<EmailLog, "id" | "user_id" | "sent_at">>;
@@ -320,7 +344,7 @@ export type Database = {
           { foreignKeyName: "feedback_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ]
       >;
-      profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "email" | "recording_ack_at" | "phone" | "signup_reason" | "signup_goal" | "hero_variant" | "created_at">>;
+      profiles: Table<Profile, Insert<Profile, "full_name" | "avatar_url" | "email" | "recording_ack_at" | "phone" | "signup_reason" | "signup_goal" | "hero_variant" | "gclid" | "gbraid" | "wbraid" | "plan_intent" | "created_at">>;
       call_comments: Table<
         CallComment,
         Insert<CallComment, "id" | "created_at">,

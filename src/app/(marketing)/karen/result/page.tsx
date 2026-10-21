@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdsConversion } from "@/components/analytics/ads-conversion";
 import { redirect } from "next/navigation";
 import { currentDemo } from "@/lib/demo/session";
 import { OUTCOME_TEXT } from "@/lib/domain/session-status";
@@ -18,11 +19,12 @@ export default async function KarenResultPage() {
   if (!demo) redirect("/karen");
   if (demo.status === "created" || demo.status === "dialing") redirect("/karen/call");
   const pending = demo.status === "live" || demo.status === "ended" || demo.status === "scoring";
-  const signup = `/signup?email=${encodeURIComponent(demo.email)}`;
+  const signup = demo.personal_email ? "/signup" : `/signup?email=${encodeURIComponent(demo.email)}`;
 
   return (
     <Section className="pt-14 md:pt-20">
       <ResultPoller pending={pending} />
+      {demo.status === "scored" && <AdsConversion kind="karen" id={demo.id} email={demo.email} />}
       <div className="mx-auto max-w-3xl">
         <Eyebrow>Your call with Karen</Eyebrow>
         {pending ? (

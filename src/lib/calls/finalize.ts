@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
+import { logFunnel } from "@/lib/funnel";
 import { callContext, reportError } from "@/lib/sentry";
 import { moodById } from "@/lib/domain/moods";
 import "server-only";
@@ -212,7 +213,10 @@ export async function finalizeCall(sessionId: string) {
 async function afterCollect(db: Db, orgId: string) {
   const { data: orgRow } = await db.from("organizations").select("plan, trial_call_limit, trial_ends_at").eq("id", orgId).single();
   const connected = await countTrialCalls(db, orgId);
-  if (connected === 1) await track("first_call", { plan: orgRow?.plan ?? "" }).catch(() => {});
+  if (connected === 1) {
+    await track("first_call", { plan: orgRow?.plan ?? "" }).catch(() => {});
+    await logFunnel("first_call", { subject: orgId, dedupeKey: `first_call:${orgId}`, meta: { plan: orgRow?.plan ?? "" } });
+  }
   if (connected === 5) await track("fifth_call", { plan: orgRow?.plan ?? "" }).catch(() => {});
   if (orgRow?.plan !== "trial") return;
   const t = trialStatus(orgRow, connected);

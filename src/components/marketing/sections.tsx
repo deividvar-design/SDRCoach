@@ -53,7 +53,7 @@ export function ProofSection() {
   );
 }
 
-export function CtaBand({ title = "Ten free calls. Then decide.", body = "Work email, no card. Your first prospect picks up in under two minutes." }: { title?: string; body?: string }) {
+export function CtaBand({ title = "Ten free calls. Then decide.", body = "Work email, no card. Your first prospect picks up in under two minutes.", secondary = { href: "/pricing", label: "See pricing" } }: { title?: string; body?: string; secondary?: { href: string; label: string } | null }) {
   return (
     <Section>
       <div className="stage text-paper rounded-3xl px-8 py-14 text-center md:px-16">
@@ -61,7 +61,7 @@ export function CtaBand({ title = "Ten free calls. Then decide.", body = "Work e
         <p className="mx-auto mt-4 max-w-md text-balance opacity-80">{body}</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>
-          <Button size="lg" variant="outline" className="border-paper/30 bg-transparent text-paper hover:bg-paper/10" asChild><Link href="/pricing">See pricing</Link></Button>
+          {secondary && <Button size="lg" variant="outline" className="border-paper/30 bg-transparent text-paper hover:bg-paper/10" asChild><Link href={secondary.href}>{secondary.label}</Link></Button>}
         </div>
         <p className="mt-4 text-sm opacity-70">{TRIAL.calls} calls, {TRIAL.days} days, work email only</p>
       </div>

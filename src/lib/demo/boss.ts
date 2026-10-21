@@ -1,4 +1,5 @@
 import "server-only";
+import { logFunnel } from "@/lib/funnel";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { BOSS_PERSONAS } from "@/content/boss-personas";
 import { buildPersonaPrompt, firstMessage } from "@/lib/prompts/persona";
@@ -44,7 +45,7 @@ export function companyFromDomain(domain: string) {
  * Limits count calls that actually minted a voice token (prompt_hash set). Waitlisted rows, abandoned forms and
  * mic-denied attempts never count, so a failed first try is not a lifetime ban.
  */
-export async function checkDemoLimits(db: Db, { email, domain, ip }: { email: string; domain: string; ip: string | null }): Promise<string | null> {
+export async function checkDemoLimits(db: Db, { email, domain, ip, personal = false }: { email: string; domain: string; ip: string | null; personal?: boolean }): Promise<string | null> {
   const since = new Date(Date.now() - DAY).toISOString();
   const count = async (q: ReturnType<Db["from"]>) => (await q).count ?? 0;
   const minted = () => db.from("demo_calls").select("id", { count: "exact", head: true }).not("prompt_hash", "is", null);
@@ -55,15 +56,16 @@ export async function checkDemoLimits(db: Db, { email, domain, ip }: { email: st
     count(minted().gte("created_at", since)),
   ]);
   if (byEmail >= DEMO_LIMITS.perEmail) return "already_played";
-  if (byDomain >= DEMO_LIMITS.perDomainPerDay) return "domain_limit";
+  if (!personal && byDomain >= DEMO_LIMITS.perDomainPerDay) return "domain_limit";
   if (byIp >= DEMO_LIMITS.perIpPerDay) return "ip_limit";
   if (global >= DEMO_LIMITS.globalPerDay) return "busy";
   return null;
 }
 
 /** Karen's brief for a caller we know only by their company name. */
-export function demoPrompt(demo: Pick<DemoCall, "email" | "domain">) {
-  const org = { name: companyFromDomain(demo.domain), company_description: null, product_description: null, ideal_customer_profile: null };
+export function demoPrompt(demo: Pick<DemoCall, "email" | "domain" | "company" | "personal_email">) {
+  const name = demo.company?.trim() || (demo.personal_email ? "a company she has not heard of" : companyFromDomain(demo.domain));
+  const org = { name, company_description: null, product_description: null, ideal_customer_profile: null };
   const repName = demo.email.split("@")[0]?.split(/[._-]/)[0] ?? "the rep";
   const mood = MOODS.find((m) => m.id === "plain")!;
   const prompt = buildPersonaPrompt({ target: KAREN, difficulty: "cold", org, repName: capitalise(repName), mood, gatekeeper: null, ttsModel: process.env.ELEVENLABS_TTS_MODEL });
@@ -154,6 +156,7 @@ export async function finalizeDemo(id: string) {
       })
       .eq("id", id);
     await track("demo_scored", { outcome, overall: Math.round(score.overall * 10) / 10 }).catch(() => {});
+    await logFunnel("karen_call_completed", { email: demo.email, subject: id, dedupeKey: `karen_completed:${id}`, meta: { outcome, overall: Math.round(score.overall * 10) / 10, personal: demo.personal_email } });
 
     // Claim the email before sending so two workers can never both send it. A mail failure never un-scores the call.
     if (emailConfigured()) {
@@ -161,7 +164,7 @@ export async function finalizeDemo(id: string) {
       if (claimedMail) {
         try {
           const { data: fresh } = await db.from("demo_calls").select("share_slug").eq("id", id).maybeSingle();
-          const mail = templates.demoScorecard({ firstName: repName, email: demo.email, overall: score.overall, outcome, outcomeReason, dimensions: score.dimensions, strengths: score.strengths, improvements: score.improvements, coachSummary: score.coach_summary, unsubscribeUrl: unsubscribeUrl(id), shareUrl: fresh?.share_slug ? absoluteUrl(`/karen/score/${fresh.share_slug}`) : null });
+          const mail = templates.demoScorecard({ firstName: repName, email: demo.email, overall: score.overall, outcome, outcomeReason, dimensions: score.dimensions, strengths: score.strengths, improvements: score.improvements, coachSummary: score.coach_summary, unsubscribeUrl: unsubscribeUrl(id), shareUrl: fresh?.share_slug ? absoluteUrl(`/karen/score/${fresh.share_slug}`) : null, personalEmail: demo.personal_email });
           await sendMail({ to: demo.email, ...mail });
         } catch (err) {
           reportError(err, { where: "demo_scorecard_email", extra: { demoId: id } });

@@ -1,17 +1,18 @@
 /**
- * The Google Ads tag (gtag.js) on every page, in Google's consent mode. It loads before any choice is made but
- * starts with every storage type denied, so it sets no cookies and sends only cookieless pings until the viewer
- * picks "Accept all" on the banner. A stored "Accept all" is applied before the first hit so returning viewers are
- * measured from the first page. Off entirely until NEXT_PUBLIC_GOOGLE_ADS_ID is set, so previews never report.
+ * The Google Ads tag (gtag.js) on every page, in Google's consent mode. In the EEA, the UK and Switzerland it starts
+ * with every storage type denied and sets nothing until the viewer picks "Accept all"; elsewhere it starts granted
+ * unless the viewer chose "Only necessary". The middleware's region cookie decides which. A stored choice always
+ * wins. Off entirely until NEXT_PUBLIC_GOOGLE_ADS_ID is set, so previews never report.
  */
 const ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
 
 export function GoogleTag() {
   if (!ID) return null;
   const inline = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
-gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});
-try{var c=JSON.parse(localStorage.getItem('cookie-consent')||'null');if(c&&c.marketing===true){gtag('consent','update',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'})}}catch(e){}
-gtag('js',new Date());gtag('config',${JSON.stringify(ID)});`;
+(function(){var g=null;try{var c=JSON.parse(localStorage.getItem('cookie-consent')||'null');if(c&&typeof c.marketing==='boolean')g=c.marketing}catch(e){}
+if(g===null){g=/(?:^|; )cr=row(?:;|$)/.test(document.cookie)}
+var s=g?'granted':'denied';gtag('consent','default',{ad_storage:s,ad_user_data:s,ad_personalization:s,analytics_storage:s,wait_for_update:g?0:500});})();
+gtag('js',new Date());gtag('config',${JSON.stringify(ID)},{allow_enhanced_conversions:true});`;
   return (
     <>
       <script async src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ID)}`} />

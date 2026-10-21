@@ -62,7 +62,6 @@ export const PLANS: Plan[] = [
     features: ["Everything in Starter", "100 calls per seat a month instead of 40", "Up to 100 knowledge sources instead of 30", "Priority support, same-day reply on working days"],
     cta: "Start free trial",
     highlight: true,
-    guarantee: "First month refunded if the team report doesn't show you a skill gap you didn't know about.",
   },
   {
     id: "enterprise",

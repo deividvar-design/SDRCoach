@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { CONSENT_EVENT, readConsent, type Consent } from "./consent";
+import { CONSENT_EVENT, effectiveConsent, type Consent } from "./consent";
 
 type PostHog = typeof import("posthog-js").default;
 
@@ -53,7 +53,7 @@ export function AnalyticsProvider() {
       if (c?.analytics) startAnalytics();
       else stopAnalytics();
     };
-    apply(readConsent());
+    apply(effectiveConsent());
     const onChange = (e: Event) => apply((e as CustomEvent<Consent>).detail);
     window.addEventListener(CONSENT_EVENT, onChange);
     return () => window.removeEventListener(CONSENT_EVENT, onChange);

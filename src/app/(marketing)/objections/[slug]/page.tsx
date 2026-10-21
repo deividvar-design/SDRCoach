@@ -69,6 +69,9 @@ export default async function ObjectionPage({ params }: PageProps<"/objections/[
             </ul>
           </div>
         )}
+        <p className="text-muted-foreground mt-6 text-sm">
+          Karen says a version of this one in the first minute. <Link href="/karen" className="text-foreground underline underline-offset-4">Hear it on a free three-minute call</Link>, scored, no account.
+        </p>
         <div className="prose mt-10">{content}</div>
         {page.faq.length > 0 && (
           <section className="mt-12 border-t pt-8">

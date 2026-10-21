@@ -32,6 +32,7 @@ export function BossFights({ hangUps = 0 }: { hangUps?: number }) {
           </article>
           {others.map((b) => (
             <article key={b.name} className="flex flex-col rounded-2xl border border-white/15 p-6">
+              <p className="dial text-paper/50 mb-4 text-[11px]">BOSS FIGHT · AI PROSPECT</p>
               <p className="font-display text-2xl leading-snug md:text-3xl">“{b.objections[0]}”</p>
               <div className="mt-auto pt-6">
                 <div className="font-display text-2xl">{b.name}</div>
@@ -40,7 +41,7 @@ export function BossFights({ hangUps = 0 }: { hangUps?: number }) {
             </article>
           ))}
         </div>
-        <p className="text-paper/60 mt-6">Three minutes, a work email, a scored report after. No account needed.</p>
+        <p className="text-paper/60 mt-6">Three minutes, an email for the scorecard, no account needed.</p>
       </div>
     </section>
   );

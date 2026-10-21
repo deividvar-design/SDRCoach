@@ -6,6 +6,7 @@ import { priceCatalog, stripe } from "@/lib/billing/stripe";
 import { handleStripeEvent, type SyncDeps } from "@/lib/billing/sync";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { track } from "@vercel/analytics/server";
+import { logFunnel } from "@/lib/funnel";
 
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -62,7 +63,11 @@ export async function POST(request: Request) {
 
   try {
     const result = await handleStripeEvent(event, deps);
-    if (event.type === "checkout.session.completed") await track("subscribed", { plan: String(event.data.object.metadata?.plan ?? "") }).catch(() => {});
+    if (event.type === "checkout.session.completed") {
+      const plan = String(event.data.object.metadata?.plan ?? "");
+      await track("subscribed", { plan }).catch(() => {});
+      if (result.handled && result.orgId) await logFunnel("trial_to_paid", { subject: result.orgId, dedupeKey: `paid:${result.orgId}`, meta: { plan } });
+    }
     return NextResponse.json(result);
   } catch (err) {
     console.error("stripe webhook failed", event.type, err);

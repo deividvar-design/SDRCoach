@@ -10,7 +10,7 @@ import { FOUNDING } from "@/lib/billing/plans";
 
 export const metadata = pageMetadata({
   title: "Pricing: per-seat plans, ten free calls first",
-  description: "Per-seat plans with a monthly call allowance, in dollars or euros. First month refunded if the team report shows nothing new. Free trial: 10 calls, no card.",
+  description: "Per-seat plans with a monthly call allowance, in dollars or euros, and a 30-day money-back guarantee on the first payment. Free trial: 10 calls, no card.",
   path: "/pricing",
   card: ["page", "pricing"],
 });
@@ -18,7 +18,7 @@ export const metadata = pageMetadata({
 const FAQ = [
   { q: "Is there a money-back guarantee?", a: "Yes. If a paid plan isn't working for your team, email us within 30 days of your first payment and we refund it in full, no questions. It covers the first payment on a new subscription." },
   { q: "Can we pay by invoice?", a: `Yes, on annual plans. Email ${SALES_EMAIL} with the plan and seat count and we send a Stripe invoice with 30-day payment terms. Monthly and quarterly plans are card only.` },
-  { q: "What is founding pricing?", a: `The first ${FOUNDING.teams} teams to subscribe keep Starter at $${FOUNDING.price.usd} a seat a month, on any billing period, for as long as they stay subscribed. The counter on the page is the real number of paying teams. When it reaches ${FOUNDING.teams}, Starter is $79.` },
+  { q: "What is founding pricing?", a: `The first ${FOUNDING.teams} teams to subscribe keep Starter at $${FOUNDING.price.usd} a seat a month, on any billing period, for as long as they stay subscribed. When those spots are taken, Starter is $79.` },
   { q: "What counts as a call?", a: "A call that connects to the AI prospect. Dials that never connect are not counted." },
   { q: "What happens when the team uses its allowance?", a: "Calls are pooled across seats, so one rep can use more than another. When the pool is empty, dialing pauses until the month resets. Adding a seat raises the pool immediately, and there is never a surprise charge." },
   { q: "Do unused calls roll over?", a: "No. Allowances reset monthly. Annual plans are billed up front with a 20% discount." },
@@ -56,7 +56,7 @@ export default async function PricingPage() {
           </dl>
         </section>
       </div>
-      <CtaBand title="Start with ten free calls." body="Every plan begins as a trial. Upgrade from inside the app when the team is ready." />
+      <CtaBand title="Start with ten free calls." body="Every plan begins as a trial. Upgrade from inside the app when the team is ready." secondary={{ href: "/karen", label: "Not ready? Try one call against Karen" }} />
     </>
   );
 }

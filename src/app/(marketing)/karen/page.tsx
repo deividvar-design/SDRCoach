@@ -13,13 +13,14 @@ export const metadata = pageMetadata({
 });
 
 const FAQ: [string, string][] = [
-  ["Is this really free?", "Yes. One three-minute cold call against Karen, no account and no card. You give a work email so we can send you the scored report. If you want more calls, or a prospect built from your own targets, that is the 14-day trial."],
-  ["Who is Karen?", "An AI prospect. Head of Procurement, twenty-two years in the job, interrupted mid-task by your call. She is the hardest level our customers' reps practise against, turned up a little further. She interrupts, asks who you are, mentions her incumbent and tries to end the call."],
+  ["Is this really free?", "Yes. One three-minute cold call against Karen, no account and no card. You give an email so we can send you the scored report. If you want more calls, or a prospect built from your own targets, that is the 14-day trial."],
+  ["Who is Karen?", "An AI prospect. Head of Procurement, twenty-two years in the job, interrupted mid-task by your call. She is the hardest level reps practise against inside 100 Dials, turned up a little further. She interrupts, asks who you are, mentions her incumbent and tries to end the call."],
   ["What does the report score?", "The same six skills every 100 Dials call is scored on: opener, reason for call, discovery, objection handling, value proposition and close, each out of ten with the rationale quoting your own words. Nobody books Karen. Staying composed and asking one sharp question is the win."],
-  ["Can my whole team try it?", "Each person can take the call once with their own work email, and the leaderboard shows how they did. For a team practising daily on prospects built from your accounts, start a trial and invite them."],
+  ["Can my whole team try it?", "Each person can take the call once with their own email, and the leaderboard shows how they did. For a team practising daily on prospects built from your accounts, start a trial and invite them."],
 ];
 
-export default function KarenPage() {
+export default async function KarenPage({ searchParams }: PageProps<"/karen">) {
+  const { email } = await searchParams;
   return (
     <>
       <JsonLd data={faqLd(FAQ.map(([q, a]) => ({ q, a })))} />
@@ -39,13 +40,13 @@ export default function KarenPage() {
               ))}
             </ul>
             <p className="text-muted-foreground mt-8 max-w-xl">
-              She is an AI prospect, the same kind our customers' reps dial every day, turned up to eleven. After the call, our coach scores your opener, reason for call, discovery, objection handling, value and close, and emails you the report. Nobody is expected to book her. Staying composed is the win.
+              She is an AI prospect, the same kind reps dial inside 100 Dials every day, turned up to eleven. After the call, our coach scores your opener, reason for call, discovery, objection handling, value and close, and emails you the report. Nobody is expected to book her. Staying composed is the win.
             </p>
             <p className="text-muted-foreground mt-4 max-w-xl">
               See <Link href="/karen/leaderboard" className="text-foreground underline underline-offset-4">who lasted longest this month</Link>, or read up on <Link href="/objections" className="text-foreground underline underline-offset-4">the objections she will throw at you</Link> first.
             </p>
           </div>
-          <ChallengeForm />
+          <ChallengeForm email={typeof email === "string" ? email : undefined} />
         </div>
       </Section>
       <Section>

@@ -33,7 +33,7 @@ export default function CookiesPage() {
       </table>
 
       <h2>Marketing and visitor identification (with consent)</h2>
-      <p>If you choose “Accept all”, we also load tags that tell us which campaigns bring visitors, and one that identifies the company a visitor works at from their network address. None of them run if you choose “Only necessary”. Each provider sets its own cookies and has its own policy.</p>
+      <p>If you choose “Accept all”, we also load tags that tell us which campaigns bring visitors, and one that identifies the company a visitor works at from their network address. None of them run if you choose “Only necessary”. In the European Economic Area, the United Kingdom and Switzerland nothing loads until you choose. Elsewhere these tags run by default and “Only necessary” switches them off. Each provider sets its own cookies and has its own policy.</p>
       <table>
         <thead><tr><th>Provider</th><th>Purpose</th><th>Duration</th></tr></thead>
         <tbody>

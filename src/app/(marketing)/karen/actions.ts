@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { track } from "@vercel/analytics/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { validateBusinessEmail } from "@/lib/email/business";
+import { classifyEmailDomain, emailDomain, hasMx } from "@/lib/email/business";
 import { checkDemoLimits } from "@/lib/demo/boss";
 import { DEMO_COOKIE, clientIp, currentDemo } from "@/lib/demo/session";
 import { newShareSlug } from "@/lib/demo/share";
+import { logFunnel } from "@/lib/funnel";
+import { readAdClick } from "@/lib/ads/click";
 
 export interface ChallengeState {
   error?: string;
@@ -22,28 +24,68 @@ const LIMIT_MESSAGES: Record<string, string> = {
   ip_limit: "Karen has had enough calls from this connection today. Try again tomorrow.",
 };
 
-export async function challengeKaren(_prev: ChallengeState, formData: FormData): Promise<ChallengeState> {
-  const parsed = z.object({ email: z.string().email("Enter a valid email"), newsletter: z.string().optional() }).safeParse({ email: formData.get("email"), newsletter: formData.get("newsletter") || undefined });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
-  const email = parsed.data.email.trim().toLowerCase();
+const REJECT_MESSAGES: Record<string, string> = {
+  invalid: "Enter a valid email address.",
+  disposable: "Temporary addresses can't call Karen. Use one you can read the scorecard at.",
+  no_mx: "That domain can't receive email. Check the spelling.",
+};
 
-  const check = await validateBusinessEmail(email);
-  if (!check.ok) return { error: check.message };
+/**
+ * Any real address can call Karen once. A personal address is flagged so the scorecard email asks for a work
+ * one before a trial, and it skips the per-company limit, which would otherwise lump every Gmail caller together.
+ */
+export async function challengeKaren(_prev: ChallengeState, formData: FormData): Promise<ChallengeState> {
+  const parsed = z
+    .object({ email: z.string().email("Enter a valid email"), company: z.string().trim().max(80).optional(), newsletter: z.string().optional() })
+    .safeParse({ email: formData.get("email"), company: formData.get("company") || undefined, newsletter: formData.get("newsletter") || undefined });
+  if (!parsed.success) {
+    await logFunnel("karen_submit");
+    await logFunnel("karen_rejected", { reason: "invalid" });
+    return { error: parsed.error.issues[0]?.message };
+  }
+  const email = parsed.data.email.trim().toLowerCase();
+  const company = parsed.data.company?.replace(/\s+/g, " ") || null;
+  await logFunnel("karen_submit", { email, meta: { company: Boolean(company) } });
+
+  const listed = classifyEmailDomain(email);
+  const personal = !listed.ok && listed.reason === "free";
+  if (!listed.ok && !personal) {
+    await logFunnel("karen_rejected", { email, reason: listed.reason });
+    return { error: REJECT_MESSAGES[listed.reason] ?? "Enter a valid email address." };
+  }
+  const domain = listed.ok ? listed.domain : emailDomain(email)!;
+  const skipMx = process.env.SDRCOACH_DEMO === "1" || process.env.SKIP_MX_CHECK === "1";
+  if (!skipMx && !(await hasMx(domain))) {
+    await logFunnel("karen_rejected", { email, reason: "no_mx" });
+    return { error: REJECT_MESSAGES.no_mx };
+  }
 
   const db = createAdminClient();
   const ip = await clientIp();
-  const limit = await checkDemoLimits(db, { email, domain: check.domain, ip });
+  const limit = await checkDemoLimits(db, { email, domain, ip, personal });
   if (limit === "busy") {
     // Keep the lead, skip the call. The row counts against nothing since it never connects.
-    await db.from("demo_calls").insert({ email, domain: check.domain, ip, newsletter: parsed.data.newsletter === "on", status: "failed", error: "daily cap" });
+    await db.from("demo_calls").insert({ email, domain, ip, company, personal_email: personal, newsletter: parsed.data.newsletter === "on", status: "failed", error: "daily cap" });
+    await logFunnel("karen_rejected", { email, reason: "busy" });
     return { waitlisted: true };
   }
-  if (limit) return { error: LIMIT_MESSAGES[limit] ?? "Try again later." };
+  if (limit) {
+    await logFunnel("karen_rejected", { email, reason: limit });
+    return { error: LIMIT_MESSAGES[limit] ?? "Try again later." };
+  }
 
-  const { data: demo, error } = await db.from("demo_calls").insert({ email, domain: check.domain, ip, newsletter: parsed.data.newsletter === "on", share_slug: newShareSlug() }).select("id").single();
-  if (error || !demo) return { error: "Something went wrong. Try again in a minute." };
+  const click = await readAdClick();
+  const { data: demo, error } = await db
+    .from("demo_calls")
+    .insert({ email, domain, ip, company, personal_email: personal, newsletter: parsed.data.newsletter === "on", share_slug: newShareSlug(), ...click })
+    .select("id")
+    .single();
+  if (error || !demo) {
+    await logFunnel("karen_rejected", { email, reason: "insert_failed" });
+    return { error: "Something went wrong. Try again in a minute." };
+  }
 
-  await track("demo_started", { domain: check.domain }).catch(() => {});
+  await track("demo_started", { domain, personal }).catch(() => {});
   (await cookies()).set(DEMO_COOKIE, demo.id, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 3 * 60 * 60 });
   redirect("/karen/call");
 }

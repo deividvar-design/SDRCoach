@@ -13,7 +13,7 @@ export const SITE = {
   descriptor: "Cold Call Coach",
   url: (process.env.NEXT_PUBLIC_APP_URL ?? "https://100dials.com").replace(/\/$/, ""),
   tagline: "Ramp on the phone, not on your pipeline.",
-  description: "Ramp new SDRs in 14 days. Reps dial realistic AI prospects built from their own targets and get coached on every call, before the real ones pick up.",
+  description: "An AI cold call simulator for SDR teams. Reps dial realistic prospects built from their own targets and get coached on every call, before the real ones pick up.",
   company: {
     // Set NEXT_PUBLIC_LEGAL_NAME / NEXT_PUBLIC_LEGAL_ADDRESS once incorporated; until then the pages name the product only.
     legalName: process.env.NEXT_PUBLIC_LEGAL_NAME ?? "100 Dials",

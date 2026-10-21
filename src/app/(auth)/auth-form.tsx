@@ -1,19 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { CALLBACK_ENABLED, DIAL_CODES, SIGNUP_REASONS } from "@/lib/marketing/signup-intent";
-import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
+import { requestWorkEmailLink, signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 
-const selectClass = "border-input bg-background text-foreground h-9 w-full rounded-md border px-3 text-sm shadow-xs focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none";
+export interface PlanIntent {
+  plan: string;
+  planName: string;
+  billing: "month" | "quarter" | "year";
+}
 
-export function AuthForm({ mode, next, invite, email, notice }: { mode: "login" | "signup"; next?: string; invite?: string; email?: string; notice?: { kind: "info" | "error"; text: string } }) {
+const BILLING_LABEL = { month: "billed monthly", quarter: "billed quarterly", year: "billed annually" } as const;
+
+export function AuthForm({ mode, next, invite, email, notice, intent }: { mode: "login" | "signup"; next?: string; invite?: string; email?: string; notice?: { kind: "info" | "error"; text: string }; intent?: PlanIntent }) {
   const action = mode === "login" ? signIn : signUp;
   const [state, formAction, pending] = useActionState<AuthState, FormData>(action, {});
+
+  // The plan picked on the pricing page rides along in a cookie, so it survives the Google round trip too.
+  useEffect(() => {
+    if (!intent) return;
+    try {
+      document.cookie = `plan_intent=${encodeURIComponent(`${intent.plan}:${intent.billing}`)};path=/;max-age=2592000;samesite=lax`;
+    } catch {}
+  }, [intent]);
+
+  if (state.personalEmail) return <PersonalEmailNext email={state.personalEmail} />;
 
   return (
     <div className="space-y-6">
@@ -24,15 +38,22 @@ export function AuthForm({ mode, next, invite, email, notice }: { mode: "login" 
         </p>
       </div>
 
+      {intent && mode === "signup" && (
+        <p className="bg-card rounded-md border p-3 text-sm">
+          Starting a trial of the <span className="font-medium">{intent.planName}</span> plan, {BILLING_LABEL[intent.billing]}. The trial is free; you pick the plan when it ends. <Link href="/pricing" className="text-muted-foreground underline underline-offset-4">Change</Link>
+        </p>
+      )}
+
       {notice && <p className={`rounded-md border p-3 text-sm ${notice.kind === "error" ? "border-destructive/40 text-destructive" : "text-muted-foreground"}`}>{notice.text}</p>}
 
       <form action={signInWithGoogle}>
         {next && <input type="hidden" name="next" value={next} />}
         {invite && <input type="hidden" name="invite" value={invite} />}
-        <Button type="submit" variant="outline" className="w-full gap-3">
+        <Button type="submit" size="lg" className="w-full gap-3">
           <GoogleMark />
-          Continue with Google
+          {mode === "login" ? "Sign in with Google" : "Continue with Google"}
         </Button>
+        {mode === "signup" && !invite && <p className="text-muted-foreground mt-2 text-center text-xs">Use your Google Workspace account. Personal Gmail can't start a trial.</p>}
       </form>
       <div className="text-muted-foreground flex items-center gap-3 text-xs">
         <span className="bg-border h-px flex-1" />
@@ -43,16 +64,10 @@ export function AuthForm({ mode, next, invite, email, notice }: { mode: "login" 
       <form action={formAction} className="space-y-4">
         {next && <input type="hidden" name="next" value={next} />}
         {invite && <input type="hidden" name="invite" value={invite} />}
-        {mode === "signup" && (
-          <div className="space-y-2">
-            <Label htmlFor="full_name">Full name</Label>
-            <Input id="full_name" name="full_name" autoComplete="name" required />
-          </div>
-        )}
+        {intent && <input type="hidden" name="plan_intent" value={`${intent.plan}:${intent.billing}`} />}
         <div className="space-y-2">
           <Label htmlFor="email">Work email</Label>
           <Input id="email" name="email" type="email" autoComplete="email" required defaultValue={email} placeholder={mode === "signup" && !invite ? "you@company.com" : undefined} />
-          {mode === "signup" && !invite && <p className="text-muted-foreground text-xs">Work email only. Personal addresses can’t start a trial.</p>}
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -61,37 +76,16 @@ export function AuthForm({ mode, next, invite, email, notice }: { mode: "login" 
           </div>
           <Input id="password" name="password" type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={8} required />
         </div>
-        {mode === "signup" && !invite && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="signup_reason">Why are you here?</Label>
-              <select id="signup_reason" name="signup_reason" required defaultValue="" className={selectClass}>
-                <option value="" disabled>Pick one</option>
-                {SIGNUP_REASONS.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="signup_goal">What would make this worth paying for in 30 days? <span className="text-muted-foreground font-normal">(optional)</span></Label>
-              <Textarea id="signup_goal" name="signup_goal" rows={2} maxLength={500} placeholder="One sentence is plenty." />
-            </div>
-            {CALLBACK_ENABLED && (
-              <div className="space-y-2">
-                <Label htmlFor="phone">Want Karen to call you right now? <span className="text-muted-foreground font-normal">(optional)</span></Label>
-                <div className="flex gap-2">
-                  <select name="dial_code" defaultValue="+1" aria-label="Country code" className={`${selectClass} w-28`}>
-                    {DIAL_CODES.map(([cc, code]) => <option key={cc} value={code}>{cc} {code}</option>)}
-                  </select>
-                  <Input id="phone" name="phone" type="tel" autoComplete="tel-national" inputMode="tel" placeholder="Mobile number" />
-                </div>
-                <p className="text-muted-foreground text-xs">One two-minute call from Karen, then a scorecard in your inbox. We never call twice.</p>
-              </div>
-            )}
-          </>
+        {mode === "signup" && (
+          <div className="space-y-2">
+            <Label htmlFor="full_name">Full name <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Input id="full_name" name="full_name" autoComplete="name" maxLength={80} />
+          </div>
         )}
         {state.error && <p className="text-destructive text-sm">{state.error}</p>}
         {state.message && <p className="text-success text-sm">{state.message}</p>}
-        <Button type="submit" className="w-full" disabled={pending}>
-          {pending ? "One moment…" : mode === "login" ? "Sign in" : "Create account"}
+        <Button type="submit" variant="outline" className="w-full" disabled={pending}>
+          {pending ? "One moment…" : mode === "login" ? "Sign in" : "Create account with email"}
         </Button>
       </form>
 
@@ -106,6 +100,36 @@ export function AuthForm({ mode, next, invite, email, notice }: { mode: "login" 
           </>
         )}
       </p>
+    </div>
+  );
+}
+
+/** A personal address cannot start a trial, but it can call Karen now, or have the link sent to a work inbox. */
+function PersonalEmailNext({ email }: { email: string }) {
+  const [state, action, pending] = useActionState<AuthState, FormData>(requestWorkEmailLink, {});
+  return (
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight">That one's a personal address.</h1>
+        <p className="text-muted-foreground text-sm">The trial creates a workspace for your company, so it has to start from a work email. Two ways on from here.</p>
+      </div>
+      <div className="bg-card space-y-2 rounded-2xl border p-5">
+        <div className="font-medium">Try Karen now</div>
+        <p className="text-muted-foreground text-sm">One free three-minute cold call against our rudest AI prospect, scored, with any email. No account.</p>
+        <Button variant="signal" className="w-full" asChild><Link href={`/karen?email=${encodeURIComponent(email)}`}>Call Karen</Link></Button>
+      </div>
+      <form action={action} className="bg-card space-y-3 rounded-2xl border p-5">
+        <div className="font-medium">Email me a link to continue from my work inbox</div>
+        <div className="space-y-2">
+          <Label htmlFor="work_email">Work email</Label>
+          <Input id="work_email" name="work_email" type="email" autoComplete="email" placeholder="you@company.com" required />
+        </div>
+        {state.error && <p className="text-destructive text-sm">{state.error}</p>}
+        {state.message ? <p className="text-success text-sm">{state.message}</p> : (
+          <Button type="submit" variant="outline" className="w-full" disabled={pending}>{pending ? "Sending…" : "Send the link"}</Button>
+        )}
+      </form>
+      <p className="text-muted-foreground text-center text-sm"><Link href="/signup" className="underline underline-offset-4">Use a different email</Link></p>
     </div>
   );
 }

@@ -30,6 +30,12 @@ export interface Rendered {
 }
 
 export const templates = {
+  continueOnWork(p: { href: string }): Rendered {
+    const cta = { label: "Start the free trial", href: p.href };
+    const lines = ["You asked us to send the signup link to this address.", "The trial creates a workspace for your company domain, so it has to start from a work email. This one works. Ten calls, fourteen days, no card.", "If you did not ask for this, ignore it and nothing happens."];
+    return { subject: "Your 100 Dials signup link", html: layout("Continue from here.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
   feedback(p: { name: string; email: string; orgName: string; role: string; page: string; body: string; replyOk: boolean }): Rendered {
     const meta = [`${p.name} <${p.email}>`, `${p.orgName}, ${p.role}`, `On ${p.page}`, p.replyOk ? "Happy to be emailed back." : "Asked not to be emailed."];
     const html = `<p style="margin:0 0 16px;white-space:pre-wrap">${esc(p.body)}</p><p style="margin:0;font-size:13px;color:#8a857a">${meta.map(esc).join("<br>")}</p>`;
@@ -199,8 +205,8 @@ export const templates = {
     return { subject: `Welcome to ${SITE.name} ${p.plan}`, html: layout("You're all set.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
   },
 
-  demoScorecard(p: { firstName: string; email: string; overall: number; outcome: string; outcomeReason: string; dimensions: ScoreDimensions; strengths: string[]; improvements: string[]; coachSummary: string; unsubscribeUrl: string; shareUrl?: string | null }): Rendered {
-    const cta = { label: "Start a free trial with this address", href: absoluteUrl(`/signup?email=${encodeURIComponent(p.email)}`) };
+  demoScorecard(p: { firstName: string; email: string; overall: number; outcome: string; outcomeReason: string; dimensions: ScoreDimensions; strengths: string[]; improvements: string[]; coachSummary: string; unsubscribeUrl: string; shareUrl?: string | null; personalEmail?: boolean }): Rendered {
+    const cta = p.personalEmail ? { label: "Start a free trial with your work email", href: absoluteUrl("/signup") } : { label: "Start a free trial with this address", href: absoluteUrl(`/signup?email=${encodeURIComponent(p.email)}`) };
     const rows = (Object.keys(RUBRIC) as RubricKey[]).map((k) => ({ label: RUBRIC[k].label, score: p.dimensions[k].score, note: p.dimensions[k].rationale }));
     const outcome = OUTCOME_TEXT[p.outcome] ?? p.outcome;
     const html = [
@@ -213,6 +219,7 @@ export const templates = {
       `<p style="margin:16px 0 0;color:#3b3833">${esc(p.coachSummary)}</p>`,
       p.shareUrl ? `<p style="margin:16px 0 0;font-size:14px">Your scorecard has a public page: <a href="${p.shareUrl}" style="color:#1c1b19">${esc(p.shareUrl)}</a>. Post it, or put yourself on the leaderboard from the results page.</p>` : "",
       `<p style="margin:16px 0 0;font-size:13px;color:#8a857a">Karen is one of the prospects in ${esc(SITE.name)}. Reps dial prospects built from their own targets, at three levels, and every call is scored like this one. Ten calls are free.</p>`,
+      p.personalEmail ? `<p style="margin:12px 0 0;font-size:13px;color:#3b3833">The trial needs a work email, so the workspace belongs to your company and your team can join it. Sign up with yours and the ten free calls are waiting.</p>` : "",
       `<p style="margin:12px 0 0;font-size:12px;color:#8a857a">We'll send one follow-up in a couple of days. <a href="${p.unsubscribeUrl}" style="color:#8a857a">Don't</a>.</p>`,
     ].join("");
     const text = [
@@ -230,6 +237,7 @@ export const templates = {
       p.coachSummary,
       "",
       ...(p.shareUrl ? [`Your public scorecard: ${p.shareUrl}`, ""] : []),
+      ...(p.personalEmail ? ["The trial needs a work email, so the workspace belongs to your company and your team can join it.", ""] : []),
       `No follow-up: ${p.unsubscribeUrl}`,
     ];
     return { subject: `Your call with Karen: ${p.overall.toFixed(1)} / 10`, html: layout("Here's how it went.", html, cta), text: textOf(text, cta) };

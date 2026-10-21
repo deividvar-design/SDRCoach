@@ -16,6 +16,9 @@ import { DRAFT_MODEL, SITE_COOKIE, draftWorkspace, fetchSiteText, normaliseSite,
 import { recordAnthropicUsage } from "@/lib/usage/record";
 import { cookies } from "next/headers";
 import { VOICE_IDS } from "@/lib/domain/voices";
+import { CALLBACK_ENABLED, SIGNUP_REASONS, toE164 } from "@/lib/marketing/signup-intent";
+
+const REASON_IDS = SIGNUP_REASONS.map((r) => r.id);
 
 export interface OnboardingState {
   error?: string;
@@ -31,9 +34,21 @@ function slugify(name: string) {
 
 export async function createOrganization(_prev: OnboardingState, formData: FormData): Promise<OnboardingState> {
   const parsed = z
-    .object({ name: z.string().min(2, "Give your company a name"), website: z.string().max(200).optional() })
-    .safeParse({ name: formData.get("name"), website: formData.get("website") || undefined });
+    .object({
+      name: z.string().min(2, "Give your company a name"),
+      website: z.string().max(200).optional(),
+      signup_reason: z.enum(REASON_IDS as [string, ...string[]], { message: "Tell us why you're here" }),
+      signup_goal: z.string().trim().max(500).optional(),
+      phone: z.string().trim().max(30).optional(),
+      dial_code: z.string().trim().max(6).optional(),
+    })
+    .safeParse({ name: formData.get("name"), website: formData.get("website") || undefined, signup_reason: formData.get("signup_reason") || undefined, signup_goal: formData.get("signup_goal") || undefined, phone: formData.get("phone") || undefined, dial_code: formData.get("dial_code") || undefined });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  let phone: string | null = null;
+  if (CALLBACK_ENABLED && parsed.data.phone) {
+    phone = toE164(parsed.data.dial_code ?? "+1", parsed.data.phone);
+    if (!phone) return { error: "That phone number doesn't look right. Digits only, without the country code." };
+  }
   const site = parsed.data.website ? normaliseSite(parsed.data.website) : null;
   if (parsed.data.website && !site) return { error: "That website address doesn't look right. Try the form example.com." };
 
@@ -54,6 +69,13 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
   const db = process.env.SDRCOACH_DEMO === "1" ? supabase : createAdminClient();
   const { data: orgId, error } = await db.rpc("create_organization", { p_name: parsed.data.name, p_slug: slug, p_user_id: user.id, p_trial_domain: check.domain });
   if (!error && orgId) {
+    if (process.env.SDRCOACH_DEMO !== "1") {
+      await createAdminClient()
+        .from("profiles")
+        .update({ signup_reason: parsed.data.signup_reason, signup_goal: parsed.data.signup_goal || null, phone })
+        .eq("id", user.id)
+        .then(({ error: e }) => e && reportError(e, { where: "signup_intent", extra: { userId: user.id } }));
+    }
     await db.from("targets").insert([
       ...PRACTICE_PERSONAS.map((p) => ({ ...p, pain_points: [...p.pain_points], objections: [...p.objections], org_id: orgId, created_by: user.id, kind: "practice" as const })),
       ...BOSS_PERSONAS.map((p) => ({ ...p, pain_points: [...p.pain_points], objections: [...p.objections], org_id: orgId, created_by: user.id, kind: "boss" as const })),
