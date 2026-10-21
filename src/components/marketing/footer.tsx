@@ -6,7 +6,7 @@ import { CookieSettingsLink } from "@/components/analytics/cookie-banner";
 const COLS = [
   { title: "Product", links: [["/for-managers", "For managers"], ["/for-enablement", "For enablement"], ["/pricing", "Pricing"], ["/signup", "Start free trial"]] },
   { title: "Resources", links: [["/blog", "Blog"], ["/objections", "Objection library"], ["/karen", "Fight Karen"], ["/trust", "Trust & security"]] },
-  { title: "Legal", links: [["/privacy", "Privacy"], ["/terms", "Terms"], ["/cookies", "Cookies"]] },
+  { title: "Legal", links: [["/company", "Company"], ["/privacy", "Privacy"], ["/terms", "Terms"], ["/cookies", "Cookies"]] },
 ] as const;
 
 export function MarketingFooter() {

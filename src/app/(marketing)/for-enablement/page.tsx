@@ -1,4 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
+import { JsonLd, faqLd } from "@/components/seo/json-ld";
 import Link from "next/link";
 import { FeatureRow } from "@/components/marketing/feature-row";
 import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/marketing/sections";
@@ -11,9 +12,17 @@ export const metadata = pageMetadata({
   card: ["page", "for-enablement"],
 });
 
+const FAQ: [string, string][] = [
+  ["Can AI roleplay be grounded in our own call recordings?", "Yes. Upload CSV exports of your real call transcripts from Gong, Chorus or your dialler. 100 Dials extracts how your buyers talk, the objections they raise and the phrasing they use, and puts that in the prospect's mouth. Delete a source and its digest goes with it."],
+  ["How are reps scored?", "Every call is scored on the same six skills: opener, reason for call, discovery, objection handling, value proposition and close, each out of ten with a rationale that quotes the rep's own words. Sixteen objection types are tagged with how the rep handled each one."],
+  ["Does 100 Dials train AI models on our transcripts?", "No. Your transcripts ground your prospects and nothing else. Database, authentication and file storage are hosted in the EU, and a data processing agreement with the named list of subprocessors is available on request for every plan."],
+  ["How do we measure skill over time?", "Managers get a heatmap of the six skills by rep, a table of the objections the team fumbles, per-rep trend charts and a Monday digest, so a programme can be measured week over week instead of judged from a few listened-to calls."],
+];
+
 export default function ForEnablementPage() {
   return (
     <>
+      <JsonLd data={faqLd(FAQ.map(([q, a]) => ({ q, a })))} />
       <Section className="pt-14 md:pt-20">
         <div className="max-w-3xl">
           <Eyebrow>For sales enablement</Eyebrow>
@@ -75,6 +84,18 @@ export default function ForEnablementPage() {
             </li>
           ))}
         </ul>
+      </Section>
+
+      <Section className="border-t">
+        <H2>Questions enablement teams ask first.</H2>
+        <dl className="mt-8 divide-y">
+          {FAQ.map(([q, a]) => (
+            <div key={q} className="grid gap-2 py-5 md:grid-cols-[1fr_1.6fr]">
+              <dt className="font-medium">{q}</dt>
+              <dd className="text-muted-foreground">{a}</dd>
+            </div>
+          ))}
+        </dl>
       </Section>
 
       <ProofSection />

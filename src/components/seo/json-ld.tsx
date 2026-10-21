@@ -1,4 +1,5 @@
 import { SITE, absoluteUrl } from "@/lib/site";
+import { PLANS, TRIAL } from "@/lib/billing/plans";
 
 type Ld = Record<string, unknown>;
 
@@ -20,6 +21,9 @@ export function organizationLd(): Ld {
     name: SITE.name,
     url: SITE.url,
     logo: absoluteUrl("/logo.png"),
+    legalName: SITE.company.legalName,
+    foundingDate: "2026",
+    ...(SITE.company.address ? { address: { "@type": "PostalAddress", streetAddress: SITE.company.address, addressCountry: "LT" } } : {}),
     contactPoint: [{ "@type": "ContactPoint", email: SITE.company.email, contactType: "sales" }],
   };
 }
@@ -33,7 +37,17 @@ export function softwareLd(): Ld {
     operatingSystem: "Web",
     description: SITE.description,
     url: SITE.url,
-    offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: "Free trial: 10 calls over 14 days" },
+    offers: [
+      ...PLANS.flatMap((p) => (p.prices ? [{
+        "@type": "Offer",
+        name: `${p.name}, per seat per month`,
+        price: String(p.prices.usd.month),
+        priceCurrency: "USD",
+        description: `${p.callsPerSeat} calls per seat per month`,
+        url: absoluteUrl("/pricing"),
+      }] : [])),
+      { "@type": "Offer", name: "Free trial", price: "0", priceCurrency: "USD", description: `${TRIAL.calls} calls over ${TRIAL.days} days, no card` },
+    ],
   };
 }
 

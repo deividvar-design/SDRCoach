@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/objections"), lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/karen"), lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/trust"), lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: absoluteUrl("/company"), lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: absoluteUrl("/privacy"), lastModified: legal, changeFrequency: "yearly", priority: 0.2 },
     { url: absoluteUrl("/terms"), lastModified: legal, changeFrequency: "yearly", priority: 0.2 },
     { url: absoluteUrl("/cookies"), lastModified: legal, changeFrequency: "yearly", priority: 0.1 },

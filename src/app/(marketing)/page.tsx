@@ -50,6 +50,9 @@ export default async function HomePage() {
             {hero.headline.map((line, i) => <span key={line} className="md:block">{i > 0 ? " " : ""}{line}</span>)}
           </h1>
           <p className={cn("font-display enter mt-5 max-w-3xl text-balance", hero.large ? "text-2xl text-muted-foreground md:text-3xl" : "text-signal text-3xl md:text-5xl")} style={{ "--enter-delay": "90ms" } as React.CSSProperties}>{hero.sub}</p>
+          <p className="text-muted-foreground enter mt-5 max-w-2xl" style={{ "--enter-delay": "120ms" } as React.CSSProperties}>
+            100 Dials is an AI cold call simulator for SDR teams. Reps dial realistic prospects built from their own target accounts, every call is scored on six skills, and managers see where the team struggles.
+          </p>
           <div className="enter mt-8 flex flex-wrap items-center gap-4" style={{ "--enter-delay": "140ms" } as React.CSSProperties}>
             <Button size="xl" variant="signal" asChild><Link href="/karen">Pick up</Link></Button>
             <Button size="xl" variant="outline" asChild><Link href="/signup">Start free trial</Link></Button>
