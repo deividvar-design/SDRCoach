@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { z } from "zod";
 import { track } from "@vercel/analytics/server";
 import { createClient } from "@/lib/supabase/server";
@@ -11,7 +10,7 @@ import { isAdminEmail } from "@/lib/auth";
 import { appUrl } from "@/lib/site";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { reportError } from "@/lib/sentry";
-import { HERO_COOKIE, isHeroVariant, pinnedHeroVariant } from "@/lib/marketing/hero";
+import { heroVariant } from "@/lib/marketing/hero";
 import { CALLBACK_ENABLED, SIGNUP_REASONS, toE164 } from "@/lib/marketing/signup-intent";
 
 export interface AuthState {
@@ -64,8 +63,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     phone = toE164(parsed.data.dial_code ?? "+1", parsed.data.phone);
     if (!phone) return { error: "That phone number doesn't look right. Digits only, without the country code." };
   }
-  const heroCookie = (await cookies()).get(HERO_COOKIE)?.value;
-  const variant = pinnedHeroVariant() ?? (isHeroVariant(heroCookie) ? heroCookie : null);
+  const variant = heroVariant();
 
   const supabase = await createClient();
 

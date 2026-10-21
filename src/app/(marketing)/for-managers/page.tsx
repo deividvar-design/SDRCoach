@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { FeatureRow } from "@/components/marketing/feature-row";
 import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/marketing/sections";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
 
-export const metadata: Metadata = {
-  title: "For sales managers",
-  description: "Ramp new SDRs in days, see every rep's weakest skill and the objections the team fumbles, assign ramp calls before the real outreach starts, and get a Monday digest of the floor.",
-  alternates: { canonical: "/for-managers" }, openGraph: { url: "/for-managers" },
-};
+export const metadata = pageMetadata({
+  title: "For sales managers: ramp SDRs on fake calls first",
+  description: "Ramp new SDRs in days, see each rep's weakest skill and the objections the team fumbles, and get a Monday digest of the floor before the real outreach starts.",
+  path: "/for-managers",
+  card: ["page", "for-managers"],
+});
 
 const FAQ: [string, string][] = [
             ["Will reps game it?", "They can try. The prospect decides the outcome from its own words, the grader is calibrated so a nine is rare, the prospect brief is server-checked on every call, and you can read every transcript. Gaming it is harder than just getting better."],
@@ -28,6 +29,9 @@ export default function ForManagersPage() {
           <h1 className="font-display mt-4 text-5xl text-balance md:text-6xl">Stop ramping reps on your real pipeline.</h1>
           <p className="text-muted-foreground mt-6 text-lg text-balance">
             A new SDR's first fifty dials are the worst calls your prospects will ever get. Give them fifty fake ones first, score every one, and put them on the phones when the numbers say they're ready.
+          </p>
+          <p className="text-muted-foreground mt-4">
+            Not sure where your team breaks? Start with <Link href="/objections" className="text-foreground underline underline-offset-4">the fifteen objections new reps fumble most</Link>, or <Link href="/blog/average-sdr-ramp-time" className="text-foreground underline underline-offset-4">what a three-month ramp actually looks like</Link>.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>

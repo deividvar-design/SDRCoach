@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { getAllObjectionPages } from "@/lib/objections";
 import { CtaBand, Eyebrow, Section } from "@/components/marketing/sections";
 import { JsonLd, breadcrumbLd } from "@/components/seo/json-ld";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Cold call objections: what to say to each one",
-  description: "Fifteen cold-call objections, from 'send me an email' to 'we're not a fit', each with what it really means, three ways to handle it, a worked exchange and the mistakes that lose the call.",
-  alternates: { canonical: "/objections" }, openGraph: { url: "/objections" },
-};
+  description: "Fifteen cold-call objections, from 'send me an email' to 'we're not a fit': what each means, three ways to handle it, and the mistakes that lose the call.",
+  path: "/objections",
+  card: ["page", "objections"],
+});
 
 export default function ObjectionIndex() {
   const pages = getAllObjectionPages();

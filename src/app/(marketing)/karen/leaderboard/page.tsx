@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { leaderboard, survivedLabel } from "@/lib/demo/share";
 import { Section } from "@/components/marketing/sections";
 import { Button } from "@/components/ui/button";
 
-export const metadata: Metadata = {
-  title: "Karen leaderboard: who lasted longest this month",
-  description: "The twenty reps who stayed on the line with Karen the longest this month, ranked by time survived. Opt-in only. Three minutes, no account, your turn.",
-  alternates: { canonical: "/karen/leaderboard" },
-  openGraph: { url: "/karen/leaderboard" },
-};
+/** Indexable only once someone is on it; an empty board is not worth a result. */
+export async function generateMetadata(): Promise<Metadata> {
+  const rows = await leaderboard(1).catch(() => []);
+  return pageMetadata({
+    title: "Karen leaderboard: who lasted longest this month",
+    description: "The twenty reps who stayed on the line with Karen the longest this month, ranked by time survived. Opt-in only. Three minutes, no account, your turn.",
+    path: "/karen/leaderboard",
+    card: ["page", "leaderboard"],
+    noindex: rows.length === 0,
+  });
+}
 export const dynamic = "force-dynamic";
 
 export default async function LeaderboardPage() {

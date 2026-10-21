@@ -19,7 +19,7 @@ export function organizationLd(): Ld {
     "@type": "Organization",
     name: SITE.name,
     url: SITE.url,
-    logo: absoluteUrl("/opengraph-image"),
+    logo: absoluteUrl("/logo.png"),
     contactPoint: [{ "@type": "ContactPoint", email: SITE.company.email, contactType: "sales" }],
   };
 }
@@ -45,7 +45,7 @@ export function faqLd(items: readonly { q: string; a: string }[]): Ld {
   };
 }
 
-export function articleLd(p: { title: string; description: string; slug: string; date: string; updated?: string; author: string; path?: string }): Ld {
+export function articleLd(p: { title: string; description: string; slug: string; date: string; updated?: string; author: string; path?: string; image: string }): Ld {
   return {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -54,9 +54,9 @@ export function articleLd(p: { title: string; description: string; slug: string;
     datePublished: p.date,
     dateModified: p.updated ?? p.date,
     author: p.author === SITE.name ? { "@type": "Organization", name: SITE.name, url: SITE.url } : { "@type": "Person", name: p.author },
-    publisher: { "@type": "Organization", name: SITE.name, logo: { "@type": "ImageObject", url: absoluteUrl("/opengraph-image") } },
+    publisher: { "@type": "Organization", name: SITE.name, logo: { "@type": "ImageObject", url: absoluteUrl("/logo.png") } },
     mainEntityOfPage: absoluteUrl(p.path ?? `/blog/${p.slug}`),
-    image: absoluteUrl("/opengraph-image"),
+    image: absoluteUrl(p.image),
   };
 }
 

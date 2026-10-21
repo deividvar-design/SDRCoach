@@ -11,7 +11,14 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   // Blog posts are read from disk at request/build time; make sure they ship with the server bundle.
-  outputFileTracingIncludes: { "/blog/[slug]": ["./content/blog/**/*"], "/blog": ["./content/blog/**/*"], "/sitemap.xml": ["./content/blog/**/*"], "/blog/rss.xml": ["./content/blog/**/*"] },
+  outputFileTracingIncludes: {
+    "/": ["./content/objections/**/*"],
+    "/blog/[slug]": ["./content/blog/**/*"],
+    "/blog": ["./content/blog/**/*"],
+    "/blog/rss.xml": ["./content/blog/**/*"],
+    "/sitemap.xml": ["./content/blog/**/*", "./content/objections/**/*"],
+    "/og/[kind]/[slug]": ["./content/blog/**/*", "./content/objections/**/*"],
+  },
   images: { formats: ["image/avif", "image/webp"] },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];

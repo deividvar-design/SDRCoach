@@ -1,13 +1,11 @@
 import type { MetadataRoute } from "next";
 import { INDEXABLE, absoluteUrl } from "@/lib/site";
-
-const APP_PATHS = ["/api/", "/admin", "/dashboard", "/targets", "/sessions", "/team", "/knowledge", "/settings", "/practice", "/upgrade", "/onboarding", "/invite/", "/auth/", "/login", "/signup", "/forgot-password", "/reset-password"];
+import { NOINDEX_PATHS } from "@/lib/routes";
 
 export default function robots(): MetadataRoute.Robots {
   if (!INDEXABLE) return { rules: [{ userAgent: "*", disallow: "/" }] };
   return {
-    rules: [{ userAgent: "*", allow: "/", disallow: APP_PATHS }],
+    rules: [{ userAgent: "*", allow: "/", disallow: NOINDEX_PATHS }],
     sitemap: absoluteUrl("/sitemap.xml"),
-    host: absoluteUrl("/"),
   };
 }

@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { SITE } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
+import { ogPath } from "@/lib/og-cards";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { compileMDX } from "next-mdx-remote/rsc";
@@ -19,12 +22,13 @@ export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): P
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) return {};
-  return {
+  return pageMetadata({
     title: post.title,
     description: post.description,
-    alternates: { canonical: `/blog/${post.slug}` },
-    openGraph: { type: "article", url: `/blog/${post.slug}`, publishedTime: post.date, modifiedTime: post.updated ?? post.date, authors: [post.author], tags: post.tags },
-  };
+    path: `/blog/${post.slug}`,
+    card: ["blog", post.slug],
+    article: { publishedTime: post.date, modifiedTime: post.updated ?? post.date, authors: [post.author], tags: post.tags },
+  });
 }
 
 const components = {
@@ -46,7 +50,7 @@ export default async function BlogPost({ params }: PageProps<"/blog/[slug]">) {
 
   return (
     <>
-      <JsonLd data={[articleLd(post), breadcrumbLd([{ name: "Blog", path: "/blog" }, { name: post.title, path: `/blog/${post.slug}` }]), ...(post.faq.length ? [faqLd(post.faq)] : [])]} />
+      <JsonLd data={[articleLd({ ...post, image: ogPath("blog", post.slug, SITE.contentUpdated) }), breadcrumbLd([{ name: "Blog", path: "/blog" }, { name: post.title, path: `/blog/${post.slug}` }]), ...(post.faq.length ? [faqLd(post.faq)] : [])]} />
       <article className="mx-auto w-full max-w-3xl px-6 py-16">
         <nav aria-label="Breadcrumb" className="text-muted-foreground text-sm"><Link href="/blog" className="hover:underline">Blog</Link></nav>
         <h1 className="font-display mt-4 text-5xl text-balance">{post.title}</h1>

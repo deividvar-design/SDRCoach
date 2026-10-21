@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { getAllPosts } from "@/lib/blog";
 import { formatDate } from "@/lib/utils";
 import { CtaBand, Eyebrow, Section } from "@/components/marketing/sections";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Blog: cold calling, backed by data",
   description: "Research-backed guides on cold-call openers, objection handling, talk ratio and SDR coaching. Short, specific, and practisable.",
-  alternates: { canonical: "/blog" }, openGraph: { url: "/blog" },
-};
+  path: "/blog",
+  card: ["page", "blog"],
+});
 
 export default function BlogIndex() {
   const posts = getAllPosts();

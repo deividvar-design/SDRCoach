@@ -1,13 +1,15 @@
-import type { Metadata } from "next";
+import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
 import { KAREN } from "@/lib/demo/boss";
 import { Section } from "@/components/marketing/sections";
 import { ChallengeForm } from "./challenge-form";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Can you survive Karen? A cold call you will not forget",
   description: "Dial Karen Whitlock, Head of Procurement, the rudest prospect we could build. Three minutes, no account, a scored report after. Work email only.",
-  alternates: { canonical: "/karen" }, openGraph: { url: "/karen" },
-};
+  path: "/karen",
+  card: ["page", "karen"],
+});
 
 export default function KarenPage() {
   return (
@@ -29,6 +31,9 @@ export default function KarenPage() {
             </ul>
             <p className="text-muted-foreground mt-8 max-w-xl">
               She is an AI prospect, the same kind our customers' reps dial every day, turned up to eleven. After the call, our coach scores your opener, reason for call, discovery, objection handling, value and close, and emails you the report. Nobody is expected to book her. Staying composed is the win.
+            </p>
+            <p className="text-muted-foreground mt-4 max-w-xl">
+              See <Link href="/karen/leaderboard" className="text-foreground underline underline-offset-4">who lasted longest this month</Link>, or read up on <Link href="/objections" className="text-foreground underline underline-offset-4">the objections she will throw at you</Link> first.
             </p>
           </div>
           <ChallengeForm />

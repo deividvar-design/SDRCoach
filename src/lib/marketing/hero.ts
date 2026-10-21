@@ -1,13 +1,10 @@
-import { cookies } from "next/headers";
-
 /**
- * Homepage headline test. The variant is assigned once per browser in the proxy (cookie `hero`), read here on the
- * server so the page renders the right copy on first paint, and attached to the signup event so the two can be
- * compared. HERO_VARIANT in the environment pins one variant and ends the test.
+ * Homepage headline. The cookie-based split test is over: the page now renders one variant for everyone so it can be
+ * cached, and HERO_VARIANT in the environment switches the copy without a deploy. The variant is still recorded on
+ * signup so the admin signups table keeps saying which headline each account saw.
  */
 export type HeroVariant = "ramp" | "karen";
-export const HERO_COOKIE = "hero";
-export const HERO_VARIANTS: HeroVariant[] = ["ramp", "karen"];
+export const DEFAULT_HERO: HeroVariant = "karen";
 
 export const HERO_COPY: Record<HeroVariant, { headline: string[]; sub: string; large: boolean }> = {
   ramp: {
@@ -26,15 +23,8 @@ export function isHeroVariant(v: unknown): v is HeroVariant {
   return v === "ramp" || v === "karen";
 }
 
-/** Pinned by the environment, else the browser's assigned variant, else the default. */
-export function pinnedHeroVariant(): HeroVariant | null {
+/** The environment's pick, else the default. No request state, so pages that use it can be static. */
+export function heroVariant(): HeroVariant {
   const v = process.env.HERO_VARIANT;
-  return isHeroVariant(v) ? v : null;
-}
-
-export async function heroVariant(): Promise<HeroVariant> {
-  const pinned = pinnedHeroVariant();
-  if (pinned) return pinned;
-  const v = (await cookies()).get(HERO_COOKIE)?.value;
-  return isHeroVariant(v) ? v : "ramp";
+  return isHeroVariant(v) ? v : DEFAULT_HERO;
 }

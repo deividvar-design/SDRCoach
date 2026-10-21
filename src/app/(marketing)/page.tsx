@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, Mic, Target, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,13 +11,21 @@ import { CtaBand, H2, Section } from "@/components/marketing/sections";
 import { JsonLd, organizationLd, softwareLd } from "@/components/seo/json-ld";
 import { HERO_COPY, heroVariant } from "@/lib/marketing/hero";
 import { karenHangUpsThisMonth } from "@/lib/demo/share";
+import { getAllObjectionPages } from "@/lib/objections";
+import { pageMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: { absolute: "100 Dials: Ramp new SDRs in 14 days, on the phone" },
-  description: "New reps get their hard calls in before they get them on your pipeline. They dial realistic AI prospects built from your own targets, every call ends with the prospect's decision and a transcript, and the coach scores six skills. Managers see where the team struggles. Free trial, work email only.",
-  alternates: { canonical: "/" }, openGraph: { url: "/" },
-};
+export const metadata = pageMetadata({
+  title: "AI cold call simulator for new SDRs",
+  description: "New reps dial realistic AI prospects built from your own targets and get scored on six skills before they touch your pipeline. Free trial, work email only.",
+  path: "/",
+});
+
+// The Karen counter is a database read; an hourly rebuild keeps the page cached at the edge.
+export const revalidate = 3600;
+
+/** The objections shown on the homepage, the ones new reps meet first. */
+const FEATURED_OBJECTIONS = ["not-interested", "send-me-an-email", "no-budget", "we-already-have-a-solution", "call-me-back-later", "not-the-decision-maker"];
 
 const STEPS = [
   { icon: Target, title: "Add who you're calling", body: "Real accounts from this quarter's list, or one of six built-in personas and three boss fights. Pick a voice, add the pains and objections, and each one becomes a live prospect." },
@@ -28,7 +35,9 @@ const STEPS = [
 
 
 export default async function HomePage() {
-  const [variant, hangUps] = await Promise.all([heroVariant(), karenHangUpsThisMonth().catch(() => 0)]);
+  const variant = heroVariant();
+  const hangUps = await karenHangUpsThisMonth().catch(() => 0);
+  const objections = getAllObjectionPages().filter((p) => FEATURED_OBJECTIONS.includes(p.slug)).sort((a, b) => FEATURED_OBJECTIONS.indexOf(a.slug) - FEATURED_OBJECTIONS.indexOf(b.slug));
   const hero = HERO_COPY[variant];
   return (
     <>
@@ -118,7 +127,30 @@ export default async function HomePage() {
         </div>
       </Section>
 
-      {/* 7. Founder note */}
+      {/* 7. The objection library: the content that earns the search traffic, linked from the page that gets it */}
+      <Section className="border-t">
+        <div className="grid gap-10 md:grid-cols-[1fr_1.3fr] md:items-start">
+          <div>
+            <H2>The objections every new rep fumbles.</H2>
+            <p className="text-muted-foreground text-body mt-5">
+              Fifteen of them, written up: what each one really means, three ways to answer it, and the mistakes that lose the call. The same lines the AI prospects use, so reps can read them before they hear them.
+            </p>
+            <Button className="mt-6" variant="outline" asChild><Link href="/objections">Read the objection library</Link></Button>
+          </div>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {objections.map((o) => (
+              <li key={o.slug}>
+                <Link href={`/objections/${o.slug}`} className="bg-card block h-full rounded-2xl border p-5 transition-shadow hover:shadow-md">
+                  <div className="font-display text-2xl leading-snug">“{o.phrasings[0] ?? o.label}”</div>
+                  <div className="text-muted-foreground mt-2 text-sm">{o.coaching}</div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Section>
+
+      {/* 8. Founder note */}
       <FounderNote />
 
       <CtaBand />

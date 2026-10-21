@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { LegalPage } from "@/components/marketing/legal";
 import { CookieSettingsLink } from "@/components/analytics/cookie-banner";
 
-export const metadata: Metadata = { title: "Cookie policy", description: "Which cookies 100 Dials sets, what they do, and how to change your choice.", alternates: { canonical: "/cookies" }, openGraph: { url: "/cookies" } };
+export const metadata = pageMetadata({ title: "Cookie policy", description: "Which cookies 100 Dials sets, what each one does, which wait for your consent, and how to change your choice later.", path: "/cookies", card: ["page", "legal"] });
 
 export default function CookiesPage() {
   return (

@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { FeatureRow } from "@/components/marketing/feature-row";
 import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/marketing/sections";
 import { Button } from "@/components/ui/button";
 
-export const metadata: Metadata = {
-  title: "For sales enablement",
+export const metadata = pageMetadata({
+  title: "For sales enablement: your call library, as practice",
   description: "Turn your call library into a training ground. Ground AI prospects in your real transcripts, grade every rep on one rubric, and measure skill week over week.",
-  alternates: { canonical: "/for-enablement" }, openGraph: { url: "/for-enablement" },
-};
+  path: "/for-enablement",
+  card: ["page", "for-enablement"],
+});
 
 export default function ForEnablementPage() {
   return (
@@ -19,6 +20,9 @@ export default function ForEnablementPage() {
           <h1 className="font-display mt-4 text-5xl text-balance md:text-6xl">Your call library is a training ground. Use it.</h1>
           <p className="text-muted-foreground mt-6 text-lg text-balance">
             You have thousands of recorded calls and one rubric in a slide deck. 100 Dials turns the recordings into prospects that talk like your market and turns the rubric into a score on every ramp call, for every rep, every week.
+          </p>
+          <p className="text-muted-foreground mt-4">
+            Before the trial, read <Link href="/blog/cold-call-scorecard-template" className="text-foreground underline underline-offset-4">the six-skill scorecard the coach uses</Link> and <Link href="/objections" className="text-foreground underline underline-offset-4">the objection library it grades against</Link>.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>

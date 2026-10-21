@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { PlanGrid } from "@/components/billing/plan-grid";
 import { SALES_EMAIL, TRIAL } from "@/lib/billing/plans";
 import { viewerCurrency } from "@/lib/billing/currency-server";
@@ -8,11 +8,12 @@ import { Guarantee } from "@/components/billing/guarantee";
 import { foundingOffer } from "@/lib/billing/founding";
 import { FOUNDING } from "@/lib/billing/plans";
 
-export const metadata: Metadata = {
-  title: "Pricing",
-  description: "Simple per-seat pricing with a monthly call allowance. Free trial: 10 calls, 14 days, no card, work email required.",
-  alternates: { canonical: "/pricing" }, openGraph: { url: "/pricing" },
-};
+export const metadata = pageMetadata({
+  title: "Pricing: per-seat plans, ten free calls first",
+  description: "Per-seat plans with a monthly call allowance, in dollars or euros. First month refunded if the team report shows nothing new. Free trial: 10 calls, no card.",
+  path: "/pricing",
+  card: ["page", "pricing"],
+});
 
 const FAQ = [
   { q: "Is there a money-back guarantee?", a: "Yes. If a paid plan isn't working for your team, email us within 30 days of your first payment and we refund it in full, no questions. It covers the first payment on a new subscription." },

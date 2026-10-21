@@ -1,27 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isAppPath } from "@/lib/routes";
 
-const PUBLIC_PATHS = ["/", "/pricing", "/for-managers", "/for-enablement", "/trust", "/privacy", "/terms", "/cookies", "/blog", "/sitemap.xml", "/robots.txt", "/opengraph-image", "/login", "/signup", "/auth", "/invite", "/forgot-password", "/karen", "/api/demo", "/objections", "/llms.txt"];
-
-function isPublic(pathname: string) {
-  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-}
-
-const HERO_COOKIE = "hero";
-
-/** Assigns the homepage headline variant once per browser. Pinned variants (HERO_VARIANT) need no cookie. */
-function assignHero(request: NextRequest, response: NextResponse) {
-  if (process.env.HERO_VARIANT || request.cookies.get(HERO_COOKIE)) return;
-  response.cookies.set(HERO_COOKIE, Math.random() < 0.5 ? "ramp" : "karen", { path: "/", maxAge: 90 * 86_400, sameSite: "lax" });
-}
-
-/** Refreshes the Supabase session cookie and redirects unauthenticated users. */
+/**
+ * Refreshes the Supabase session cookie, sends signed-out visitors of app paths to sign in, and sends signed-in
+ * visitors of the auth pages to the dashboard. Any other path is left alone, so an unknown URL is a real 404.
+ */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
-  if (process.env.SDRCOACH_DEMO === "1" && !process.env.VERCEL) {
-    assignHero(request, response);
-    return response;
-  }
+  if (process.env.SDRCOACH_DEMO === "1" && !process.env.VERCEL) return response;
+
+  const { pathname } = request.nextUrl;
+  // No session cookie and nothing to protect: skip the auth round trip so public pages stay fast and cacheable.
+  const hasSessionCookie = request.cookies.getAll().some((c) => c.name.startsWith("sb-"));
+  if (!hasSessionCookie && !isAppPath(pathname)) return response;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -47,9 +39,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-
-  if (!user && !isPublic(pathname)) {
+  if (!user && isAppPath(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
@@ -63,6 +53,5 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  assignHero(request, response);
   return response;
 }

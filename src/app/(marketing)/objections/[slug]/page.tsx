@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { SITE } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
+import { ogPath } from "@/lib/og-cards";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { compileMDX } from "next-mdx-remote/rsc";
@@ -19,12 +22,13 @@ export async function generateMetadata({ params }: PageProps<"/objections/[slug]
   const { slug } = await params;
   const page = getObjectionPage(slug);
   if (!page) return {};
-  return {
+  return pageMetadata({
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/objections/${page.slug}` },
-    openGraph: { type: "article", url: `/objections/${page.slug}`, modifiedTime: page.updated, tags: ["objection handling", page.label] },
-  };
+    path: `/objections/${page.slug}`,
+    card: ["objections", page.slug],
+    article: { modifiedTime: page.updated, tags: ["objection handling", page.label] },
+  });
 }
 
 const components = {
@@ -48,7 +52,7 @@ export default async function ObjectionPage({ params }: PageProps<"/objections/[
     <>
       <JsonLd
         data={[
-          articleLd({ title: page.title, description: page.description, slug: page.slug, path: `/objections/${page.slug}`, date: page.updated, updated: page.updated, author: "100 Dials" }),
+          articleLd({ title: page.title, description: page.description, slug: page.slug, path: `/objections/${page.slug}`, date: page.updated, updated: page.updated, author: "100 Dials", image: ogPath("objections", page.slug, SITE.contentUpdated) }),
           breadcrumbLd([{ name: "Objections", path: "/objections" }, { name: page.label, path: `/objections/${page.slug}` }]),
           ...(page.faq.length ? [faqLd(page.faq)] : []),
         ]}

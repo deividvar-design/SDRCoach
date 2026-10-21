@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { Database, Globe, Lock, ShieldCheck, Trash2, Users } from "lucide-react";
 import { CtaBand, Eyebrow, H2, Section } from "@/components/marketing/sections";
 import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Trust & security",
-  description: "How 100 Dials handles your call recordings, transcripts and team data: EU hosting, per-tenant isolation, no model training on your data, and deletion on request.",
-  alternates: { canonical: "/trust" }, openGraph: { url: "/trust" },
-};
+export const metadata = pageMetadata({
+  title: "Trust and security: how we handle call data",
+  description: "How 100 Dials handles call recordings, transcripts and team data: EU hosting, per-tenant isolation, no model training on your data, deletion on request.",
+  path: "/trust",
+  card: ["page", "trust"],
+});
 
 const PILLARS = [
   { icon: Lock, title: "Your data never trains models", body: "Transcripts and recordings are used only to ground your own team's prospects and grade your own team's calls. We do not train, fine-tune or share models with them. Our AI providers are contractually bound the same way." },

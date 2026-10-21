@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { LegalPage } from "@/components/marketing/legal";
 import { SITE } from "@/lib/site";
 import { TRIAL } from "@/lib/billing/plans";
 
-export const metadata: Metadata = { title: "Terms of service", description: "The agreement between 100 Dials and customers using the service.", alternates: { canonical: "/terms" }, openGraph: { url: "/terms" } };
+export const metadata = pageMetadata({ title: "Terms of service", description: "The agreement between 100 Dials and the teams that use it: the service, the trial, billing, the money-back guarantee, data and liability.", path: "/terms", card: ["page", "legal"] });
 
 export default function TermsPage() {
   const c = SITE.company;
