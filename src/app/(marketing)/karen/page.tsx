@@ -1,19 +1,28 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import { KAREN } from "@/lib/demo/boss";
-import { Section } from "@/components/marketing/sections";
+import { Eyebrow, H2, Section } from "@/components/marketing/sections";
+import { JsonLd, faqLd } from "@/components/seo/json-ld";
 import { ChallengeForm } from "./challenge-form";
 
 export const metadata = pageMetadata({
-  title: "Can you survive Karen? A cold call you will not forget",
-  description: "Dial Karen Whitlock, Head of Procurement, the rudest prospect we could build. Three minutes, no account, a scored report after. Work email only.",
+  title: "Practice cold calls free: can you survive Karen?",
+  description: "Practise a cold call free against Karen Whitlock, Head of Procurement, the rudest AI prospect we could build. Three minutes, no account, a scored report after.",
   path: "/karen",
   card: ["page", "karen"],
 });
 
+const FAQ: [string, string][] = [
+  ["Is this really free?", "Yes. One three-minute cold call against Karen, no account and no card. You give a work email so we can send you the scored report. If you want more calls, or a prospect built from your own targets, that is the 14-day trial."],
+  ["Who is Karen?", "An AI prospect. Head of Procurement, twenty-two years in the job, interrupted mid-task by your call. She is the hardest level our customers' reps practise against, turned up a little further. She interrupts, asks who you are, mentions her incumbent and tries to end the call."],
+  ["What does the report score?", "The same six skills every 100 Dials call is scored on: opener, reason for call, discovery, objection handling, value proposition and close, each out of ten with the rationale quoting your own words. Nobody books Karen. Staying composed and asking one sharp question is the win."],
+  ["Can my whole team try it?", "Each person can take the call once with their own work email, and the leaderboard shows how they did. For a team practising daily on prospects built from your accounts, start a trial and invite them."],
+];
+
 export default function KarenPage() {
   return (
     <>
+      <JsonLd data={faqLd(FAQ.map(([q, a]) => ({ q, a })))} />
       <Section className="pt-14 md:pt-20">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
           <div>
@@ -38,6 +47,18 @@ export default function KarenPage() {
           </div>
           <ChallengeForm />
         </div>
+      </Section>
+      <Section>
+        <Eyebrow>Practice cold calls free</Eyebrow>
+        <H2>What you are signing up for.</H2>
+        <dl className="mt-8 grid gap-6 md:grid-cols-2">
+          {FAQ.map(([q, a]) => (
+            <div key={q} className="rounded-2xl border p-6">
+              <dt className="font-medium">{q}</dt>
+              <dd className="text-muted-foreground mt-2 text-sm">{a}</dd>
+            </div>
+          ))}
+        </dl>
       </Section>
     </>
   );

@@ -10,13 +10,13 @@
 - [Pricing](/pricing): per-seat plans and the free trial
 - [Trust and security](/trust): data handling, retention, deletion
 - [Blog](/blog): research-backed guides on cold calling
-- [Can you survive Karen?](/karen): a free three-minute call against our rudest AI prospect, work email only, scored report after
+- [Practice cold calls free: can you survive Karen?](/karen): a free three-minute cold call against our rudest AI prospect, work email only, scored report after
 - [Objection library](/objections): fifteen cold-call objections, each with what it means, three ways to handle it and a worked exchange
 
 ## Facts
 
 - Free trial: 10 calls over 14 days, work email required, no card.
-- Pricing per seat per month: Starter $59 / €55 (40 calls), Team $159 / €149 (100 calls); 20% off annual. Charged in EUR or USD, VAT excluded. 30-day money-back guarantee on the first payment.
+- Pricing per seat per month: Starter $79 / €75 (40 calls), Team $159 / €149 (100 calls); 20% off annual. Charged in EUR or USD, VAT excluded. 30-day money-back guarantee on the first payment.
 - Scoring rubric: opener, reason for call, discovery, objection handling, value proposition, close.
 - Knowledge sources that ground the prospects: 10 on trial, 30 on Starter, 100 on Team. Call recordings, transcripts and replay on every plan.
 - Objection taxonomy: sixteen types tagged on every reviewed call with how the rep handled them.
@@ -24,7 +24,16 @@
 
 ## Recent posts
 
-- [Cold call simulators do the one job roleplay cannot: repetition](/blog/cold-call-simulator): peer roleplay, recorded-call review and AI simulators compared, what each is for, and a weekly shape that runs all three
+- [Cold calling statistics 2026: 50 figures with their sources](/blog/cold-calling-statistics): fifty figures from Gong, Cognism, Bridge Group, Orum, RAIN Group and Gartner with their sources, and eight famous statistics that have none
+- [Hyperbound vs Second Nature vs 100 Dials: price, fit, grounding](/blog/hyperbound-vs-second-nature-vs-100-dials): what each is built for, how each is priced, and who should pick which, checked October 2026
+- [AI sales roleplay software pricing: who publishes a price](/blog/ai-sales-roleplay-software-pricing): seven vendors in one table, what the quote-only tiers are called, and how to compare a seat price with a quote
+- [Hyperbound alternatives: five tools, sorted by how you buy them](/blog/hyperbound-alternatives): five alternatives sorted by whether you can see a price and start today, with where Hyperbound still wins
+- [Second Nature alternatives for teams that cannot wait for a demo](/blog/second-nature-alternatives): alternatives by reason for leaving, two with a published price and a trial
+- [Nooks AI roleplay alternative: practice without buying a dialler](/blog/nooks-ai-roleplay-alternative): what Nooks and Orum offer for roleplay inside a dialler, when that is right, and what to check in a standalone tool
+- [Practice cold calling without real prospects: a 4-week plan](/blog/practice-cold-calling-without-real-prospects): the three ways to practise without a live list, a week-by-week drill plan with calls per day and level, and the numbers that say a rep is ready
+- [Cold call practice for beginners: the first ten calls](/blog/cold-call-practice-for-beginners): drill the opener, the reason for call and one objection, ignore discovery and the pitch for now, three opening mistakes, and a 0 to 10 self-check table
+- [Sales roleplay examples: six cold call scenarios, scripted](/blog/sales-roleplay-examples): one two-minute scenario per rubric skill with a prospect brief, sample lines and a pass condition, plus a summary table
+- [Cold call simulator: the practice tool roleplay cannot replace](/blog/cold-call-simulator): peer roleplay, recorded-call review and AI simulators compared, what each is for, and a weekly shape that runs all three
 - [Average SDR ramp time: three months, and where the weeks go](/blog/average-sdr-ramp-time): three definitions of ramp, where the weeks go, how it changes with team size, and the part you can cut
 - [Cold call scorecard template: six skills and how to weight them](/blog/cold-call-scorecard-template): the six skills, the weights, and a 0 to 10 anchor per skill so two managers agree
 - [AI cold call practice software: what to look for and what to ignore](/blog/ai-cold-call-practice-software): the four things that decide whether reps improve, and the features to ignore
