@@ -9,6 +9,7 @@
 - [For sales enablement](/for-enablement): grounding in real transcripts, one rubric, measurement
 - [Pricing](/pricing): per-seat plans and the free trial
 - [Trust and security](/trust): data handling, retention, deletion
+- [Company](/company): who makes 100 Dials, where it is hosted, pricing and contact in one place
 - [Blog](/blog): research-backed guides on cold calling
 - [Practice cold calls free: can you survive Karen?](/karen): a free three-minute cold call against our rudest AI prospect, work email only, scored report after
 - [Objection library](/objections): fifteen cold-call objections, each with what it means, three ways to handle it and a worked exchange
@@ -55,3 +56,10 @@
 - [Too hard to switch: how to handle it on a cold call](/objections/too-hard-to-switch)
 - [Why are you calling me: how to handle it on a cold call](/objections/why-are-you-calling-me)
 - [They won't share details: how to handle it on a cold call](/objections/wont-share-details)
+- [The best and worst cold call openers, according to 300 million calls](/blog/best-cold-call-openers): the best cold call openers sound familiar or ask permission, then state the reason for the call. The worst asks if it is a bad time. Gong's rate for each.
+- [How much should an SDR talk on a cold call?](/blog/cold-call-talk-ratio): on a cold call the rep talks slightly more than half the time, not the 30 percent used for discovery. The longest monologue matters more than the ratio.
+- [How to handle "just send me an email" without sending the email](/blog/handling-send-me-an-email): agree in two words, ask what the email would have to answer, answer that in one sentence, then ask for fifteen minutes at a set time. The exact words.
+- [The reason for the call: the 15 seconds that decide a cold call](/blog/reason-for-call): stating why you are calling, specifically and early, is the most reliable move on a cold call. How to build the line, five examples, and what to avoid.
+- [How to run cold call roleplay that reps do not hate](/blog/cold-call-roleplay): cold call roleplay works when there is no audience, one skill per session, a prospect who can say no and one rubric. A weekly format and how to score it.
+- [The eight cold call objections you will hear most, and what to say](/blog/common-cold-call-objections): the eight objections that end most cold calls, what each usually means, and a one-line response for each that acknowledges, isolates and redirects.
+- [SDR onboarding plan: a 30-60-90 day template that gets to booked meetings](/blog/sdr-onboarding-plan-30-60-90): a 30-60-90 day SDR onboarding plan: practice before real dials, live dials with daily review, then a target, and the number that says each phase is done.
