@@ -38,7 +38,7 @@ function loadScript(): Promise<void> {
 /**
  * Google One Tap: the "Continue as …" prompt Chrome shows over the page. The ID token goes straight to Supabase
  * (signInWithIdToken), so it creates or signs in the same account the Google button does. Shown only to signed-out
- * visitors, only on the sign-in and sign-up pages, and off until NEXT_PUBLIC_GOOGLE_CLIENT_ID is set.
+ * visitors, on the homepage and the sign-in and sign-up pages, and off until NEXT_PUBLIC_GOOGLE_CLIENT_ID is set.
  */
 export function GoogleOneTap({ mode, next }: { mode: "login" | "signup"; next: string }) {
   const router = useRouter();

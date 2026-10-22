@@ -13,6 +13,7 @@ import { HERO_COPY, heroVariant } from "@/lib/marketing/hero";
 import { karenHangUpsThisMonth } from "@/lib/demo/share";
 import { getAllObjectionPages } from "@/lib/objections";
 import { pageMetadata } from "@/lib/seo";
+import { GoogleOneTap } from "@/components/auth/google-one-tap";
 import { cn } from "@/lib/utils";
 
 export const metadata = pageMetadata({
@@ -42,6 +43,8 @@ export default async function HomePage() {
   return (
     <>
       <JsonLd data={[organizationLd(), softwareLd()]} />
+      {/* "Continue as …" for signed-out visitors; accepting starts the trial flow. */}
+      <GoogleOneTap mode="signup" next="/onboarding" />
 
       {/* 1. Hero. Two headlines under test; the variant travels with the signup event. */}
       <Section className="pt-10 md:pt-14" data-hero={variant}>
