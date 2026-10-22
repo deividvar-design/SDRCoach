@@ -67,11 +67,6 @@ export function KarenHero() {
             <Link href="/signup" className="font-medium underline-offset-4 hover:underline">Skip to the {TRIAL.calls}-call team trial →</Link>
             <p className="text-muted-foreground text-sm">{TRIAL.calls} free calls · {TRIAL.days} days access · no credit card</p>
           </div>
-          <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-2 border-t pt-4 text-[13px]">
-            <span>Your calls are never used to train models</span>
-            <span>EU company</span>
-            <Link href="/pricing" className="hover:text-foreground underline-offset-4 hover:underline">Public pricing</Link>
-          </div>
         </div>
       </div>
     </section>
