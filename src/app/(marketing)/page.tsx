@@ -51,13 +51,7 @@ export default async function HomePage() {
       {!hero ? (
         <>
           <KarenHero />
-          <Section className="border-t">
-            <H2>What a scored call looks like.</H2>
-            <p className="text-muted-foreground text-body mt-4 max-w-2xl">
-              100 Dials is an AI cold call simulator for SDR teams. Reps dial realistic prospects built from their own target accounts, every call is scored on six skills, and managers see where the team struggles.
-            </p>
-            <div className="mt-8"><SampleCall /></div>
-          </Section>
+          {/* The "What a scored call looks like" SampleCall section is hidden for now. Its definition line moved to How it works. */}
         </>
       ) : (
       <Section className="pt-10 md:pt-14" data-hero={variant}>
@@ -84,6 +78,11 @@ export default async function HomePage() {
       {/* 2. How it works */}
       <Section id="how-it-works" className="border-t">
         <H2>Three steps between a new rep and a booked meeting.</H2>
+        {!hero && (
+          <p className="text-muted-foreground text-body mt-4 max-w-2xl">
+            100 Dials is an AI cold call simulator for SDR teams. Reps dial realistic prospects built from their own target accounts, every call is scored on six skills, and managers see where the team struggles.
+          </p>
+        )}
         <ol className="mt-10 grid gap-8 md:grid-cols-3">
           {STEPS.map((s) => (
             <li key={s.title} className="border-t pt-5">
