@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { requestWorkEmailLink, signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
+import { GoogleOneTap } from "@/components/auth/google-one-tap";
 
 export interface PlanIntent {
   plan: string;
@@ -31,6 +32,7 @@ export function AuthForm({ mode, next, invite, email, notice, intent }: { mode: 
 
   return (
     <div className="space-y-6">
+      {!invite && <GoogleOneTap mode={mode} next={mode === "signup" ? "/onboarding" : next ?? "/dashboard"} />}
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">{mode === "login" ? "Welcome back" : "Create your account"}</h1>
         <p className="text-muted-foreground text-sm">

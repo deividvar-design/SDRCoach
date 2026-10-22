@@ -122,6 +122,16 @@ export async function requestWorkEmailLink(_prev: AuthState, formData: FormData)
   return { message: `Sent. Open the link from ${email} to continue.` };
 }
 
+/** One Tap signed someone in on the client; record it the same way the other paths are recorded. */
+export async function recordOneTap(mode: "login" | "signup") {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+  await logFunnel("signup_submit", { email: user.email, subject: user.id, meta: { method: "one_tap", mode } });
+}
+
 /** Google sign-in. New users land on onboarding, where the work-email rule is applied to the Google address. */
 export async function signInWithGoogle(formData: FormData) {
   const invite = typeof formData.get("invite") === "string" ? String(formData.get("invite")) : "";
