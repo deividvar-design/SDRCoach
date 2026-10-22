@@ -123,7 +123,8 @@ export async function requestWorkEmailLink(_prev: AuthState, formData: FormData)
 }
 
 /** One Tap signed someone in on the client; record it the same way the other paths are recorded. */
-export async function recordOneTap(mode: "login" | "signup") {
+export async function recordOneTap(mode: "login" | "signup" | "karen") {
+  if (mode === "karen") return; // the Karen start route logs it
   const supabase = await createClient();
   const {
     data: { user },
@@ -136,7 +137,7 @@ export async function recordOneTap(mode: "login" | "signup") {
 export async function signInWithGoogle(formData: FormData) {
   const invite = typeof formData.get("invite") === "string" ? String(formData.get("invite")) : "";
   const next = invite ? `/invite/${invite}` : safeNext(formData.get("next"));
-  await logFunnel("signup_submit", { meta: { invited: Boolean(invite), method: "google" } });
+  if (!next.startsWith("/karen")) await logFunnel("signup_submit", { meta: { invited: Boolean(invite), method: "google" } });
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",

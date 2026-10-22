@@ -40,7 +40,7 @@ function loadScript(): Promise<void> {
  * (signInWithIdToken), so it creates or signs in the same account the Google button does. Shown only to signed-out
  * visitors, on the homepage and the sign-in and sign-up pages, and off until NEXT_PUBLIC_GOOGLE_CLIENT_ID is set.
  */
-export function GoogleOneTap({ mode, next }: { mode: "login" | "signup"; next: string }) {
+export function GoogleOneTap({ mode, next }: { mode: "login" | "signup" | "karen"; next: string }) {
   const router = useRouter();
   const started = useRef(false);
 
@@ -59,7 +59,7 @@ export function GoogleOneTap({ mode, next }: { mode: "login" | "signup"; next: s
       id.initialize({
         client_id: CLIENT_ID,
         nonce: hashed,
-        context: mode === "login" ? "signin" : "signup",
+        context: mode === "login" ? "signin" : mode === "karen" ? "use" : "signup",
         use_fedcm_for_prompt: true,
         itp_support: true,
         auto_select: false,
@@ -71,8 +71,7 @@ export function GoogleOneTap({ mode, next }: { mode: "login" | "signup"; next: s
             return;
           }
           await recordOneTap(mode).catch(() => {});
-          router.replace(next);
-          router.refresh();
+          window.location.assign(next);
         },
       });
       id.prompt();

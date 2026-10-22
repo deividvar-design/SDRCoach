@@ -14,6 +14,7 @@ import { karenHangUpsThisMonth } from "@/lib/demo/share";
 import { getAllObjectionPages } from "@/lib/objections";
 import { pageMetadata } from "@/lib/seo";
 import { GoogleOneTap } from "@/components/auth/google-one-tap";
+import { KarenHero } from "@/components/marketing/karen-hero";
 import { cn } from "@/lib/utils";
 
 export const metadata = pageMetadata({
@@ -39,14 +40,26 @@ export default async function HomePage() {
   const variant = heroVariant();
   const hangUps = await karenHangUpsThisMonth().catch(() => 0);
   const objections = getAllObjectionPages().filter((p) => FEATURED_OBJECTIONS.includes(p.slug)).sort((a, b) => FEATURED_OBJECTIONS.indexOf(a.slug) - FEATURED_OBJECTIONS.indexOf(b.slug));
-  const hero = HERO_COPY[variant];
+  const hero = variant === "a" ? null : HERO_COPY[variant];
   return (
     <>
       <JsonLd data={[organizationLd(), softwareLd()]} />
-      {/* "Continue as …" for signed-out visitors; accepting starts the trial flow. */}
-      <GoogleOneTap mode="signup" next="/onboarding" />
+      {/* "Continue as …" for signed-out visitors. With hero A it starts the Karen call, like the main button. */}
+      <GoogleOneTap mode={hero ? "signup" : "karen"} next={hero ? "/onboarding" : "/karen/start"} />
 
-      {/* 1. Hero. Two headlines under test; the variant travels with the signup event. */}
+      {/* 1. Hero. HERO_VARIANT switches between A (default) and the two earlier headlines. */}
+      {!hero ? (
+        <>
+          <KarenHero />
+          <Section className="border-t">
+            <H2>What a scored call looks like.</H2>
+            <p className="text-muted-foreground text-body mt-4 max-w-2xl">
+              100 Dials is an AI cold call simulator for SDR teams. Reps dial realistic prospects built from their own target accounts, every call is scored on six skills, and managers see where the team struggles.
+            </p>
+            <div className="mt-8"><SampleCall /></div>
+          </Section>
+        </>
+      ) : (
       <Section className="pt-10 md:pt-14" data-hero={variant}>
         <div>
           <h1 className={cn("font-display enter mt-4 leading-[0.98]", hero.large ? "text-[3.4rem] md:text-[5.5rem] xl:text-[7.5rem]" : "text-[2.75rem] md:text-[4.25rem] xl:text-[5.75rem]")} style={{ "--enter-delay": "0ms" } as React.CSSProperties}>
@@ -66,6 +79,7 @@ export default async function HomePage() {
           <SampleCall autoStart />
         </div>
       </Section>
+      )}
 
       {/* 2. How it works */}
       <Section id="how-it-works" className="border-t">

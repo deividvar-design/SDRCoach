@@ -3,10 +3,11 @@
  * cached, and HERO_VARIANT in the environment switches the copy without a deploy. The variant is still recorded on
  * signup so the admin signups table keeps saying which headline each account saw.
  */
-export type HeroVariant = "ramp" | "karen";
-export const DEFAULT_HERO: HeroVariant = "karen";
+export type HeroVariant = "a" | "ramp" | "karen";
+export const DEFAULT_HERO: HeroVariant = "a";
 
-export const HERO_COPY: Record<HeroVariant, { headline: string[]; sub: string; large: boolean }> = {
+/** "a" has its own layout (KarenHero); its copy lives there. */
+export const HERO_COPY: Record<Exclude<HeroVariant, "a">, { headline: string[]; sub: string; large: boolean }> = {
   ramp: {
     headline: ["Your new SDR will quit or get fired", "before they survive a hard call."],
     sub: "Karen fixes that in 14 days.",
@@ -20,7 +21,7 @@ export const HERO_COPY: Record<HeroVariant, { headline: string[]; sub: string; l
 };
 
 export function isHeroVariant(v: unknown): v is HeroVariant {
-  return v === "ramp" || v === "karen";
+  return v === "a" || v === "ramp" || v === "karen";
 }
 
 /** The environment's pick, else the default. No request state, so pages that use it can be static. */

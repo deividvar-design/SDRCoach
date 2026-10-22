@@ -10,6 +10,8 @@ import { ResultPoller } from "./result-poller";
 import { LeaderboardForm } from "./leaderboard-form";
 import { ShareButton } from "../share-button";
 import { survivedLabel } from "@/lib/demo/share";
+import { createClient } from "@/lib/supabase/server";
+import { absoluteUrl } from "@/lib/site";
 
 export const metadata = { title: "Your call with Karen", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -20,6 +22,12 @@ export default async function KarenResultPage() {
   if (demo.status === "created" || demo.status === "dialing") redirect("/karen/call");
   const pending = demo.status === "live" || demo.status === "ended" || demo.status === "scoring";
   const signup = demo.personal_email ? "/signup" : `/signup?email=${encodeURIComponent(demo.email)}`;
+  // Signed in with the same Google account that made the call: the trial is one click away.
+  const {
+    data: { user },
+  } = await (await createClient()).auth.getUser();
+  const viaGoogle = Boolean(user?.email && user.email.toLowerCase() === demo.email);
+  const forward = `mailto:?subject=${encodeURIComponent("Cold call practice for the team")}&body=${encodeURIComponent(`I just tried a cold call against an AI prospect on 100 Dials${demo.share_slug ? ` (my scorecard: ${absoluteUrl(`/karen/score/${demo.share_slug}`)})` : ""}. It does this for a whole SDR team, on prospects built from our own accounts. Ten free calls to try it: ${absoluteUrl("/signup")}`)}`;
 
   return (
     <Section className="pt-14 md:pt-20">
@@ -85,13 +93,27 @@ export default async function KarenResultPage() {
                 </div>
               </div>
             )}
-            <div className="bg-card mt-10 flex flex-col gap-4 rounded-2xl border p-6 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="font-medium">Karen is one of the easy ones.</div>
-                <div className="text-muted-foreground text-sm">Prospects built from your own targets, three levels, every call scored like this. Ten free calls, no card.</div>
+            {demo.personal_email ? (
+              <div className="mt-10 flex flex-col gap-4 rounded-2xl border border-dashed p-6 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="font-medium">Want your team on this?</div>
+                  <div className="text-muted-foreground text-sm">Team trials need a work account, so the workspace belongs to your company.</div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild><Link href={viaGoogle ? "/onboarding" : "/signup"}>Start with work email</Link></Button>
+                  <Button variant="outline" asChild><a href={forward}>Forward to my manager</a></Button>
+                </div>
               </div>
-              <Button size="lg" asChild><Link href={signup}>Start a free trial</Link></Button>
-            </div>
+            ) : (
+              <div className="stage text-paper mt-10 flex flex-col gap-5 rounded-2xl p-6 sm:flex-row sm:items-center sm:justify-between md:p-7">
+                <div className="space-y-1.5">
+                  {viaGoogle && <div className="dial text-paper/60 text-xs">SIGNED IN WITH GOOGLE · {demo.email.toUpperCase()}</div>}
+                  <div className="font-display text-3xl leading-tight">{viaGoogle ? `Your trial for ${demo.domain} is one click away.` : "Karen is one of the easy ones."}</div>
+                  <div className="text-paper/75 text-sm">Prospects built from your own accounts, three levels, every call scored like this. Ten free calls, no card. Invite your reps when you're ready.</div>
+                </div>
+                <Button size="lg" variant="signal" className="shrink-0" asChild><Link href={viaGoogle ? "/onboarding" : signup}>Start my 10 free calls</Link></Button>
+              </div>
+            )}
           </>
         )}
       </div>
