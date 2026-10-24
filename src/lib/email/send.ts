@@ -14,6 +14,8 @@ export interface Mail {
   html: string;
   text: string;
   replyTo?: string;
+  /** Display name for the From header; the address stays the configured sender. */
+  fromName?: string;
 }
 
 /** Sends through Resend. Without a key it logs the subject and returns, so local flows never break. */
@@ -23,7 +25,8 @@ export async function sendMail(mail: Mail): Promise<{ id: string | null; skipped
     return { id: null, skipped: true };
   }
   client ??= new Resend(process.env.RESEND_API_KEY);
-  const from = process.env.EMAIL_FROM ?? `${SITE.name} <hello@${new URL(SITE.url).hostname}>`;
+  const configured = process.env.EMAIL_FROM ?? `${SITE.name} <hello@${new URL(SITE.url).hostname}>`;
+  const from = mail.fromName ? `${mail.fromName} <${configured.match(/<([^>]+)>/)?.[1] ?? configured}>` : configured;
   const { data, error } = await client.emails.send({ from, to: mail.to, subject: mail.subject, html: mail.html, text: mail.text, replyTo: mail.replyTo ?? SITE.company.email });
   if (error) throw new Error(error.message);
   return { id: data?.id ?? null, skipped: false };
