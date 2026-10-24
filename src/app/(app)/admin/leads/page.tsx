@@ -24,7 +24,7 @@ export default async function LeadsPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Internal" title="Karen leads" description="Every work email that challenged Karen. Scorecards went to the address shown." actions={<Link href="/admin" className="text-sm underline underline-offset-4">Back to admin</Link>} />
+      <PageHeader eyebrow="Internal" title="Karen leads" description="Everyone who challenged Karen. Scorecards went to the address shown; callers who left before the email step have none." actions={<Link href="/admin" className="text-sm underline underline-offset-4">Back to admin</Link>} />
       <div className="grid gap-4 sm:grid-cols-3">
         <StatTile label="Leads" value={leads.length} hint={`${week.length} in the last 7 days`} />
         <StatTile label="Completed calls" value={scored.length} hint={`${leads.filter((l) => l.status === "failed").length} failed or capped`} />
@@ -49,7 +49,7 @@ export default async function LeadsPage() {
             ) : (
               leads.map((l) => (
                 <TableRow key={l.id}>
-                  <TableCell><a href={`mailto:${l.email}`} className="font-medium hover:underline">{l.email}</a><div className="text-muted-foreground text-xs">{l.domain}</div></TableCell>
+                  <TableCell>{l.email ? <a href={`mailto:${l.email}`} className="font-medium hover:underline">{l.email}</a> : <span className="text-muted-foreground">No email yet</span>}<div className="text-muted-foreground text-xs">{l.domain ?? (l.status === "scored" ? "left before the email step" : "")}</div></TableCell>
                   <TableCell className="text-muted-foreground text-sm">{formatDate(l.created_at)}</TableCell>
                   <TableCell><Badge variant={l.status === "scored" ? "success" : l.status === "failed" ? "destructive" : "secondary"}>{l.status === "failed" && l.error === "daily cap" ? "capped" : l.status}</Badge></TableCell>
                   <TableCell className="text-sm">{l.outcome ? OUTCOME_TEXT[l.outcome] ?? l.outcome : "—"}</TableCell>

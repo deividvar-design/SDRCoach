@@ -2,33 +2,49 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { DEMO_COOKIE, currentDemo } from "@/lib/demo/session";
-import { DEMO_COOKIE_OPTIONS, startDemo } from "@/lib/demo/start";
-import { logFunnel } from "@/lib/funnel";
+import { DEMO_COOKIE_OPTIONS, attachDemoEmail, startDemo } from "@/lib/demo/start";
 
-export interface ChallengeState {
-  error?: string;
-  /** The daily cap is hit: the email was kept so we can say when Karen is free again. */
-  waitlisted?: boolean;
+/**
+ * The call button. No form, no email: Karen picks up and the caller is asked where to send the scorecard after.
+ * Someone already signed in with Google keeps their address on the call, so the result page skips that step.
+ */
+export async function callKaren() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const email = user?.email ?? null;
+  const result = await startDemo({ email, method: email ? "google" : "call" });
+  if ("waitlisted" in result) redirect("/karen?busy=1");
+  if ("error" in result) redirect(`/karen?error=${encodeURIComponent(result.code)}`);
+  (await cookies()).set(DEMO_COOKIE, result.id, DEMO_COOKIE_OPTIONS);
+  redirect("/karen/call");
 }
 
-/** The form path into a Karen call. The Google button and One Tap reach the same startDemo through /karen/start. */
-export async function challengeKaren(_prev: ChallengeState, formData: FormData): Promise<ChallengeState> {
+export interface EmailStepState {
+  error?: string;
+  done?: boolean;
+  personal?: boolean;
+}
+
+/** The email step on the result page: where the scorecard goes. Only the browser that made the call can set it. */
+export async function addDemoEmail(_prev: EmailStepState, formData: FormData): Promise<EmailStepState> {
   const parsed = z
     .object({ email: z.string().email("Enter a valid email"), company: z.string().trim().max(80).optional(), newsletter: z.string().optional() })
     .safeParse({ email: formData.get("email"), company: formData.get("company") || undefined, newsletter: formData.get("newsletter") || undefined });
-  if (!parsed.success) {
-    await logFunnel("karen_submit", { meta: { method: "email" } });
-    await logFunnel("karen_rejected", { reason: "invalid", meta: { method: "email" } });
-    return { error: parsed.error.issues[0]?.message };
-  }
-  const result = await startDemo({ email: parsed.data.email, company: parsed.data.company, newsletter: parsed.data.newsletter === "on", method: "email" });
-  if ("waitlisted" in result) return { waitlisted: true };
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const demo = await currentDemo();
+  if (!demo) return { error: "That call is no longer on file." };
+  if (demo.email) return { done: true, personal: demo.personal_email };
+  const result = await attachDemoEmail(demo.id, parsed.data.email, { company: parsed.data.company, newsletter: parsed.data.newsletter === "on" });
   if ("error" in result) return { error: result.error };
-  (await cookies()).set(DEMO_COOKIE, result.id, DEMO_COOKIE_OPTIONS);
-  redirect("/karen/call");
+  revalidatePath("/karen/result");
+  return { done: true, personal: result.personal };
 }
 
 export interface LeaderboardState {

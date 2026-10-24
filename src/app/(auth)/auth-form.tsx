@@ -56,6 +56,11 @@ export function AuthForm({ mode, next, invite, email, notice, intent }: { mode: 
           {mode === "login" ? "Sign in with Google" : "Continue with Google"}
         </Button>
         {mode === "signup" && !invite && <p className="text-muted-foreground mt-2 text-center text-xs">Use your Google Workspace account. Personal Gmail can't start a trial.</p>}
+        {mode === "signup" && !invite && (
+          <p className="bg-muted/60 mt-4 rounded-xl px-4 py-3 text-center text-sm">
+            Practising on your own? <Link href="/karen" className="font-medium underline underline-offset-4">Call Karen free</Link>, no account needed.
+          </p>
+        )}
       </form>
       <div className="text-muted-foreground flex items-center gap-3 text-xs">
         <span className="bg-border h-px flex-1" />

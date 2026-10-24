@@ -4,7 +4,8 @@ import { TRIAL } from "@/lib/billing/plans";
 import { KAREN } from "@/lib/demo/boss";
 import { signInWithGoogle } from "@/app/(auth)/actions";
 import { GoogleMark } from "@/app/(auth)/auth-form";
-import { KarenQuickForm } from "./karen-quick-form";
+import { CallKarenSubmit } from "./call-karen-button";
+import { callKaren } from "@/app/(marketing)/karen/actions";
 
 const POINTS = [
   { icon: Clock, text: "First call in under 2 minutes" },
@@ -38,20 +39,17 @@ export function KarenHero() {
           <p className="rounded-2xl bg-white/[0.07] px-4 py-3.5 text-[15px] leading-relaxed">“{KAREN.objections[0]}”</p>
           <div className="border-t border-white/10" />
           <h2 className="font-display text-3xl leading-tight">Can you survive Karen?</h2>
+          <form action={callKaren}>
+            <CallKarenSubmit className="focus-visible:ring-paper/50" />
+          </form>
           <form action={signInWithGoogle}>
             <input type="hidden" name="next" value="/karen/start" />
-            <button type="submit" className="bg-signal text-signal-foreground focus-visible:ring-paper/50 flex h-14 w-full cursor-pointer items-center justify-center gap-3 rounded-xl text-[17px] font-medium outline-none transition-[filter] hover:brightness-105 focus-visible:ring-[3px]">
-              <span className="grid size-6 place-items-center rounded-full bg-white"><GoogleMark /></span>
+            <button type="submit" className="text-paper focus-visible:ring-paper/40 flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/20 text-[15px] font-medium outline-none transition-colors hover:bg-white/10 focus-visible:ring-[3px]">
+              <span className="grid size-5 place-items-center rounded-full bg-white"><GoogleMark /></span>
               Call Karen with Google
             </button>
           </form>
-          <div className="text-paper/60 flex items-center gap-3 text-[13px]">
-            <span className="h-px flex-1 bg-white/15" />
-            or with email
-            <span className="h-px flex-1 bg-white/15" />
-          </div>
-          <KarenQuickForm />
-          <p className="text-paper/60 text-xs leading-relaxed">Any Google account works. One call per person. The call is recorded and scored, and your report arrives by email.</p>
+          <p className="text-paper/60 text-xs leading-relaxed">No email to start. Allow the microphone and she picks up. After the call you say where the scorecard goes. One call per person; it is recorded and scored.</p>
         </section>
 
         <div className="enter space-y-6 lg:col-start-1 lg:row-start-2 lg:self-start" style={{ "--enter-delay": "60ms" } as React.CSSProperties}>

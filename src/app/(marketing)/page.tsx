@@ -3,6 +3,7 @@ import { BookOpen, Mic, Target, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TRIAL } from "@/lib/billing/plans";
 import { SampleCall } from "@/components/marketing/sample-call";
+import { ProofCall } from "@/components/marketing/proof-call";
 import { BossFights } from "@/components/marketing/boss-fights";
 import { Ladder } from "@/components/marketing/ladder";
 import { Heatmap } from "@/components/marketing/heatmap";
@@ -51,7 +52,13 @@ export default async function HomePage() {
       {!hero ? (
         <>
           <KarenHero />
-          {/* The "What a scored call looks like" SampleCall section is hidden for now. Its definition line moved to How it works. */}
+          <Section className="border-t">
+            <H2>What a scored call looks like.</H2>
+            <p className="text-muted-foreground text-body mt-4 max-w-2xl">
+              The coach scores six skills out of ten, quotes the rep's own words in the rationale, and names the one thing to fix before the next dial. This is a sample against Karen.
+            </p>
+            <div className="mt-8"><ProofCall /></div>
+          </Section>
         </>
       ) : (
       <Section className="pt-10 md:pt-14" data-hero={variant}>

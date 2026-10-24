@@ -106,8 +106,9 @@ export type AdminAction = { id: string; admin_email: string; org_id: string | nu
 export type Feedback = { id: string; org_id: string | null; user_id: string | null; email: string; name: string | null; role: string | null; page: string | null; user_agent: string | null; body: string; reply_ok: boolean; created_at: string };
 export type DemoCall = {
   id: string;
-  email: string;
-  domain: string;
+  /** Null until the caller says where to send the scorecard; the call button asks after the call. */
+  email: string | null;
+  domain: string | null;
   ip: string | null;
   newsletter: boolean;
   status: "created" | "dialing" | "live" | "ended" | "scoring" | "scored" | "failed";
@@ -139,6 +140,7 @@ export type DemoCall = {
   gclid: string | null;
   gbraid: string | null;
   wbraid: string | null;
+  email_added_at: string | null;
   created_at: string;
 };
 
@@ -330,7 +332,7 @@ export type Database = {
         Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
-      demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "followup_sent_at" | "finalize_attempts" | "scoring_started_at" | "mints" | "share_slug" | "display_name" | "display_company" | "leaderboard_opt_in" | "shared_at" | "company" | "personal_email" | "gclid" | "gbraid" | "wbraid" | "created_at">>;
+      demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "email" | "domain" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "followup_sent_at" | "finalize_attempts" | "scoring_started_at" | "mints" | "share_slug" | "display_name" | "display_company" | "leaderboard_opt_in" | "shared_at" | "company" | "personal_email" | "gclid" | "gbraid" | "wbraid" | "email_added_at" | "created_at">>;
       funnel_events: Table<FunnelEvent, Insert<FunnelEvent, "id" | "reason" | "email_domain" | "email_hash" | "subject" | "dedupe_key" | "meta" | "created_at">>;
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
       admin_actions: Table<AdminAction, Insert<AdminAction, "id" | "org_id" | "payload" | "created_at">>;

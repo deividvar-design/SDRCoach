@@ -3,7 +3,8 @@ import { pageMetadata } from "@/lib/seo";
 import { KAREN } from "@/lib/demo/boss";
 import { Eyebrow, H2, Section } from "@/components/marketing/sections";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
-import { ChallengeForm } from "./challenge-form";
+import { CallKarenSubmit } from "@/components/marketing/call-karen-button";
+import { callKaren } from "./actions";
 import { DEMO_ERRORS } from "@/lib/demo/start";
 import { signInWithGoogle } from "@/app/(auth)/actions";
 import { GoogleMark } from "@/app/(auth)/auth-form";
@@ -16,14 +17,14 @@ export const metadata = pageMetadata({
 });
 
 const FAQ: [string, string][] = [
-  ["Is this really free?", "Yes. One three-minute cold call against Karen, no account and no card. You give an email so we can send you the scored report. If you want more calls, or a prospect built from your own targets, that is the 14-day trial."],
+  ["Is this really free?", "Yes. One three-minute cold call against Karen, no account, no card and no form first. After the call you give an email so we can send you the scored report. If you want more calls, or a prospect built from your own targets, that is the 14-day trial."],
   ["Who is Karen?", "An AI prospect. Head of Procurement, twenty-two years in the job, interrupted mid-task by your call. She is the hardest level reps practise against inside 100 Dials, turned up a little further. She interrupts, asks who you are, mentions her incumbent and tries to end the call."],
   ["What does the report score?", "The same six skills every 100 Dials call is scored on: opener, reason for call, discovery, objection handling, value proposition and close, each out of ten with the rationale quoting your own words. Nobody books Karen. Staying composed and asking one sharp question is the win."],
   ["Can my whole team try it?", "Each person can take the call once with their own email, and the leaderboard shows how they did. For a team practising daily on prospects built from your accounts, start a trial and invite them."],
 ];
 
 export default async function KarenPage({ searchParams }: PageProps<"/karen">) {
-  const { email, error, busy } = await searchParams;
+  const { error, busy } = await searchParams;
   const notice = busy ? "Karen has taken all the calls she will take today. Come back tomorrow, or start a free trial, where she picks up every time." : typeof error === "string" ? DEMO_ERRORS[error] ?? null : null;
   return (
     <>
@@ -52,15 +53,23 @@ export default async function KarenPage({ searchParams }: PageProps<"/karen">) {
           </div>
           <div className="space-y-4">
             {notice && <p className="border-destructive/40 text-destructive rounded-xl border p-4 text-sm">{notice}</p>}
-            <form action={signInWithGoogle}>
-              <input type="hidden" name="next" value="/karen/start" />
-              <button type="submit" className="bg-signal text-signal-foreground focus-visible:ring-ring/50 flex h-14 w-full cursor-pointer items-center justify-center gap-3 rounded-xl text-[17px] font-medium outline-none transition-[filter] hover:brightness-105 focus-visible:ring-[3px]">
-                <span className="grid size-6 place-items-center rounded-full bg-white"><GoogleMark /></span>
-                Call Karen with Google
-              </button>
-            </form>
-            <div className="text-muted-foreground flex items-center gap-3 text-xs"><span className="bg-border h-px flex-1" />or with email<span className="bg-border h-px flex-1" /></div>
-            <ChallengeForm email={typeof email === "string" ? email : undefined} />
+            <div className="bg-card space-y-4 rounded-2xl border p-6">
+              <form action={callKaren}>
+                <CallKarenSubmit />
+              </form>
+              <p className="text-muted-foreground text-sm">No email to start. Allow the microphone, Karen picks up, and after the call you say where the scorecard goes.</p>
+              <div className="text-muted-foreground flex items-center gap-3 text-xs"><span className="bg-border h-px flex-1" />or<span className="bg-border h-px flex-1" /></div>
+              <form action={signInWithGoogle}>
+                <input type="hidden" name="next" value="/karen/start" />
+                <button type="submit" className="hover:bg-accent focus-visible:ring-ring/50 flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border text-[15px] font-medium outline-none focus-visible:ring-[3px]">
+                  <span className="grid size-5 place-items-center rounded-full bg-white"><GoogleMark /></span>
+                  Call Karen with Google
+                </button>
+              </form>
+              <p className="text-muted-foreground text-[13px] leading-relaxed">
+                One call per person, three minutes max. The call is recorded and scored. See the <Link href="/privacy" className="underline underline-offset-4">privacy policy</Link>.
+              </p>
+            </div>
           </div>
         </div>
       </Section>

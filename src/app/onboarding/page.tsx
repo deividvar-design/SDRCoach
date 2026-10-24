@@ -39,7 +39,7 @@ export default async function OnboardingPage() {
             <div className="bg-card space-y-2 rounded-2xl border p-5">
               <div className="font-medium">Try Karen now</div>
               <p className="text-muted-foreground text-sm">One free three-minute cold call against our rudest AI prospect, scored, with this address.</p>
-              <Button variant="signal" className="w-full" asChild><Link href={`/karen?email=${encodeURIComponent(user.email)}`}>Call Karen</Link></Button>
+              <Button variant="signal" className="w-full" asChild><Link href="/karen">Call Karen</Link></Button>
             </div>
             <form action="/auth/signout" method="post" className="bg-card space-y-2 rounded-2xl border p-5">
               <div className="font-medium">Use your work account</div>

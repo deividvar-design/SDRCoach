@@ -45,13 +45,13 @@ export function companyFromDomain(domain: string) {
  * Limits count calls that actually minted a voice token (prompt_hash set). Waitlisted rows, abandoned forms and
  * mic-denied attempts never count, so a failed first try is not a lifetime ban.
  */
-export async function checkDemoLimits(db: Db, { email, domain, ip, personal = false }: { email: string; domain: string; ip: string | null; personal?: boolean }): Promise<string | null> {
+export async function checkDemoLimits(db: Db, { email, domain, ip, personal = false }: { email?: string | null; domain?: string | null; ip: string | null; personal?: boolean }): Promise<string | null> {
   const since = new Date(Date.now() - DAY).toISOString();
   const count = async (q: ReturnType<Db["from"]>) => (await q).count ?? 0;
   const minted = () => db.from("demo_calls").select("id", { count: "exact", head: true }).not("prompt_hash", "is", null);
   const [byEmail, byDomain, byIp, global] = await Promise.all([
-    count(minted().eq("email", email)),
-    count(minted().eq("domain", domain).gte("created_at", since)),
+    email ? count(minted().eq("email", email)) : Promise.resolve(0),
+    domain ? count(minted().eq("domain", domain).gte("created_at", since)) : Promise.resolve(0),
     ip ? count(minted().eq("ip", ip).gte("created_at", since)) : Promise.resolve(0),
     count(minted().gte("created_at", since)),
   ]);
@@ -64,9 +64,9 @@ export async function checkDemoLimits(db: Db, { email, domain, ip, personal = fa
 
 /** Karen's brief for a caller we know only by their company name. */
 export function demoPrompt(demo: Pick<DemoCall, "email" | "domain" | "company" | "personal_email">) {
-  const name = demo.company?.trim() || (demo.personal_email ? "a company she has not heard of" : companyFromDomain(demo.domain));
+  const name = demo.company?.trim() || (demo.domain && !demo.personal_email ? companyFromDomain(demo.domain) : "a company she has not heard of");
   const org = { name, company_description: null, product_description: null, ideal_customer_profile: null };
-  const repName = demo.email.split("@")[0]?.split(/[._-]/)[0] ?? "the rep";
+  const repName = demo.email?.split("@")[0]?.split(/[._-]/)[0] || "the rep";
   const mood = MOODS.find((m) => m.id === "plain")!;
   const prompt = buildPersonaPrompt({ target: KAREN, difficulty: "cold", org, repName: capitalise(repName), mood, gatekeeper: null, ttsModel: process.env.ELEVENLABS_TTS_MODEL });
   return { prompt, firstMessage: firstMessage({ target: KAREN, difficulty: "cold", gatekeeper: null }), voiceId: KAREN.voice_id, repName: capitalise(repName), org };
@@ -158,23 +158,45 @@ export async function finalizeDemo(id: string) {
     await track("demo_scored", { outcome, overall: Math.round(score.overall * 10) / 10 }).catch(() => {});
     await logFunnel("karen_call_completed", { email: demo.email, subject: id, dedupeKey: `karen_completed:${id}`, meta: { outcome, overall: Math.round(score.overall * 10) / 10, personal: demo.personal_email } });
 
-    // Claim the email before sending so two workers can never both send it. A mail failure never un-scores the call.
-    if (emailConfigured()) {
-      const { data: claimedMail } = await db.from("demo_calls").update({ email_sent_at: new Date().toISOString() }).eq("id", id).is("email_sent_at", null).select("id").maybeSingle();
-      if (claimedMail) {
-        try {
-          const { data: fresh } = await db.from("demo_calls").select("share_slug").eq("id", id).maybeSingle();
-          const mail = templates.demoScorecard({ firstName: repName, email: demo.email, overall: score.overall, outcome, outcomeReason, dimensions: score.dimensions, strengths: score.strengths, improvements: score.improvements, coachSummary: score.coach_summary, unsubscribeUrl: unsubscribeUrl(id), shareUrl: fresh?.share_slug ? absoluteUrl(`/karen/score/${fresh.share_slug}`) : null, personalEmail: demo.personal_email });
-          await sendMail({ to: demo.email, ...mail });
-        } catch (err) {
-          reportError(err, { where: "demo_scorecard_email", extra: { demoId: id } });
-          await db.from("demo_calls").update({ email_sent_at: null }).eq("id", id);
-        }
-      }
-    }
+    // The scorecard goes out now when the caller already gave an address; otherwise the email step sends it.
+    if (demo.email) await sendDemoScorecard(id);
   } catch (err) {
     reportError(err, { where: "demo_finalize", extra: { demoId: id, attempts } });
     await retryOrFail(err instanceof Error ? err.message : String(err));
+  }
+}
+
+/**
+ * Email the scorecard for a scored call, at most once. Claims email_sent_at before sending so two workers can never
+ * both send it; a mail failure releases the claim and never un-scores the call.
+ */
+export async function sendDemoScorecard(id: string) {
+  if (!emailConfigured()) return;
+  const db = createAdminClient();
+  const { data: demo } = await db.from("demo_calls").select("*").eq("id", id).maybeSingle();
+  if (!demo || !demo.email || demo.status !== "scored" || !demo.score || demo.email_sent_at) return;
+  const { data: claimed } = await db.from("demo_calls").update({ email_sent_at: new Date().toISOString() }).eq("id", id).is("email_sent_at", null).select("id").maybeSingle();
+  if (!claimed) return;
+  try {
+    const { repName } = demoPrompt(demo);
+    const mail = templates.demoScorecard({
+      firstName: repName,
+      email: demo.email,
+      overall: Number(demo.overall ?? 0),
+      outcome: demo.outcome ?? "rejected",
+      outcomeReason: demo.outcome_reason ?? "",
+      dimensions: demo.score.dimensions,
+      strengths: demo.score.strengths,
+      improvements: demo.score.improvements,
+      coachSummary: demo.score.coach_summary,
+      unsubscribeUrl: unsubscribeUrl(id),
+      shareUrl: demo.share_slug ? absoluteUrl(`/karen/score/${demo.share_slug}`) : null,
+      personalEmail: demo.personal_email,
+    });
+    await sendMail({ to: demo.email, ...mail });
+  } catch (err) {
+    reportError(err, { where: "demo_scorecard_email", extra: { demoId: id } });
+    await db.from("demo_calls").update({ email_sent_at: null }).eq("id", id);
   }
 }
 

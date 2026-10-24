@@ -13,7 +13,7 @@ import { reportAdsConversion } from "@/components/analytics/ads-conversion";
 import { stripVoiceTags } from "@/lib/elevenlabs/tags";
 
 interface Props {
-  demo: { id: string; email: string };
+  demo: { id: string; email: string | null };
   prospect: { name: string; title: string; company: string; notes: string };
   maxSeconds: number;
   voiceConfigured: boolean;

@@ -126,8 +126,9 @@ export async function GET(request: Request) {
 
   // Karen demo leads: two days after a scored call, one nudge towards the trial, unless they already signed up.
   if (emailConfigured()) {
-    const { data: demos } = await db.from("demo_calls").select("id, email, overall, outcome").eq("status", "scored").is("followup_sent_at", null).lte("created_at", new Date(now - 2 * DAY).toISOString()).gte("created_at", new Date(now - 10 * DAY).toISOString()).limit(200);
+    const { data: demos } = await db.from("demo_calls").select("id, email, overall, outcome").eq("status", "scored").not("email", "is", null).is("followup_sent_at", null).lte("created_at", new Date(now - 2 * DAY).toISOString()).gte("created_at", new Date(now - 10 * DAY).toISOString()).limit(200);
     for (const d of demos ?? []) {
+      if (!d.email) continue;
       // Claim before sending so overlapping cron runs cannot double-send; release the claim if the send fails.
       const { data: claimed } = await db.from("demo_calls").update({ followup_sent_at: new Date().toISOString() }).eq("id", d.id).is("followup_sent_at", null).select("id").maybeSingle();
       if (!claimed) continue;
