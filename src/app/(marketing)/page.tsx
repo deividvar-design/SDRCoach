@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { TRIAL } from "@/lib/billing/plans";
 import { SampleCall } from "@/components/marketing/sample-call";
 import { ProofCall } from "@/components/marketing/proof-call";
+import { ResearchCards } from "@/components/marketing/research-cards";
 import { BossFights } from "@/components/marketing/boss-fights";
 import { Ladder } from "@/components/marketing/ladder";
 import { Heatmap } from "@/components/marketing/heatmap";
@@ -154,6 +155,8 @@ export default async function HomePage() {
       </Section>
 
       {/* 7. The objection library: the content that earns the search traffic, linked from the page that gets it */}
+      <ResearchCards />
+
       <Section className="border-t">
         <div className="grid gap-10 md:grid-cols-[1fr_1.3fr] md:items-start">
           <div>

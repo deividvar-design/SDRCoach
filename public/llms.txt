@@ -8,6 +8,7 @@
 - [For sales managers](https://100dials.com/for-managers): ramp, visibility, team stats, momentum
 - [For sales enablement](https://100dials.com/for-enablement): grounding in real transcripts, one rubric, measurement
 - [Pricing](https://100dials.com/pricing): per-seat plans and the free trial
+- [The research behind 100 Dials](https://100dials.com/research): nine studies on simulation, practice and feedback, what they show and don't, how the product uses each
 - [Trust and security](https://100dials.com/trust): data handling, retention, deletion
 - [Company](https://100dials.com/company): who makes 100 Dials, where it is hosted, pricing and contact in one place
 - [Blog](https://100dials.com/blog): research-backed guides on cold calling
