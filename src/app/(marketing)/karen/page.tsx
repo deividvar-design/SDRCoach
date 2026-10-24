@@ -32,7 +32,7 @@ export default async function KarenPage({ searchParams }: PageProps<"/karen">) {
         <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
           <div>
             <h1 className="font-display text-6xl leading-[0.95] text-balance md:text-[6rem]">Can you survive Karen?</h1>
-            <p className="text-muted-foreground mt-6 max-w-xl text-lg">No account, three minutes, one shot. 
+            <p className="text-muted-foreground mt-6 max-w-xl text-lg">No account, three minutes, one shot.{" "}
               {KAREN.name} is {KAREN.title} at {KAREN.company}. Twenty-two years in procurement. She does not take cold calls, she wants your manager's name, and she is making a note of this.
             </p>
             <ul className="mt-8 space-y-3">

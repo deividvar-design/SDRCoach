@@ -17,6 +17,7 @@ export const DEMO_ERRORS: Record<string, string> = {
   domain_limit: "Three people from your company have already called Karen today. Try again tomorrow, or start a free trial.",
   ip_limit: "Karen has had enough calls from this connection today. Try again tomorrow.",
   insert_failed: "Something went wrong. Try again in a minute.",
+  expired: "That call is no longer on file. Enter your email to start again.",
 };
 
 export type StartResult = { id: string } | { waitlisted: true } | { error: string; code: string };

@@ -9,7 +9,9 @@ const BILLING: BillingInterval[] = ["month", "quarter", "year"];
 function planIntent(plan: unknown, billing: unknown): PlanIntent | undefined {
   const p = PLANS.find((x) => x.id === plan && x.id !== "enterprise");
   if (!p) return undefined;
-  const b = BILLING.includes(billing as BillingInterval) ? (billing as BillingInterval) : "month";
+  const alias: Record<string, BillingInterval> = { annual: "year", annually: "year", yearly: "year", monthly: "month", quarterly: "quarter" };
+  const raw = typeof billing === "string" ? (alias[billing] ?? billing) : "month";
+  const b = BILLING.includes(raw as BillingInterval) ? (raw as BillingInterval) : "month";
   return { plan: p.id, planName: p.name, billing: b };
 }
 

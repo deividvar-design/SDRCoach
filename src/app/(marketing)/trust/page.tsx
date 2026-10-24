@@ -54,7 +54,17 @@ export default function TrustPage() {
       <Section className="border-t">
         <Eyebrow>Processing</Eyebrow>
         <H2>What happens to the data, and where.</H2>
-        <div className="bg-card mt-8 overflow-x-auto rounded-2xl border">
+        {/* Phones get the same rows stacked; three columns do not fit in 390px without a hidden scroll. */}
+        <dl className="bg-card mt-8 divide-y rounded-2xl border text-sm sm:hidden">
+          {PROCESSING.map(([n, p, r]) => (
+            <div key={n} className="space-y-1 px-5 py-4">
+              <dt className="font-medium">{n}</dt>
+              <dd className="text-muted-foreground">{p}</dd>
+              <dd>{r}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="bg-card mt-8 hidden overflow-x-auto rounded-2xl border sm:block">
           <table className="w-full min-w-[560px] text-sm">
             <thead className="text-muted-foreground bg-muted/50 text-left text-xs uppercase tracking-wide">
               <tr><th className="px-5 py-3">Function</th><th className="px-5 py-3">Purpose</th><th className="px-5 py-3">Where and how</th></tr>

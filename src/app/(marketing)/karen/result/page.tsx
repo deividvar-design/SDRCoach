@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 export default async function KarenResultPage() {
   const demo = await currentDemo();
-  if (!demo) redirect("/karen");
+  if (!demo) redirect("/karen?error=expired");
   if (demo.status === "created" || demo.status === "dialing") redirect("/karen/call");
   const pending = demo.status === "live" || demo.status === "ended" || demo.status === "scoring";
   const signup = demo.personal_email ? "/signup" : `/signup?email=${encodeURIComponent(demo.email)}`;

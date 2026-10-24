@@ -3,14 +3,16 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { OPEN_EVENT, openConsent, readConsent, writeConsent } from "./consent";
+import { OPEN_EVENT, consentRequired, openConsent, readConsent, writeConsent } from "./consent";
 
 export function CookieBanner() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const id = window.setTimeout(() => {
-      if (!readConsent()) setOpen(true);
+      // Outside the EEA, the UK and Switzerland consent is implied and the banner would only cost attention;
+      // the footer's "Cookie settings" link still opens it on request.
+      if (!readConsent() && consentRequired()) setOpen(true);
     }, 400);
     const onOpen = () => setOpen(true);
     window.addEventListener(OPEN_EVENT, onOpen);

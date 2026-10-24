@@ -54,7 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <MarketingTags />
         <CookieBanner />
         {/* Cookieless traffic measurement: pages, referrers, countries, campaigns. Runs without consent because it sets nothing on the device. */}
-        <Analytics />
+        {process.env.VERCEL && <Analytics />}
       </body>
     </html>
   );
