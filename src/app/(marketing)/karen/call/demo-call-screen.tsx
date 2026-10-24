@@ -9,9 +9,11 @@ import { cn, formatDuration, initials } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { track } from "@/components/analytics/provider";
+import { reportAdsConversion } from "@/components/analytics/ads-conversion";
 import { stripVoiceTags } from "@/lib/elevenlabs/tags";
 
 interface Props {
+  demo: { id: string; email: string };
   prospect: { name: string; title: string; company: string; notes: string };
   maxSeconds: number;
   voiceConfigured: boolean;
@@ -31,7 +33,7 @@ export function DemoCallScreen(props: Props) {
   );
 }
 
-function Inner({ prospect, maxSeconds, voiceConfigured }: Props) {
+function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
   const router = useRouter();
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +53,10 @@ function Inner({ prospect, maxSeconds, voiceConfigured }: Props) {
   const conversation = useConversation({
     onConnect: ({ conversationId }) => {
       setStage("live");
+      // The Google Ads "Karen call" conversion goes out the moment Karen picks up, while the caller is certainly on
+      // the page. Waiting for the scored result lost every caller who closed the tab or locked the phone first; the
+      // result page still reports it too, and the shared transaction id stops Google counting it twice.
+      reportAdsConversion("karen", demo.id, { email: demo.email });
       linkedRef.current = fetch("/api/demo/link", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ conversationId }) }).catch(() => {});
     },
     onMessage: ({ message, role }) => {

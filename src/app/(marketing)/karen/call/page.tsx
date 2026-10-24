@@ -12,6 +12,7 @@ export default async function KarenCallPage() {
   if (demo.status !== "created" && demo.status !== "dialing") redirect("/karen/result");
   return (
     <DemoCallScreen
+      demo={{ id: demo.id, email: demo.email }}
       prospect={{ name: KAREN.name, title: KAREN.title, company: KAREN.company, notes: KAREN.persona_notes }}
       maxSeconds={DEMO_MAX_SECONDS}
       voiceConfigured={Boolean(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_AGENT_ID)}
