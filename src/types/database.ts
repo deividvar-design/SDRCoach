@@ -127,6 +127,10 @@ export type DemoCall = {
   error: string | null;
   email_sent_at: string | null;
   followup_sent_at: string | null;
+  /** Karen cadence emails sent so far (0 to 4). */
+  followup_step: number;
+  /** Set when the cadence ends early: unsubscribe, trial signup, internal address or an earlier call by the same email. */
+  followup_stopped_at: string | null;
   /** Short public id for the shareable scorecard. Never the row id, which is the session secret. */
   share_slug: string | null;
   display_name: string | null;
@@ -330,7 +334,7 @@ export type Database = {
         Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
-      demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "followup_sent_at" | "finalize_attempts" | "scoring_started_at" | "mints" | "share_slug" | "display_name" | "display_company" | "leaderboard_opt_in" | "shared_at" | "company" | "personal_email" | "gclid" | "gbraid" | "wbraid" | "created_at">>;
+      demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "followup_sent_at" | "followup_step" | "followup_stopped_at" | "finalize_attempts" | "scoring_started_at" | "mints" | "share_slug" | "display_name" | "display_company" | "leaderboard_opt_in" | "shared_at" | "company" | "personal_email" | "gclid" | "gbraid" | "wbraid" | "created_at">>;
       funnel_events: Table<FunnelEvent, Insert<FunnelEvent, "id" | "reason" | "email_domain" | "email_hash" | "subject" | "dedupe_key" | "meta" | "created_at">>;
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
       admin_actions: Table<AdminAction, Insert<AdminAction, "id" | "org_id" | "payload" | "created_at">>;

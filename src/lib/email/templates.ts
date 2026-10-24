@@ -27,7 +27,30 @@ export interface Rendered {
   html: string;
   text: string;
   replyTo?: string;
+  fromName?: string;
 }
+
+/** A short personal note from David: no header, no button, a plain link, the legal footer and a stop link. */
+function note(paragraphs: string[], stopUrl: string, link?: { label: string; href: string }) {
+  const p = (html: string) => `<p style="margin:0 0 12px">${html}</p>`;
+  const body = [
+    ...paragraphs.map((t) => p(esc(t))),
+    link ? p(`<a href="${link.href}" style="color:#1c1b19;font-weight:600">${esc(link.label)}</a>`) : "",
+    p("David"),
+    `<p style="margin:20px 0 0;font-size:12px;color:#8a857a">Not useful? <a href="${stopUrl}" style="color:#8a857a">Stop these emails</a>. ${esc(SITE.company.legalName)} · <a href="${absoluteUrl("/privacy")}" style="color:#8a857a">Privacy</a></p>`,
+  ].join("");
+  const html = `<!doctype html><html><body style="margin:0;padding:24px 16px;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#1c1b19"><div style="max-width:520px">${body}</div></body></html>`;
+  const text = [...paragraphs.flatMap((t) => [t, ""]), ...(link ? [`${link.label}: ${link.href}`, ""] : []), "David", "", `Not useful? Stop these emails: ${stopUrl}`, `${SITE.company.legalName}`].join("\n");
+  return { html, text };
+}
+
+/** Links from the Karen cadence carry the step, so site analytics can tell which email brought someone back. */
+function cadenceHref(path: string, step: number, params: Record<string, string> = {}) {
+  const q = new URLSearchParams({ ...params, utm_source: "karen", utm_medium: "email", utm_campaign: "karen_cadence", utm_content: `e${step}` });
+  return absoluteUrl(`${path}?${q.toString()}`);
+}
+
+const FROM_DAVID = `David from ${SITE.name}`;
 
 export const templates = {
   continueOnWork(p: { href: string }): Rendered {
@@ -172,19 +195,32 @@ export const templates = {
     return { subject: `Last one from us: 20% off until ${p.until}`, html: layout("Last one from us.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta), replyTo: SITE.company.email };
   },
 
-  demoFollowUp(p: { firstName: string; email: string; overall: number; outcome: string; unsubscribeUrl: string }): Rendered {
-    const cta = { label: "Start a free trial", href: absoluteUrl(`/signup?email=${encodeURIComponent(p.email)}`) };
-    const won = p.outcome === "meeting_booked" || p.outcome === "callback";
-    const lines = [
-      `Hi ${p.firstName},`,
-      won
-        ? `You got ${p.overall.toFixed(1)} against Karen and she gave you a next step. Almost nobody does. The question is whether your reps can.`
-        : `You scored ${p.overall.toFixed(1)} against Karen. She is built so that most people land between four and six, so that is about where it should be on a first go.`,
-      "The people who score highest against her do two things: they keep every turn under fifteen words, and they ask one specific question about her world before they say anything about their own. Both are habits, and habits come from reps.",
-      `A free trial gives your team ${TRIAL.calls} calls over ${TRIAL.days} days against prospects built from your own targets, at three levels, with Karen and two other boss fights thrown in. Work email, no card.`,
-    ];
-    const foot = `<p style="margin:12px 0 0;font-size:12px;color:#8a857a">This is the last email about your call. <a href="${p.unsubscribeUrl}" style="color:#8a857a">No more from us</a>.</p>`;
-    return { subject: won ? "You beat Karen. Can your team?" : `${p.overall.toFixed(1)} against Karen. Here's how to climb`, html: layout("Round two.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("") + foot, cta), text: textOf([...lines, "", `No more emails: ${p.unsubscribeUrl}`], cta) };
+  /** Karen cadence, day 1: the team trial. Personal addresses are told the trial runs on a company email. */
+  karenCadence1(p: { name: string | null; email: string; personal: boolean; stopUrl: string }): Rendered {
+    const hi = `Hi ${p.name ?? "there"},`;
+    const lines = p.personal
+      ? [hi, `Thanks for taking on Karen. ${SITE.name} is built for sales teams, so the free trial runs on a company email.`, `If your team does cold calling, sign up with your work email, or forward this to your sales manager. The trial is ${TRIAL.calls} calls for the team, no card.`]
+      : [hi, `Thanks for taking on Karen. ${SITE.name} is built for sales teams: your reps practise on prospects that push back like real buyers, and you get a scored report on every call.`, `Your team's free trial includes ${TRIAL.calls} calls, no card.`];
+    const link = { label: "Start the team trial", href: cadenceHref("/signup", 1, p.personal ? {} : { email: p.email }) };
+    return { subject: "karen rematch", ...note(lines, p.stopUrl, link), replyTo: SITE.company.email, fromName: FROM_DAVID };
+  },
+
+  /** Day 4: a free rematch, no signup. */
+  karenCadence2(p: { stopUrl: string }): Rendered {
+    const lines = ["Want another go before you bring the team in? Karen's still there, no signup needed.", "One thing that helps: say your name, company and why you're calling in your first breath."];
+    return { subject: "karen's still there", ...note(lines, p.stopUrl, { label: "Call Karen again", href: cadenceHref("/karen", 2) }), replyTo: SITE.company.email, fromName: FROM_DAVID };
+  },
+
+  /** Day 8, work emails only: the concierge offer. The reply is the call to action. */
+  karenCadence3(p: { stopUrl: string }): Rendered {
+    const lines = ["If you run a team: send me 3 accounts your reps call next week, and I'll set them up as practice prospects on your free trial within 24 hours.", "Just reply with the company names."];
+    return { subject: "your reps' next calls", ...note(lines, p.stopUrl), replyTo: SITE.company.email, fromName: FROM_DAVID };
+  },
+
+  /** Day 14: close the loop. Last email of the cadence. */
+  karenCadence4(p: { stopUrl: string }): Rendered {
+    const lines = ["Should I stop here, or check back when your team's next reps start? Reply 1 to stop, 2 to hear from me later."];
+    return { subject: "close the loop?", ...note(lines, p.stopUrl), replyTo: SITE.company.email, fromName: FROM_DAVID };
   },
 
   twoCallsLeft(p: { firstName: string; orgName: string }): Rendered {
@@ -220,7 +256,7 @@ export const templates = {
       p.shareUrl ? `<p style="margin:16px 0 0;font-size:14px">Your scorecard has a public page: <a href="${p.shareUrl}" style="color:#1c1b19">${esc(p.shareUrl)}</a>. Post it, or put yourself on the leaderboard from the results page.</p>` : "",
       `<p style="margin:16px 0 0;font-size:13px;color:#8a857a">Karen is one of the prospects in ${esc(SITE.name)}. Reps dial prospects built from their own targets, at three levels, and every call is scored like this one. Ten calls are free.</p>`,
       p.personalEmail ? `<p style="margin:12px 0 0;font-size:13px;color:#3b3833">The trial needs a work email, so the workspace belongs to your company and your team can join it. Sign up with yours and the ten free calls are waiting.</p>` : "",
-      `<p style="margin:12px 0 0;font-size:12px;color:#8a857a">We'll send one follow-up in a couple of days. <a href="${p.unsubscribeUrl}" style="color:#8a857a">Don't</a>.</p>`,
+      `<p style="margin:12px 0 0;font-size:12px;color:#8a857a">We'll send a few short follow-ups over the next two weeks. <a href="${p.unsubscribeUrl}" style="color:#8a857a">Don't</a>.</p>`,
     ].join("");
     const text = [
       `Hi ${p.firstName},`,
@@ -238,7 +274,7 @@ export const templates = {
       "",
       ...(p.shareUrl ? [`Your public scorecard: ${p.shareUrl}`, ""] : []),
       ...(p.personalEmail ? ["The trial needs a work email, so the workspace belongs to your company and your team can join it.", ""] : []),
-      `No follow-up: ${p.unsubscribeUrl}`,
+      `No follow-ups: ${p.unsubscribeUrl}`,
     ];
     return { subject: `Your call with Karen: ${p.overall.toFixed(1)} / 10`, html: layout("Here's how it went.", html, cta), text: textOf(text, cta) };
   },

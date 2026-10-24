@@ -5,14 +5,16 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { sweepStaleSessions } from "@/lib/calls/sweep";
 import { orgManagers, orgOwner } from "@/lib/email/lifecycle";
-import { adminEmails } from "@/lib/auth";
+import { adminEmails, isAdminEmail } from "@/lib/auth";
 import { reasonLabel } from "@/lib/marketing/signup-intent";
-import { absoluteUrl } from "@/lib/site";
+import { SITE, absoluteUrl } from "@/lib/site";
 import { buildWeeklyDigest } from "@/lib/stats/weekly-digest";
 import { comebackUntil } from "@/lib/billing/offers";
 import { emailConfigured, sendMail } from "@/lib/email/send";
 import { templates } from "@/lib/email/templates";
 import { unsubscribeUrl } from "@/lib/demo/boss";
+import { CADENCE, CADENCE_WINDOW_DAYS, NO_REENTRY_DAYS, greetingName, nextCadenceStep } from "@/lib/demo/cadence";
+import { classifyEmailDomain, emailDomain } from "@/lib/email/business";
 import { formatDate } from "@/lib/utils";
 
 export const maxDuration = 300;
@@ -54,6 +56,7 @@ function authorized(header: string | null, secret: string) {
  *  - an internal stalled-trial alert when a workspace has not dialed by day three
  *  - three-days-left note to trial workspaces without a subscription
  *  - trial-ended notice for workspaces whose 14 days ran out in the last two weeks
+ *  - the Karen demo-lead cadence (days 1, 4, 8 and 14 after a scored call)
  *  - repair of sessions stuck between states
  * All idempotent (email_log, finalize claim).
  */
@@ -124,20 +127,52 @@ export async function GET(request: Request) {
     }
   }
 
-  // Karen demo leads: two days after a scored call, one nudge towards the trial, unless they already signed up.
+  // Karen demo leads: a four-email cadence after the scored report (src/lib/demo/cadence.ts). It ends on a trial
+  // signup, an opt-out, an internal address, or when the same person already had a cadence from an earlier call.
   if (emailConfigured()) {
-    const { data: demos } = await db.from("demo_calls").select("id, email, overall, outcome").eq("status", "scored").is("followup_sent_at", null).lte("created_at", new Date(now - 2 * DAY).toISOString()).gte("created_at", new Date(now - 10 * DAY).toISOString()).limit(200);
+    const internalDomains = new Set([new URL(SITE.url).hostname.replace(/^www\./, ""), "get100dials.com", "try100dials.com", ...adminEmails().map((e) => classifyEmailDomain(e)).flatMap((c) => (c.ok ? [c.domain] : []))]);
+    const stop = (id: string) => db.from("demo_calls").update({ followup_stopped_at: new Date().toISOString() }).eq("id", id);
+    const { data: demos } = await db
+      .from("demo_calls")
+      .select("id, email, personal_email, display_name, created_at, followup_step, followup_sent_at")
+      .eq("status", "scored")
+      .is("followup_stopped_at", null)
+      .lt("followup_step", CADENCE.length)
+      .gte("created_at", new Date(now - CADENCE_WINDOW_DAYS * DAY).toISOString())
+      .lte("created_at", new Date(now - 0.85 * DAY).toISOString())
+      .limit(300);
     for (const d of demos ?? []) {
-      // Claim before sending so overlapping cron runs cannot double-send; release the claim if the send fails.
-      const { data: claimed } = await db.from("demo_calls").update({ followup_sent_at: new Date().toISOString() }).eq("id", d.id).is("followup_sent_at", null).select("id").maybeSingle();
+      const domain = emailDomain(d.email);
+      if (isAdminEmail(d.email) || (domain && internalDomains.has(domain))) {
+        await stop(d.id);
+        continue;
+      }
+      const { data: trial } = await db.from("profiles").select("id").eq("email", d.email).limit(1).maybeSingle();
+      if (trial) {
+        await stop(d.id);
+        continue;
+      }
+      const createdAt = new Date(d.created_at).getTime();
+      const { data: earlier } = await db.from("demo_calls").select("id").eq("email", d.email).neq("id", d.id).lt("created_at", d.created_at).gte("created_at", new Date(createdAt - NO_REENTRY_DAYS * DAY).toISOString()).limit(1).maybeSingle();
+      if (earlier) {
+        await stop(d.id);
+        continue;
+      }
+      const step = nextCadenceStep({ sent: d.followup_step, personal: d.personal_email, ageDays: (now - createdAt) / DAY, daysSinceLast: d.followup_sent_at ? (now - new Date(d.followup_sent_at).getTime()) / DAY : null });
+      if (!step) continue;
+      // Claim the step before sending so overlapping cron runs cannot double-send; release it if the send fails.
+      const sentAt = new Date().toISOString();
+      const { data: claimed } = await db.from("demo_calls").update({ followup_step: step, followup_sent_at: sentAt }).eq("id", d.id).eq("followup_step", d.followup_step).is("followup_stopped_at", null).select("id").maybeSingle();
       if (!claimed) continue;
-      const { data: existing } = await db.from("profiles").select("id").eq("email", d.email).limit(1).maybeSingle();
-      if (existing) continue;
-      const firstName = d.email.split("@")[0]?.split(/[._-]/)[0] ?? "there";
-      const mail = templates.demoFollowUp({ firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1), email: d.email, overall: Number(d.overall ?? 0), outcome: d.outcome ?? "", unsubscribeUrl: unsubscribeUrl(d.id) });
-      const ok = await sendMail({ to: d.email, ...mail }).then(() => true).catch((err) => (reportError(err, { where: "cron_demo_followup", extra: { demoId: d.id } }), false));
+      const stopUrl = unsubscribeUrl(d.id);
+      const mail =
+        step === 1 ? templates.karenCadence1({ name: greetingName(d.display_name, d.email, d.personal_email), email: d.email, personal: d.personal_email, stopUrl })
+        : step === 2 ? templates.karenCadence2({ stopUrl })
+        : step === 3 ? templates.karenCadence3({ stopUrl })
+        : templates.karenCadence4({ stopUrl });
+      const ok = await sendMail({ to: d.email, ...mail }).then(() => true).catch((err) => (reportError(err, { where: "cron_karen_cadence", extra: { demoId: d.id, step } }), false));
       if (ok) results.demo_followups += 1;
-      else await db.from("demo_calls").update({ followup_sent_at: null }).eq("id", d.id);
+      else await db.from("demo_calls").update({ followup_step: d.followup_step, followup_sent_at: d.followup_sent_at }).eq("id", d.id);
     }
   }
 
