@@ -1,5 +1,7 @@
 import { AuthForm } from "../auth-form";
 
+export const metadata = { title: "Sign in" };
+
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { next, notice, error } = await searchParams;
   const message =

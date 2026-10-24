@@ -20,6 +20,14 @@ const nextConfig: NextConfig = {
     "/og/[kind]/[slug]": ["./content/blog/**/*", "./content/objections/**/*"],
   },
   images: { formats: ["image/avif", "image/webp"] },
+  poweredByHeader: false,
+  async redirects() {
+    // Feed readers guess these paths; the one feed lives under /blog.
+    return [
+      { source: "/rss.xml", destination: "/blog/rss.xml", permanent: true },
+      { source: "/feed.xml", destination: "/blog/rss.xml", permanent: true },
+    ];
+  },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

@@ -1,6 +1,8 @@
 import { AuthForm, type PlanIntent } from "../auth-form";
 import { PLANS, type BillingInterval } from "@/lib/billing/plans";
 
+export const metadata = { title: "Start your free trial" };
+
 const BILLING: BillingInterval[] = ["month", "quarter", "year"];
 
 /** `?plan=team&billing=year` from the pricing page is shown back and remembered; anything else is ignored. */

@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PageProps<"/objections/[slug]
     description: page.description,
     path: `/objections/${page.slug}`,
     card: ["objections", page.slug],
-    article: { modifiedTime: page.updated, tags: ["objection handling", page.label] },
+    article: { publishedTime: page.updated, modifiedTime: page.updated, tags: ["objection handling", page.label] },
   });
 }
 

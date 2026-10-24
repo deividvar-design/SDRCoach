@@ -6,7 +6,7 @@ import { Section } from "@/components/marketing/sections";
 
 export const metadata = pageMetadata({
   title: "Company: who makes 100 Dials",
-  description: "100 Dials is an AI cold call simulator for SDR teams, built and operated from Vilnius, Lithuania, hosted in the EU. What it does, who it is for, and how to reach us.",
+  description: "An AI cold call simulator for SDR teams, built and operated from Vilnius, Lithuania, and hosted in the EU. What 100 Dials does, who it is for, how to reach us.",
   path: "/company",
   card: ["page", "company"],
 });

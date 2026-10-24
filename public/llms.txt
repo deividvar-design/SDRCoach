@@ -4,15 +4,15 @@
 
 ## Pages
 
-- [Homepage](/): what it does, how it works, the three levels
-- [For sales managers](/for-managers): ramp, visibility, team stats, momentum
-- [For sales enablement](/for-enablement): grounding in real transcripts, one rubric, measurement
-- [Pricing](/pricing): per-seat plans and the free trial
-- [Trust and security](/trust): data handling, retention, deletion
-- [Company](/company): who makes 100 Dials, where it is hosted, pricing and contact in one place
-- [Blog](/blog): research-backed guides on cold calling
-- [Practice cold calls free: can you survive Karen?](/karen): a free three-minute cold call against our rudest AI prospect, work email only, scored report after
-- [Objection library](/objections): fifteen cold-call objections, each with what it means, three ways to handle it and a worked exchange
+- [Homepage](https://100dials.com/): what it does, how it works, the three levels
+- [For sales managers](https://100dials.com/for-managers): ramp, visibility, team stats, momentum
+- [For sales enablement](https://100dials.com/for-enablement): grounding in real transcripts, one rubric, measurement
+- [Pricing](https://100dials.com/pricing): per-seat plans and the free trial
+- [Trust and security](https://100dials.com/trust): data handling, retention, deletion
+- [Company](https://100dials.com/company): who makes 100 Dials, where it is hosted, pricing and contact in one place
+- [Blog](https://100dials.com/blog): research-backed guides on cold calling
+- [Practice cold calls free: can you survive Karen?](https://100dials.com/karen): a free three-minute cold call against our rudest AI prospect, work email only, scored report after
+- [Objection library](https://100dials.com/objections): fifteen cold-call objections, each with what it means, three ways to handle it and a worked exchange
 
 ## Facts
 
@@ -25,41 +25,41 @@
 
 ## Recent posts
 
-- [Cold calling statistics 2026: 50 figures with their sources](/blog/cold-calling-statistics): fifty figures from Gong, Cognism, Bridge Group, Orum, RAIN Group and Gartner with their sources, and eight famous statistics that have none
-- [Hyperbound vs Second Nature vs 100 Dials: price, fit, grounding](/blog/hyperbound-vs-second-nature-vs-100-dials): what each is built for, how each is priced, and who should pick which, checked October 2026
-- [AI sales roleplay software pricing: who publishes a price](/blog/ai-sales-roleplay-software-pricing): seven vendors in one table, what the quote-only tiers are called, and how to compare a seat price with a quote
-- [Hyperbound alternatives: five tools, sorted by how you buy them](/blog/hyperbound-alternatives): five alternatives sorted by whether you can see a price and start today, with where Hyperbound still wins
-- [Second Nature alternatives for teams that cannot wait for a demo](/blog/second-nature-alternatives): alternatives by reason for leaving, two with a published price and a trial
-- [Nooks AI roleplay alternative: practice without buying a dialler](/blog/nooks-ai-roleplay-alternative): what Nooks and Orum offer for roleplay inside a dialler, when that is right, and what to check in a standalone tool
-- [Practice cold calling without real prospects: a 4-week plan](/blog/practice-cold-calling-without-real-prospects): the three ways to practise without a live list, a week-by-week drill plan with calls per day and level, and the numbers that say a rep is ready
-- [Cold call practice for beginners: the first ten calls](/blog/cold-call-practice-for-beginners): drill the opener, the reason for call and one objection, ignore discovery and the pitch for now, three opening mistakes, and a 0 to 10 self-check table
-- [Sales roleplay examples: six cold call scenarios, scripted](/blog/sales-roleplay-examples): one two-minute scenario per rubric skill with a prospect brief, sample lines and a pass condition, plus a summary table
-- [Cold call simulator: the practice tool roleplay cannot replace](/blog/cold-call-simulator): peer roleplay, recorded-call review and AI simulators compared, what each is for, and a weekly shape that runs all three
-- [Average SDR ramp time: three months, and where the weeks go](/blog/average-sdr-ramp-time): three definitions of ramp, where the weeks go, how it changes with team size, and the part you can cut
-- [Cold call scorecard template: six skills and how to weight them](/blog/cold-call-scorecard-template): the six skills, the weights, and a 0 to 10 anchor per skill so two managers agree
-- [AI cold call practice software: what to look for and what to ignore](/blog/ai-cold-call-practice-software): the four things that decide whether reps improve, and the features to ignore
-- [The best and worst cold call openers, according to 300 million calls](/blog/best-cold-call-openers): the best cold call openers sound familiar or ask permission, then state the reason for the call. The worst asks if it is a bad time. Gong's rate for each.
-- [How much should an SDR talk on a cold call?](/blog/cold-call-talk-ratio): on a cold call the rep talks slightly more than half the time, not the 30 percent used for discovery. The longest monologue matters more than the ratio.
-- [How to handle "just send me an email" without sending the email](/blog/handling-send-me-an-email): agree in two words, ask what the email would have to answer, answer that in one sentence, then ask for fifteen minutes at a set time. The exact words.
-- [The reason for the call: the 15 seconds that decide a cold call](/blog/reason-for-call): stating why you are calling, specifically and early, is the most reliable move on a cold call. How to build the line, five examples, and what to avoid.
-- [How to run cold call roleplay that reps do not hate](/blog/cold-call-roleplay): cold call roleplay works when there is no audience, one skill per session, a prospect who can say no and one rubric. A weekly format and how to score it.
-- [The eight cold call objections you will hear most, and what to say](/blog/common-cold-call-objections): the eight objections that end most cold calls, what each usually means, and a one-line response for each that acknowledges, isolates and redirects.
-- [SDR onboarding plan: a 30-60-90 day template that gets to booked meetings](/blog/sdr-onboarding-plan-30-60-90): a 30-60-90 day SDR onboarding plan: practice before real dials, live dials with daily review, then a target, and the number that says each phase is done.
+- [Cold calling statistics 2026: 50 figures with their sources](https://100dials.com/blog/cold-calling-statistics): fifty figures from Gong, Cognism, Bridge Group, Orum, RAIN Group and Gartner with their sources, and eight famous statistics that have none
+- [Hyperbound vs Second Nature vs 100 Dials: price, fit, grounding](https://100dials.com/blog/hyperbound-vs-second-nature-vs-100-dials): what each is built for, how each is priced, and who should pick which, checked October 2026
+- [AI sales roleplay software pricing: who publishes a price](https://100dials.com/blog/ai-sales-roleplay-software-pricing): seven vendors in one table, what the quote-only tiers are called, and how to compare a seat price with a quote
+- [Hyperbound alternatives: five tools, sorted by how you buy them](https://100dials.com/blog/hyperbound-alternatives): five alternatives sorted by whether you can see a price and start today, with where Hyperbound still wins
+- [Second Nature alternatives for teams that cannot wait for a demo](https://100dials.com/blog/second-nature-alternatives): alternatives by reason for leaving, two with a published price and a trial
+- [Nooks AI roleplay alternative: practice without buying a dialler](https://100dials.com/blog/nooks-ai-roleplay-alternative): what Nooks and Orum offer for roleplay inside a dialler, when that is right, and what to check in a standalone tool
+- [Practice cold calling without real prospects: a 4-week plan](https://100dials.com/blog/practice-cold-calling-without-real-prospects): the three ways to practise without a live list, a week-by-week drill plan with calls per day and level, and the numbers that say a rep is ready
+- [Cold call practice for beginners: the first ten calls](https://100dials.com/blog/cold-call-practice-for-beginners): drill the opener, the reason for call and one objection, ignore discovery and the pitch for now, three opening mistakes, and a 0 to 10 self-check table
+- [Sales roleplay examples: six cold call scenarios, scripted](https://100dials.com/blog/sales-roleplay-examples): one two-minute scenario per rubric skill with a prospect brief, sample lines and a pass condition, plus a summary table
+- [Cold call simulator: the practice tool roleplay cannot replace](https://100dials.com/blog/cold-call-simulator): peer roleplay, recorded-call review and AI simulators compared, what each is for, and a weekly shape that runs all three
+- [Average SDR ramp time: three months, and where the weeks go](https://100dials.com/blog/average-sdr-ramp-time): three definitions of ramp, where the weeks go, how it changes with team size, and the part you can cut
+- [Cold call scorecard template: six skills and how to weight them](https://100dials.com/blog/cold-call-scorecard-template): the six skills, the weights, and a 0 to 10 anchor per skill so two managers agree
+- [AI cold call practice software: what to look for, what to ignore](https://100dials.com/blog/ai-cold-call-practice-software): the four things that decide whether reps improve, and the features to ignore
+- [The best and worst cold call openers, from 300 million calls](https://100dials.com/blog/best-cold-call-openers): the best cold call openers sound familiar or ask permission, then state the reason for the call. The worst asks if it is a bad time. Gong's rate for each.
+- [How much should an SDR talk on a cold call?](https://100dials.com/blog/cold-call-talk-ratio): on a cold call the rep talks slightly more than half the time, not the 30 percent used for discovery. The longest monologue matters more than the ratio.
+- [How to handle "just send me an email" without sending the email](https://100dials.com/blog/handling-send-me-an-email): agree in two words, ask what the email would have to answer, answer that in one sentence, then ask for fifteen minutes at a set time. The exact words.
+- [The reason for the call: the 15 seconds that decide a cold call](https://100dials.com/blog/reason-for-call): stating why you are calling, specifically and early, is the most reliable move on a cold call. How to build the line, five examples, and what to avoid.
+- [How to run cold call roleplay that reps do not hate](https://100dials.com/blog/cold-call-roleplay): cold call roleplay works when there is no audience, one skill per session, a prospect who can say no and one rubric. A weekly format and how to score it.
+- [The eight cold call objections you hear most, and what to say](https://100dials.com/blog/common-cold-call-objections): the eight objections that end most cold calls, what each usually means, and a one-line response for each that acknowledges, isolates and redirects.
+- [A 30-60-90 day SDR onboarding plan that gets to booked meetings](https://100dials.com/blog/sdr-onboarding-plan-30-60-90): a 30-60-90 day SDR onboarding plan: practice before real dials, live dials with daily review, then a target, and the number that says each phase is done.
 
 ## Objection library
 
-- [I don't have time: how to handle it on a cold call](/objections/i-dont-have-time)
-- [Not interested: how to handle it on a cold call](/objections/not-interested)
-- [Send me an email: how to handle it on a cold call](/objections/send-me-an-email)
-- [We already have a solution: how to handle it on a cold call](/objections/we-already-have-a-solution)
-- [No budget: how to handle it on a cold call](/objections/no-budget)
-- [I'm not the decision maker: how to handle it on a cold call](/objections/not-the-decision-maker)
-- [Call me back later: how to handle it on a cold call](/objections/call-me-back-later)
-- [We're happy with what we have: how to handle it on a cold call](/objections/happy-with-what-we-have)
-- [Too expensive: how to handle the price objection on a cold call](/objections/too-expensive)
-- [Does it actually work: handling doubt on a cold call](/objections/does-it-actually-work)
-- [How did you get my number: how to handle it on a cold call](/objections/how-did-you-get-my-number)
-- [We're not a fit: how to handle it on a cold call](/objections/were-not-a-fit)
-- [Too hard to switch: how to handle it on a cold call](/objections/too-hard-to-switch)
-- [Why are you calling me: how to handle it on a cold call](/objections/why-are-you-calling-me)
-- [They won't share details: how to handle it on a cold call](/objections/wont-share-details)
+- [I don't have time: how to handle it on a cold call](https://100dials.com/objections/i-dont-have-time)
+- [Not interested: how to handle it on a cold call](https://100dials.com/objections/not-interested)
+- [Send me an email: how to handle it on a cold call](https://100dials.com/objections/send-me-an-email)
+- [We already have a solution: how to handle it on a cold call](https://100dials.com/objections/we-already-have-a-solution)
+- [No budget: how to handle it on a cold call](https://100dials.com/objections/no-budget)
+- [I'm not the decision maker: how to handle it on a cold call](https://100dials.com/objections/not-the-decision-maker)
+- [Call me back later: how to handle it on a cold call](https://100dials.com/objections/call-me-back-later)
+- [We're happy with what we have: how to handle it on a cold call](https://100dials.com/objections/happy-with-what-we-have)
+- [Too expensive: how to handle the price objection on a cold call](https://100dials.com/objections/too-expensive)
+- [Does it actually work: handling doubt on a cold call](https://100dials.com/objections/does-it-actually-work)
+- [How did you get my number: how to handle it on a cold call](https://100dials.com/objections/how-did-you-get-my-number)
+- [We're not a fit: how to handle it on a cold call](https://100dials.com/objections/were-not-a-fit)
+- [Too hard to switch: how to handle it on a cold call](https://100dials.com/objections/too-hard-to-switch)
+- [Why are you calling me: how to handle it on a cold call](https://100dials.com/objections/why-are-you-calling-me)
+- [They won't share details: how to handle it on a cold call](https://100dials.com/objections/wont-share-details)
