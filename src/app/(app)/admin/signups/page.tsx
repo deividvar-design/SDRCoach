@@ -67,7 +67,8 @@ export default async function SignupsPage({ searchParams }: { searchParams: Prom
   ]);
   const rows = profiles ?? [];
 
-  // How each account on this page signed in, from the funnel log.
+  // How each account on this page signed in: the funnel log where it exists, else the auth record (one lookup per
+  // older account; the page is at most 50 rows).
   const providers = new Map<string, string>();
   if (rows.length) {
     const { data: events } = await db.from("funnel_events").select("subject, meta").eq("kind", "signup_completed").in("subject", rows.map((r) => r.id));
@@ -75,6 +76,15 @@ export default async function SignupsPage({ searchParams }: { searchParams: Prom
       const p = (e.meta as { provider?: string } | null)?.provider;
       if (e.subject && p) providers.set(e.subject, p);
     }
+    await Promise.all(
+      rows
+        .filter((r) => !providers.has(r.id))
+        .map(async (r) => {
+          const { data } = await db.auth.admin.getUserById(r.id);
+          const p = data.user?.app_metadata?.provider;
+          if (typeof p === "string") providers.set(r.id, p);
+        }),
+    );
   }
   const dialedTotal = callsBy.size;
 
