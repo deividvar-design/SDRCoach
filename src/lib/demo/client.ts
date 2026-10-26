@@ -89,6 +89,22 @@ function embed(row: Row, table: string, rel: string, inner: string) {
 
 type Filter = (row: Row) => boolean;
 
+function likeMatch(value: unknown, pattern: string) {
+  const re = new RegExp("^" + pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/%/g, ".*").replace(/_/g, ".") + "$", "i");
+  return re.test(String(value ?? ""));
+}
+
+function condMatch(r: Row, cond: string): boolean {
+  const [col, op, ...rest] = cond.split(".");
+  const val = rest.join(".");
+  if (op === "not") return !condMatch(r, [col, ...rest].join("."));
+  if (op === "is") return val === "null" ? r[col] == null : r[col] === (val === "true");
+  if (op === "eq") return String(r[col]) === val;
+  if (op === "neq") return String(r[col]) !== val;
+  if (op === "ilike") return likeMatch(r[col], val);
+  return false;
+}
+
 class Query implements PromiseLike<{ data: unknown; error: null; count: number | null }> {
   private filters: Filter[] = [];
   private cols = "*";
@@ -119,7 +135,18 @@ class Query implements PromiseLike<{ data: unknown; error: null; count: number |
   neq(col: string, val: unknown) { this.filters.push((r) => r[col] !== val); return this; }
   in(col: string, vals: unknown[]) { this.filters.push((r) => vals.includes(r[col])); return this; }
   is(col: string, val: unknown) { this.filters.push((r) => r[col] == val); return this; }
-  not(col: string, op: string, val: unknown) { if (op === "is") this.filters.push((r) => r[col] != val); return this; }
+  not(col: string, op: string, val: unknown) {
+    if (op === "is") this.filters.push((r) => r[col] != val);
+    else if (op === "in") { const vals = String(val).replace(/^\(|\)$/g, "").split(",").map((v) => v.trim()); this.filters.push((r) => !vals.includes(String(r[col]))); }
+    return this;
+  }
+  ilike(col: string, pattern: string) { this.filters.push((r) => likeMatch(r[col], pattern)); return this; }
+  /** PostgREST "or" syntax: `a.eq.1,b.ilike.%x%,c.not.is.null`. */
+  or(expr: string) {
+    const conds = expr.split(",").map((c) => c.trim()).filter(Boolean);
+    this.filters.push((r) => conds.some((c) => condMatch(r, c)));
+    return this;
+  }
   gt(col: string, val: string | number) { this.filters.push((r) => (r[col] as string | number) > val); return this; }
   gte(col: string, val: string | number) { this.filters.push((r) => (r[col] as string | number) >= val); return this; }
   lt(col: string, val: string | number) { this.filters.push((r) => (r[col] as string | number) < val); return this; }

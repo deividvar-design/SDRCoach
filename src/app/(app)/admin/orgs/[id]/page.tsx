@@ -14,17 +14,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScorePill } from "@/components/score-pill";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { parseList } from "@/lib/admin/list";
+import { Pager } from "@/components/admin/list-controls";
 import { ExtendTrialForm, NoteForm, SetPlanForm } from "./org-actions";
 
 export const metadata = { title: "Admin, workspace" };
 export const dynamic = "force-dynamic";
 
-export default async function AdminOrgPage({ params }: PageProps<"/admin/orgs/[id]">) {
+export default async function AdminOrgPage({ params, searchParams }: PageProps<"/admin/orgs/[id]">) {
   const { id } = await params;
   await requireAdmin();
-  const d = await loadOrgDetail(id);
+  const list = parseList(await searchParams, []);
+  const d = await loadOrgDetail(id, { from: list.from, to: list.to });
   if (!d) notFound();
-  const { org, members, sessions, trial, connected, usageAll, usage30d, actions, emails } = d;
+  const { org, members, sessions, callCount, trial, connected, usageAll, usage30d, actions, emails } = d;
 
   return (
     <div className="space-y-8">
@@ -88,7 +91,7 @@ export default async function AdminOrgPage({ params }: PageProps<"/admin/orgs/[i
       </div>
 
       <section className="bg-card rounded-2xl border">
-        <div className="border-b px-5 py-4"><h2 className="font-medium">Recent calls</h2></div>
+        <div className="border-b px-5 py-4"><h2 className="font-medium">Calls</h2></div>
         {!sessions.length ? (
           <p className="text-muted-foreground px-5 py-8 text-center text-sm">No calls yet.</p>
         ) : (
@@ -111,6 +114,7 @@ export default async function AdminOrgPage({ params }: PageProps<"/admin/orgs/[i
             </TableBody>
           </Table>
         )}
+        {callCount > list.per && <Pager path={`/admin/orgs/${id}`} state={list} total={callCount} />}
       </section>
     </div>
   );

@@ -8,15 +8,23 @@ import { StatTile } from "@/components/stat-tile";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DailyBars } from "@/components/admin/daily-bars";
+import { ListToolbar, Pager } from "@/components/admin/list-controls";
+import { parseList, slicePage, type SearchParams } from "@/lib/admin/list";
 
 export const metadata = { title: "Admin" };
 export const dynamic = "force-dynamic";
 
 const PLAN_VARIANT: Record<string, "secondary" | "success" | "destructive" | "outline"> = { trial: "secondary", starter: "success", team: "success", enterprise: "success", canceled: "destructive" };
 
-export default async function AdminPage() {
+const WORKSPACE_FILTERS = [{ key: "plan", label: "Plan", options: ["trial", "starter", "team", "enterprise", "canceled"].map((p) => ({ value: p, label: p })) }];
+
+export default async function AdminPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   await requireAdmin();
-  const [{ rows, totals, tokens, daily }, feedback] = await Promise.all([loadOverview(), loadFeedback()]);
+  const list = parseList(await searchParams, ["plan"]);
+  const [{ rows: allRows, totals, tokens, daily }, feedback] = await Promise.all([loadOverview(), loadFeedback()]);
+  const q = list.q.toLowerCase();
+  const matching = allRows.filter((r) => (!list.filters.plan || r.org.plan === list.filters.plan) && (!q || [r.org.name, r.org.trial_domain, r.ownerEmail].some((v) => v?.toLowerCase().includes(q))));
+  const { rows, total } = slicePage(matching, list);
   const fmtTokens = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
 
   return (
@@ -43,6 +51,7 @@ export default async function AdminPage() {
 
       <section className="bg-card rounded-2xl border">
         <div className="border-b px-5 py-4"><h2 className="font-medium">Workspaces</h2></div>
+        <ListToolbar path="/admin" state={list} filters={WORKSPACE_FILTERS} placeholder="Name, domain or owner email" />
         <Table>
           <TableHeader>
             <TableRow>
@@ -57,6 +66,7 @@ export default async function AdminPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {rows.length === 0 && <TableRow><TableCell colSpan={8} className="text-muted-foreground py-8 text-center text-sm">Nothing matches.</TableCell></TableRow>}
             {rows.map((r) => (
               <TableRow key={r.org.id}>
                 <TableCell>
@@ -79,6 +89,7 @@ export default async function AdminPage() {
             ))}
           </TableBody>
         </Table>
+        <Pager path="/admin" state={list} total={total} />
       </section>
 
       <section className="bg-card rounded-2xl border">

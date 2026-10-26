@@ -103,12 +103,12 @@ export async function loadOverview() {
   };
 }
 
-export async function loadOrgDetail(orgId: string) {
+export async function loadOrgDetail(orgId: string, calls: { from: number; to: number } = { from: 0, to: 24 }) {
   const db = createAdminClient();
-  const [{ data: org }, { data: members }, { data: sessions }, { data: usage }, { data: actions }, { data: emails }] = await Promise.all([
+  const [{ data: org }, { data: members }, { data: sessions, count: callCount }, { data: usage }, { data: actions }, { data: emails }] = await Promise.all([
     db.from("organizations").select("*").eq("id", orgId).maybeSingle(),
     db.from("memberships").select("user_id, role, created_at, profiles!memberships_user_id_fkey(full_name)").eq("org_id", orgId).order("created_at"),
-    db.from("call_sessions").select("id, created_at, status, difficulty, outcome, duration_seconds, started_at, user_id, targets(name), call_scores(overall)").eq("org_id", orgId).order("created_at", { ascending: false }).limit(25),
+    db.from("call_sessions").select("id, created_at, status, difficulty, outcome, duration_seconds, started_at, user_id, targets(name), call_scores(overall)", { count: "exact" }).eq("org_id", orgId).order("created_at", { ascending: false }).range(calls.from, calls.to),
     db.from("usage_events").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(2000),
     db.from("admin_actions").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(20),
     db.from("email_log").select("kind, sent_at").eq("org_id", orgId).order("sent_at", { ascending: false }).limit(20),
@@ -134,6 +134,7 @@ export async function loadOrgDetail(orgId: string) {
     org,
     members: withEmail,
     sessions: sessions ?? [],
+    callCount: callCount ?? 0,
     trial: trialStatus(org, connected ?? 0),
     connected: connected ?? 0,
     usageAll: sum(use),

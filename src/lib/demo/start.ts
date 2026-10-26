@@ -76,6 +76,7 @@ export async function startDemo(p: { email?: string | null; company?: string | n
       newsletter: Boolean(p.newsletter),
       share_slug: newShareSlug(),
       email_added_at: known ? new Date().toISOString() : null,
+      method: p.method,
       ...click,
     })
     .select("id")
