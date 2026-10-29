@@ -2,7 +2,7 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
-import { lookup } from "node:dns/promises";
+import { lookup, resolve4, resolve6 } from "node:dns/promises";
 import { isIP } from "node:net";
 import { VOICES } from "@/lib/domain/voices";
 
@@ -64,11 +64,30 @@ function isPrivateAddress(ip: string) {
   return low === "::1" || low === "::" || low.startsWith("fc") || low.startsWith("fd") || low.startsWith("fe80");
 }
 
+/**
+ * A failure that is about the site the person typed, not about us: a name that does not exist, a page that is not
+ * HTML, a redirect we will not follow. Shown to the person, never reported as an error.
+ */
+export class SiteError extends Error {
+  constructor(message: string, public readonly kind: "unresolved" | "private" | "redirect" | "status" | "not_html" | "too_large") {
+    super(message);
+    this.name = "SiteError";
+  }
+}
+
+/** Every address the name resolves to, via the system resolver first and the DNS protocol directly as a fallback. */
+async function resolveAll(hostname: string): Promise<string[]> {
+  const viaLookup = await lookup(hostname, { all: true }).then((r) => r.map((a) => a.address)).catch(() => [] as string[]);
+  if (viaLookup.length) return viaLookup;
+  const [v4, v6] = await Promise.all([resolve4(hostname).catch(() => [] as string[]), resolve6(hostname).catch(() => [] as string[])]);
+  return [...v4, ...v6];
+}
+
 /** A hostname is safe only if every address it resolves to is public: nip.io style names and split DNS both resolve inward. */
 async function assertPublicHost(hostname: string) {
-  const addrs = await lookup(hostname, { all: true }).catch(() => []);
-  if (!addrs.length) throw new Error("host does not resolve");
-  if (addrs.some((a) => isPrivateAddress(a.address))) throw new Error("host resolves to a private address");
+  const addrs = await resolveAll(hostname);
+  if (!addrs.length) throw new SiteError(`${hostname} does not resolve`, "unresolved");
+  if (addrs.some(isPrivateAddress)) throw new SiteError(`${hostname} resolves to a private address`, "private");
 }
 
 const MAX_BYTES = 1_000_000;
@@ -88,18 +107,18 @@ export async function fetchSiteText(url: URL): Promise<string> {
     const location = res.headers.get("location");
     if (res.status >= 300 && res.status < 400 && location) {
       const next = normaliseSite(new URL(location, current).href);
-      if (!next) throw new Error("redirected somewhere we will not follow");
+      if (!next) throw new SiteError("redirected somewhere we will not follow", "redirect");
       current = next;
       res = null;
       continue;
     }
     break;
   }
-  if (!res) throw new Error("too many redirects");
-  if (!res.ok) throw new Error(`site returned ${res.status}`);
+  if (!res) throw new SiteError("too many redirects", "redirect");
+  if (!res.ok) throw new SiteError(`site returned ${res.status}`, "status");
   const type = res.headers.get("content-type") ?? "";
-  if (!type.includes("html")) throw new Error("site is not an HTML page");
-  if (Number(res.headers.get("content-length") ?? 0) > MAX_BYTES) throw new Error("page too large");
+  if (!type.includes("html")) throw new SiteError("site is not an HTML page", "not_html");
+  if (Number(res.headers.get("content-length") ?? 0) > MAX_BYTES) throw new SiteError("page too large", "too_large");
 
   // Read at most MAX_BYTES whatever the headers claim.
   const reader = res.body?.getReader();

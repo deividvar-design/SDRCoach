@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { reportError } from "@/lib/sentry";
+import { logFunnel } from "@/lib/funnel";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -12,7 +13,7 @@ import { PRACTICE_PERSONAS } from "@/content/practice-personas";
 import { BOSS_PERSONAS } from "@/content/boss-personas";
 import { isAdminEmail } from "@/lib/auth";
 import { track } from "@vercel/analytics/server";
-import { DRAFT_MODEL, SITE_COOKIE, draftWorkspace, fetchSiteText, normaliseSite, type WorkspaceDraft } from "@/lib/onboarding/draft";
+import { DRAFT_MODEL, SITE_COOKIE, SiteError, draftWorkspace, fetchSiteText, normaliseSite, type WorkspaceDraft } from "@/lib/onboarding/draft";
 import { recordAnthropicUsage } from "@/lib/usage/record";
 import { cookies } from "next/headers";
 import { VOICE_IDS } from "@/lib/domain/voices";
@@ -120,6 +121,12 @@ export async function draftFromWebsite(website: string): Promise<DraftResult> {
   try {
     text = await fetchSiteText(site);
   } catch (err) {
+    if (err instanceof SiteError) {
+      // The site, not us: say what was found and move on. Logged for the record, not raised.
+      console.warn(`[onboarding_fetch_site] ${membership.org_id} ${site.href}: ${err.message}`);
+      await logFunnel("site_fetch_failed", { subject: membership.org_id, reason: err.kind, meta: { host: site.hostname } });
+      return { error: err.kind === "unresolved" ? `We couldn't find a website at ${site.hostname}. Check the address, or fill in the boxes by hand, it takes two minutes.` : `We couldn't read ${site.hostname} (${err.message}). Fill in the boxes by hand, it takes two minutes.` };
+    }
     reportError(err, { where: "onboarding_fetch_site", orgId: membership.org_id, extra: { site: site.href } });
     return { error: `We couldn't read ${site.hostname}. Fill in the boxes by hand, it takes two minutes.` };
   }

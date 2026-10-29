@@ -8,6 +8,7 @@ export type FunnelKind =
   | "karen_submit"
   | "karen_rejected"
   | "karen_email"
+  | "site_fetch_failed"
   | "karen_call_started"
   | "karen_call_completed"
   | "signup_submit"
