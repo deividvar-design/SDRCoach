@@ -28,7 +28,7 @@ export function DialsLeft({ allowance, isManager, formatDate }: { allowance: All
       </div>
       <div className="mt-1 flex items-baseline gap-1.5">
         <span className={cn("dial text-xl leading-none font-medium", low && "text-signal")}>{left}</span>
-        <span className="text-muted-foreground text-xs">of {included}</span>
+        <span className="text-muted-foreground text-xs">of {included}{allowance.bonus > 0 ? ` +${allowance.bonus} earned` : ""}</span>
       </div>
       <Progress value={pct} className="mt-2 h-1" indicatorClassName={low ? "bg-signal" : undefined} />
     </>

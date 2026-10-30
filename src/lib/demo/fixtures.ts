@@ -32,6 +32,9 @@ export const ORG: Organization = {
   subscription_status: "active",
   current_period_end: daysAgo(-21),
   cancel_at_period_end: false,
+  bonus_calls: 0,
+  referral_code: "demo1234",
+  referred_by_org_id: null,
   created_at: daysAgo(40),
 };
 

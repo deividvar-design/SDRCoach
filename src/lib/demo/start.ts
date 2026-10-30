@@ -21,7 +21,7 @@ export const DEMO_ERRORS: Record<string, string> = {
 };
 
 export type StartResult = { id: string } | { waitlisted: true } | { error: string; code: string };
-export type StartMethod = "email" | "google" | "call";
+export type StartMethod = "email" | "google" | "call" | "rematch";
 
 /** Any real address, personal ones flagged so the scorecard asks for a work email before a trial. */
 function classify(raw: string): { email: string; domain: string | null; personal: boolean; reject: string | null } {
@@ -41,6 +41,8 @@ const skipMx = (method: StartMethod) => process.env.SDRCOACH_DEMO === "1" || pro
  * rule. Every outcome is logged to the funnel.
  */
 export async function startDemo(p: { email?: string | null; company?: string | null; newsletter?: boolean; method: StartMethod }): Promise<StartResult> {
+  // A rematch is the one second call an address gets: the scorecard said what to fix, this is where they try it.
+  const perEmail = p.method === "rematch" ? 2 : 1;
   const company = p.company?.replace(/\s+/g, " ").trim() || null;
   const known = p.email ? classify(p.email) : null;
   await logFunnel("karen_submit", { email: known?.email, meta: { company: Boolean(company), method: p.method } });
@@ -55,7 +57,7 @@ export async function startDemo(p: { email?: string | null; company?: string | n
 
   const db = createAdminClient();
   const ip = await clientIp();
-  const limit = await checkDemoLimits(db, { email: known?.email ?? null, domain: known?.domain ?? null, ip, personal: known?.personal ?? false });
+  const limit = await checkDemoLimits(db, { email: known?.email ?? null, domain: known?.domain ?? null, ip, personal: known?.personal ?? false, perEmail });
   if (limit === "busy") {
     // Keep the lead when there is one, skip the call. The row counts against nothing since it never connects.
     if (known) await db.from("demo_calls").insert({ email: known.email, domain: known.domain, ip, company, personal_email: known.personal, newsletter: Boolean(p.newsletter), status: "failed", error: "daily cap" });

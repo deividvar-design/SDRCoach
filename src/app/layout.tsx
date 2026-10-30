@@ -41,6 +41,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <GoogleTag />
         {/* The viewer's timezone, so streaks and dates are computed for their day, not the server's. */}
         <script dangerouslySetInnerHTML={{ __html: 'try{document.cookie="tz="+Intl.DateTimeFormat().resolvedOptions().timeZone+";path=/;max-age=31536000;samesite=lax"}catch(e){}' }} />
+        {/* A referral code (?ref=) is kept the same way, so the workspace created later credits the referrer. */}
+        <script dangerouslySetInnerHTML={{ __html: 'try{var r=new URLSearchParams(location.search).get("ref");if(r&&/^[a-z0-9]{6,12}$/.test(r)){document.cookie="ref="+r+";path=/;max-age=7776000;samesite=lax"}}catch(e){}' }} />
         {/* Google Ads click ids survive the visit in a first-party cookie, so a signup or Karen call days later can be matched to the click. */}
         <script dangerouslySetInnerHTML={{ __html: 'try{var q=new URLSearchParams(location.search),o={},k=["gclid","gbraid","wbraid"],h=false;for(var i=0;i<k.length;i++){var v=q.get(k[i]);if(v&&/^[\\w-]{1,200}$/.test(v)){o[k[i]]=v;h=true}}if(h){document.cookie="adclick="+encodeURIComponent(JSON.stringify(o))+";path=/;max-age=7776000;samesite=lax"}}catch(e){}' }} />
       </head>

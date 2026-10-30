@@ -83,6 +83,28 @@ export type Organization = {
   subscription_status: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  /** Extra calls earned through rewards, spent once a paid month's included calls are gone. Trials get calls added to their limit instead. */
+  bonus_calls: number;
+  /** Short code behind the workspace's referral link. */
+  referral_code: string | null;
+  referred_by_org_id: string | null;
+  created_at: string;
+};
+
+export type RewardClaim = {
+  id: string;
+  org_id: string;
+  user_id: string | null;
+  kind: "linkedin_post" | "x_post" | "scorecard_share" | "invite_rep" | "referral_trial" | "referral_paid";
+  url: string | null;
+  status: "pending" | "approved" | "rejected";
+  calls: number;
+  days: number;
+  note: string | null;
+  ref_org_id: string | null;
+  ref_user_id: string | null;
+  decided_at: string | null;
+  decided_by: string | null;
   created_at: string;
 };
 
@@ -331,9 +353,10 @@ export type Database = {
     Tables: {
       organizations: Table<
         Organization,
-        Insert<Organization, "id" | "plan" | "seat_limit" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
+        Insert<Organization, "id" | "plan" | "seat_limit" | "bonus_calls" | "referral_code" | "referred_by_org_id" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
+      reward_claims: Table<RewardClaim, Insert<RewardClaim, "id" | "user_id" | "url" | "status" | "calls" | "days" | "note" | "ref_org_id" | "ref_user_id" | "decided_at" | "decided_by" | "created_at">>;
       demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "email" | "domain" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "followup_sent_at" | "finalize_attempts" | "scoring_started_at" | "mints" | "share_slug" | "display_name" | "display_company" | "leaderboard_opt_in" | "shared_at" | "company" | "personal_email" | "gclid" | "gbraid" | "wbraid" | "email_added_at" | "method" | "created_at">>;
       funnel_events: Table<FunnelEvent, Insert<FunnelEvent, "id" | "reason" | "email_domain" | "email_hash" | "subject" | "dedupe_key" | "meta" | "created_at">>;
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;

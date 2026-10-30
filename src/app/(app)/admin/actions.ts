@@ -4,6 +4,12 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { grantCalls, notifyReward } from "@/lib/rewards/grant";
+import { REWARD_BY_KIND, type RewardKind } from "@/lib/rewards/config";
+import { logFunnel } from "@/lib/funnel";
+import { sendMail, emailConfigured } from "@/lib/email/send";
+import { templates } from "@/lib/email/templates";
+import { absoluteUrl } from "@/lib/site";
 
 export interface AdminState {
   error?: string;
@@ -58,4 +64,42 @@ export async function addNote(orgId: string, _prev: AdminState, formData: FormDa
   await log(admin.email, orgId, "note", { note });
   revalidatePath(`/admin/orgs/${orgId}`);
   return { ok: "Noted." };
+}
+
+/** Approve a pasted-link reward: grant it, log it, tell the workspace. Only a pending claim moves. */
+export async function approveClaim(claimId: string): Promise<{ ok: true } | { error: string }> {
+  const admin = await requireAdmin();
+  const db = createAdminClient();
+  const { data: claim } = await db.from("reward_claims").update({ status: "approved", decided_at: new Date().toISOString(), decided_by: admin.email }).eq("id", claimId).eq("status", "pending").select("*").maybeSingle();
+  if (!claim) return { error: "That claim was already decided." };
+  await grantCalls(db, claim.org_id, { calls: claim.calls, days: claim.days });
+  await logFunnel("reward_granted", { subject: claim.org_id, reason: claim.kind, meta: { calls: claim.calls, days: claim.days, auto: false } });
+  await log(admin.email, claim.org_id, "approve_reward", { claim: claim.id, kind: claim.kind, calls: claim.calls, days: claim.days });
+  await notifyReward(db, claim.org_id, { title: REWARD_BY_KIND[claim.kind as RewardKind].title, calls: claim.calls, days: claim.days });
+  revalidatePath("/admin/rewards");
+  revalidatePath("/rewards");
+  return { ok: true };
+}
+
+/** Turn a claim down with a reason the person sees on their rewards page and in an email. They can claim again. */
+export async function rejectClaim(claimId: string, formData: FormData): Promise<{ ok: true } | { error: string }> {
+  const admin = await requireAdmin();
+  const note = String(formData.get("note") ?? "").trim().slice(0, 200) || null;
+  const db = createAdminClient();
+  const { data: claim } = await db.from("reward_claims").update({ status: "rejected", note, decided_at: new Date().toISOString(), decided_by: admin.email }).eq("id", claimId).eq("status", "pending").select("*").maybeSingle();
+  if (!claim) return { error: "That claim was already decided." };
+  await logFunnel("reward_rejected", { subject: claim.org_id, reason: claim.kind, meta: { note } });
+  await log(admin.email, claim.org_id, "reject_reward", { claim: claim.id, kind: claim.kind, note });
+  if (emailConfigured() && claim.user_id) {
+    const { data } = await db.auth.admin.getUserById(claim.user_id);
+    const to = data.user?.email;
+    if (to) {
+      const { data: profile } = await db.from("profiles").select("full_name").eq("id", claim.user_id).maybeSingle();
+      const mail = templates.rewardRejected({ firstName: profile?.full_name?.split(" ")[0] || "there", title: REWARD_BY_KIND[claim.kind as RewardKind].title, note, href: absoluteUrl("/rewards") });
+      await sendMail({ to, ...mail }).catch(() => undefined);
+    }
+  }
+  revalidatePath("/admin/rewards");
+  revalidatePath("/rewards");
+  return { ok: true };
 }

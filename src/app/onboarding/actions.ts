@@ -15,6 +15,8 @@ import { isAdminEmail } from "@/lib/auth";
 import { track } from "@vercel/analytics/server";
 import { DRAFT_MODEL, SITE_COOKIE, SiteError, draftWorkspace, fetchSiteText, normaliseSite, type WorkspaceDraft } from "@/lib/onboarding/draft";
 import { recordAnthropicUsage } from "@/lib/usage/record";
+import { attachReferral } from "@/lib/rewards/grant";
+import { REFERRAL_COOKIE } from "@/lib/rewards/referral";
 import { cookies } from "next/headers";
 import { VOICE_IDS } from "@/lib/domain/voices";
 import { CALLBACK_ENABLED, SIGNUP_REASONS, toE164 } from "@/lib/marketing/signup-intent";
@@ -81,7 +83,10 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
       ...PRACTICE_PERSONAS.map((p) => ({ ...p, pain_points: [...p.pain_points], objections: [...p.objections], org_id: orgId, created_by: user.id, kind: "practice" as const })),
       ...BOSS_PERSONAS.map((p) => ({ ...p, pain_points: [...p.pain_points], objections: [...p.objections], org_id: orgId, created_by: user.id, kind: "boss" as const })),
     ]);
-    if (process.env.SDRCOACH_DEMO !== "1") after(() => sendLifecycle(orgId, "welcome").catch((err) => reportError(err, { where: "welcome_email", orgId })));
+    if (process.env.SDRCOACH_DEMO !== "1") {
+      await attachReferral(createAdminClient(), orgId, (await cookies()).get(REFERRAL_COOKIE)?.value).catch((err) => reportError(err, { where: "attach_referral", orgId }));
+      after(() => sendLifecycle(orgId, "welcome").catch((err) => reportError(err, { where: "welcome_email", orgId })));
+    }
     await track("workspace_created", { with_site: Boolean(site) }).catch(() => {});
   }
   if (error) {

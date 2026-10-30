@@ -6,6 +6,7 @@ import { Logo } from "@/components/logo";
 import { SidebarNav } from "@/components/shell/sidebar-nav";
 import { UserMenu } from "@/components/shell/user-menu";
 import { FeedbackLink } from "@/components/shell/feedback-dialog";
+import { RewardsLink } from "@/components/shell/rewards-link";
 import { TrialBanner } from "@/components/billing/trial-banner";
 import { TrialGate } from "@/components/billing/trial-gate";
 import { SITE } from "@/lib/site";
@@ -41,6 +42,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <div className="text-muted-foreground mb-4 truncate px-3 text-xs">{viewer.org.name}</div>
         <SidebarNav isManager={isManager} />
         <div className="mt-auto flex flex-col gap-1">
+          <RewardsLink />
           <DialsLeft allowance={allowance} isManager={isManager} formatDate={formatDate} />
           <FeedbackLink />
           <UserMenu

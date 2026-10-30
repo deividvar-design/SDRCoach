@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, GraduationCap, LayoutDashboard, MoreHorizontal, Phone, Settings, Target, Users } from "lucide-react";
+import { BookOpen, Gift, GraduationCap, LayoutDashboard, MoreHorizontal, Phone, Settings, Target, Users } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
@@ -14,11 +14,13 @@ const NAV = [
   { href: "/team/coaching", label: "Coaching", icon: GraduationCap, managerOnly: true },
   { href: "/knowledge", label: "Knowledge", icon: BookOpen, managerOnly: true },
   { href: "/settings", label: "Settings", icon: Settings },
+  // The sidebar shows this one bottom-left on its own; the phone bar keeps it in the overflow menu.
+  { href: "/rewards", label: "Rewards", icon: Gift, barOnly: true },
 ];
 
 export function SidebarNav({ isManager, variant = "sidebar" }: { isManager: boolean; variant?: "sidebar" | "bar" }) {
   const pathname = usePathname();
-  const items = NAV.filter((n) => !n.managerOnly || isManager);
+  const items = NAV.filter((n) => (!n.managerOnly || isManager) && (variant === "bar" || !n.barOnly));
 
   if (variant === "bar") {
     const primary = items.slice(0, 4);

@@ -11,6 +11,8 @@ export interface Allowance {
   kind: "trial" | "paid";
   used: number;
   included: number;
+  /** Calls earned through rewards and not yet spent; counted in `left` on paid plans. Trials fold them into `included`. */
+  bonus: number;
   /** Never negative. Dialing stops at zero; `over` only exceeds zero in a race between two simultaneous dials. */
   left: number;
   over: number;
@@ -19,7 +21,7 @@ export interface Allowance {
   daysLeft: number | null;
 }
 
-type Org = Pick<Organization, "id" | "plan" | "seat_limit" | "trial_call_limit" | "trial_ends_at" | "billing_interval" | "current_period_end">;
+type Org = Pick<Organization, "id" | "plan" | "seat_limit" | "trial_call_limit" | "trial_ends_at" | "billing_interval" | "current_period_end" | "bonus_calls">;
 
 /**
  * The current allowance month on a paid plan. Allowances are per seat per month whatever the billing period, so the
@@ -58,7 +60,7 @@ export async function loadAllowance(org: Org, viewer?: { userId: string; isManag
 
   if (org.plan === "trial") {
     const t = trialStatus(org, await countTrialCalls(db, org.id));
-    return { scope: "team", kind: "trial", used: t.callsUsed, included: org.trial_call_limit, left: t.callsLeft, over: 0, resetsAt: org.trial_ends_at, daysLeft: t.onTrial ? t.daysLeft : 0 };
+    return { scope: "team", kind: "trial", used: t.callsUsed, included: org.trial_call_limit, bonus: 0, left: t.callsLeft, over: 0, resetsAt: org.trial_ends_at, daysLeft: t.onTrial ? t.daysLeft : 0 };
   }
   // A canceled workspace is gated elsewhere; trial numbers would be nonsense for it.
   if (org.plan === "canceled") return null;
@@ -72,13 +74,16 @@ export async function loadAllowance(org: Org, viewer?: { userId: string; isManag
   const { count } = await db.from("usage_events").select("id", { count: "exact", head: true }).eq("org_id", org.id).eq("kind", "voice").gte("created_at", window.start.toISOString());
   const used = count ?? 0;
   const included = plan.callsPerSeat * window.months * org.seat_limit;
+  const bonus = Math.max(0, org.bonus_calls ?? 0);
   return {
     scope: "team",
     kind: "paid",
     used,
     included,
-    left: Math.max(0, included - used),
-    over: Math.max(0, used - included),
+    bonus,
+    // The bonus balance is spent one call at a time once the included calls are gone (see spendBonusCall).
+    left: Math.max(0, included - used) + bonus,
+    over: Math.max(0, used - included - bonus),
     resetsAt: window.end.toISOString(),
     daysLeft: Math.max(0, Math.ceil((window.end.getTime() - Date.now()) / 86_400_000)),
   };

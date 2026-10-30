@@ -2,11 +2,12 @@ import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { priceCatalog, stripe } from "@/lib/billing/stripe";
+import { ensureCoupon, priceCatalog, stripe } from "@/lib/billing/stripe";
 import { handleStripeEvent, type SyncDeps } from "@/lib/billing/sync";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { track } from "@vercel/analytics/server";
 import { logFunnel } from "@/lib/funnel";
+import { referralPaidReward } from "@/lib/rewards/grant";
 
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -66,7 +67,13 @@ export async function POST(request: Request) {
     if (event.type === "checkout.session.completed") {
       const plan = String(event.data.object.metadata?.plan ?? "");
       await track("subscribed", { plan }).catch(() => {});
-      if (result.handled && result.orgId) await logFunnel("trial_to_paid", { subject: result.orgId, dedupeKey: `paid:${result.orgId}`, meta: { plan } });
+      if (result.handled && result.orgId) {
+        await logFunnel("trial_to_paid", { subject: result.orgId, dedupeKey: `paid:${result.orgId}`, meta: { plan } });
+        await referralPaidReward(result.orgId, async (subscriptionId, coupon) => {
+          await ensureCoupon(coupon);
+          await stripe().subscriptions.update(subscriptionId, { discounts: [{ coupon }] });
+        }).catch((err) => Sentry.captureException(err, { tags: { org_id: result.orgId }, extra: { where: "referral_paid" } }));
+      }
     }
     return NextResponse.json(result);
   } catch (err) {

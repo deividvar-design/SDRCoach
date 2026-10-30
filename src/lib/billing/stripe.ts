@@ -48,3 +48,19 @@ export function priceCatalog(env: NodeJS.ProcessEnv = process.env): PriceCatalog
     priceFor: (plan, interval, opts) => table.find(([p, i, id, f]) => p === plan && i === interval && f === Boolean(opts?.founding) && Boolean(id))?.[2] ?? null,
   };
 }
+
+/** The coupons the app applies itself, created in the current Stripe mode on first use. Safe to call often. */
+const COUPONS: Record<string, { percent_off: number; duration: "once" | "repeating"; duration_in_months?: number; name: string }> = {
+  TRIAL15: { percent_off: 15, duration: "repeating", duration_in_months: 3, name: "Upgraded before the trial ended" },
+  COMEBACK20: { percent_off: 20, duration: "repeating", duration_in_months: 3, name: "Came back after the trial" },
+  REFERRAL20: { percent_off: 20, duration: "repeating", duration_in_months: 3, name: "Referred by another team" },
+  REFERRALMONTH: { percent_off: 100, duration: "once", name: "A team you referred subscribed: one month free" },
+};
+
+export async function ensureCoupon(id: string) {
+  const spec = COUPONS[id];
+  if (!spec) return;
+  const existing = await stripe().coupons.retrieve(id).catch(() => null);
+  if (existing) return;
+  await stripe().coupons.create({ id, ...spec }).catch(() => undefined);
+}

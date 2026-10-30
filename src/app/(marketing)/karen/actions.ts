@@ -13,13 +13,16 @@ import { DEMO_COOKIE_OPTIONS, attachDemoEmail, startDemo } from "@/lib/demo/star
  * The call button. No form, no email: Karen picks up and the caller is asked where to send the scorecard after.
  * Someone already signed in with Google keeps their address on the call, so the result page skips that step.
  */
-export async function callKaren() {
+export async function callKaren(formData?: FormData) {
+  const rematch = formData?.get("rematch") === "1";
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const email = user?.email ?? null;
-  const result = await startDemo({ email, method: email ? "google" : "call" });
+  // A rematch keeps the address from the first call, so the result page needs no email step the second time.
+  const previous = rematch ? await currentDemo() : null;
+  const email = previous?.email ?? user?.email ?? null;
+  const result = await startDemo({ email, method: rematch ? "rematch" : email ? "google" : "call" });
   if ("waitlisted" in result) redirect("/karen?busy=1");
   if ("error" in result) redirect(`/karen?error=${encodeURIComponent(result.code)}`);
   (await cookies()).set(DEMO_COOKIE, result.id, DEMO_COOKIE_OPTIONS);

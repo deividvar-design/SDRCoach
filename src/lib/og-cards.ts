@@ -17,6 +17,7 @@ export const PAGE_CARDS: Record<string, OgCardSpec> = {
   trust: { title: "How we handle your calls and data.", kicker: "Trust and security" },
   legal: { title: "The small print, written to be read.", kicker: "Legal" },
   company: { title: "The company behind 100 Dials.", kicker: "Vilnius, Lithuania", footer: "Hosted in the EU" },
+  refer: { title: "Refer a sales team. Get a month free.", kicker: "Referrals and rewards", footer: "They get 20% off for three months" },
   research: { title: "Built on what the research says about practice.", kicker: "Research", footer: "Nine studies, limits included" },
 };
 

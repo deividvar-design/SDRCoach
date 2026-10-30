@@ -45,7 +45,7 @@ export function companyFromDomain(domain: string) {
  * Limits count calls that actually minted a voice token (prompt_hash set). Waitlisted rows, abandoned forms and
  * mic-denied attempts never count, so a failed first try is not a lifetime ban.
  */
-export async function checkDemoLimits(db: Db, { email, domain, ip, personal = false }: { email?: string | null; domain?: string | null; ip: string | null; personal?: boolean }): Promise<string | null> {
+export async function checkDemoLimits(db: Db, { email, domain, ip, personal = false, perEmail = DEMO_LIMITS.perEmail }: { email?: string | null; domain?: string | null; ip: string | null; personal?: boolean; perEmail?: number }): Promise<string | null> {
   const since = new Date(Date.now() - DAY).toISOString();
   const count = async (q: ReturnType<Db["from"]>) => (await q).count ?? 0;
   const minted = () => db.from("demo_calls").select("id", { count: "exact", head: true }).not("prompt_hash", "is", null);
@@ -55,7 +55,7 @@ export async function checkDemoLimits(db: Db, { email, domain, ip, personal = fa
     ip ? count(minted().eq("ip", ip).gte("created_at", since)) : Promise.resolve(0),
     count(minted().gte("created_at", since)),
   ]);
-  if (byEmail >= DEMO_LIMITS.perEmail) return "already_played";
+  if (byEmail >= perEmail) return "already_played";
   if (!personal && byDomain >= DEMO_LIMITS.perDomainPerDay) return "domain_limit";
   if (byIp >= DEMO_LIMITS.perIpPerDay) return "ip_limit";
   if (global >= DEMO_LIMITS.globalPerDay) return "busy";

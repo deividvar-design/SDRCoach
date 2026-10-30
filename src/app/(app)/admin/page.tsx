@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { loadFeedback, loadOverview } from "@/lib/admin/queries";
 import { formatUsd } from "@/lib/usage/pricing";
 import { formatDate } from "@/lib/utils";
@@ -21,7 +22,7 @@ const WORKSPACE_FILTERS = [{ key: "plan", label: "Plan", options: ["trial", "sta
 export default async function AdminPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   await requireAdmin();
   const list = parseList(await searchParams, ["plan"]);
-  const [{ rows: allRows, totals, tokens, daily }, feedback] = await Promise.all([loadOverview(), loadFeedback()]);
+  const [{ rows: allRows, totals, tokens, daily }, feedback, { count: pendingRewards }] = await Promise.all([loadOverview(), loadFeedback(), createAdminClient().from("reward_claims").select("id", { count: "exact", head: true }).eq("status", "pending")]);
   const q = list.q.toLowerCase();
   const matching = allRows.filter((r) => (!list.filters.plan || r.org.plan === list.filters.plan) && (!q || [r.org.name, r.org.trial_domain, r.ownerEmail].some((v) => v?.toLowerCase().includes(q))));
   const { rows, total } = slicePage(matching, list);
@@ -29,7 +30,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Internal" title="Admin" description="Every workspace, what it uses and what it costs. Actions here are logged." actions={<span className="flex gap-4"><Link href="/admin/signups" className="text-sm underline underline-offset-4">Signups</Link><Link href="/admin/leads" className="text-sm underline underline-offset-4">Karen leads</Link></span>} />
+      <PageHeader eyebrow="Internal" title="Admin" description="Every workspace, what it uses and what it costs. Actions here are logged." actions={<span className="flex gap-4"><Link href="/admin/signups" className="text-sm underline underline-offset-4">Signups</Link><Link href="/admin/leads" className="text-sm underline underline-offset-4">Karen leads</Link><Link href="/admin/rewards" className="text-sm underline underline-offset-4">Rewards{pendingRewards ? ` (${pendingRewards})` : ""}</Link></span>} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label="Workspaces" value={totals.orgs} hint={`${totals.trials} trial, ${totals.paid} paid, ${totals.canceled} canceled`} />

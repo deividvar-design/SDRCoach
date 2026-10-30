@@ -9,9 +9,12 @@ import { fetchConversation } from "@/lib/elevenlabs/client";
 import { computeMetrics } from "@/lib/scoring/metrics";
 import { scoreCall } from "@/lib/scoring/score";
 import { loadOrgDigests } from "@/lib/knowledge/digest";
-import type { CallOutcome, TranscriptTurn } from "@/types/database";
+import type { CallOutcome, Organization, TranscriptTurn } from "@/types/database";
 import { trialStatus } from "@/lib/billing/trial";
 import { countTrialCalls } from "@/lib/billing/usage";
+import { rewardsAfterCall, spendBonusCall } from "@/lib/rewards/grant";
+import { periodWindow } from "@/lib/billing/allowance";
+import { PLANS } from "@/lib/billing/plans";
 import { track } from "@vercel/analytics/server";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { recordAnthropicUsage, recordVoiceUsage } from "@/lib/usage/record";
@@ -121,7 +124,7 @@ export async function finalizeCall(sessionId: string) {
       collectedReason = typeof convo.dataCollection.outcome_reason === "string" && convo.dataCollection.outcome_reason ? convo.dataCollection.outcome_reason : null;
       summary = convo.summary;
 
-      if (!alreadyCollected) await afterCollect(db, claimed.org_id);
+      if (!alreadyCollected) await afterCollect(db, claimed.org_id, claimed.user_id);
     }
 
     const repSpoke = turns.some((t) => t.role === "rep");
@@ -209,10 +212,21 @@ export async function finalizeCall(sessionId: string) {
   }
 }
 
+/** A paid workspace past its included calls this month is drawing on earned bonus calls: take one off. */
+async function spendBonusIfOver(db: Db, orgId: string, org: Pick<Organization, "plan" | "seat_limit" | "billing_interval" | "current_period_end">) {
+  const plan = PLANS.find((p) => p.id === org.plan);
+  if (!plan?.callsPerSeat) return;
+  const window = periodWindow(org) ?? { start: new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)), months: 1 };
+  const { count } = await db.from("usage_events").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("kind", "voice").gte("created_at", window.start.toISOString());
+  await spendBonusCall(db, orgId, count ?? 0, plan.callsPerSeat * window.months * org.seat_limit);
+}
+
 /** Funnel milestones and trial emails: after this call, where does the workspace stand? Runs once per call, when it is first collected. */
-async function afterCollect(db: Db, orgId: string) {
-  const { data: orgRow } = await db.from("organizations").select("plan, trial_call_limit, trial_ends_at").eq("id", orgId).single();
+async function afterCollect(db: Db, orgId: string, userId: string) {
+  const { data: orgRow } = await db.from("organizations").select("plan, trial_call_limit, trial_ends_at, seat_limit, billing_interval, current_period_end").eq("id", orgId).single();
   const connected = await countTrialCalls(db, orgId);
+  await rewardsAfterCall(db, { orgId, userId, connectedCalls: connected });
+  if (orgRow && orgRow.plan !== "trial" && orgRow.plan !== "canceled") await spendBonusIfOver(db, orgId, orgRow);
   if (connected === 1) {
     await track("first_call", { plan: orgRow?.plan ?? "" }).catch(() => {});
     await logFunnel("first_call", { subject: orgId, dedupeKey: `first_call:${orgId}`, meta: { plan: orgRow?.plan ?? "" } });

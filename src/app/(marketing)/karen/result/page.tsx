@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { ResultPoller } from "./result-poller";
 import { LeaderboardForm } from "./leaderboard-form";
 import { EmailStep } from "./email-step";
+import { callKaren } from "../actions";
 import { ShareButton } from "../share-button";
 import { survivedLabel } from "@/lib/demo/share";
 import { createClient } from "@/lib/supabase/server";
@@ -86,6 +87,16 @@ export default async function KarenResultPage() {
             {!locked && (
               <>
                 <p className="text-muted-foreground mt-8 text-sm">The full report, with the coach's notes on every skill, is in your inbox{demo.email_sent_at ? "" : " shortly"}.</p>
+                {demo.method !== "rematch" && (
+                  <form action={callKaren} className="bg-card mt-6 flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <input type="hidden" name="rematch" value="1" />
+                    <div>
+                      <div className="font-medium">Read the fix. Then call her again.</div>
+                      <div className="text-muted-foreground text-sm">One rematch per person. Same Karen, same three minutes, and the coach scores the difference.</div>
+                    </div>
+                    <Button type="submit" variant="signal" className="shrink-0">Rematch</Button>
+                  </form>
+                )}
                 {demo.share_slug && (
                   <div className="bg-card mt-8 rounded-2xl border p-6">
                     <div className="flex flex-wrap items-center justify-between gap-4">

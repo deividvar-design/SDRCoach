@@ -36,6 +36,20 @@ export const templates = {
     return { subject: "Your 100 Dials signup link", html: layout("Continue from here.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
   },
 
+  /** A reward landed: what was added and why. */
+  rewardGranted(p: { firstName: string; title: string; line: string; detail: string | null; href: string }): Rendered {
+    const cta = { label: "See your rewards", href: p.href };
+    const lines = [`Hi ${p.firstName},`, p.line === "nothing" ? `${p.title}.` : `${p.title}: ${p.line} added to your workspace.`, ...(p.detail ? [p.detail] : []), "Thanks for spreading the word. The more reps practise, the better the coach gets at this."];
+    return { subject: p.line === "nothing" ? p.title : `${p.line} added to your workspace`, html: layout("Reward added.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  /** A pasted link was turned down, with the reason. */
+  rewardRejected(p: { firstName: string; title: string; note: string | null; href: string }): Rendered {
+    const cta = { label: "Try again", href: p.href };
+    const lines = [`Hi ${p.firstName},`, `We looked at your claim for "${p.title}" and could not add the calls.`, p.note ? `Reason: ${p.note}` : "The link did not lead to a public post about 100 Dials.", "Fix it and claim again any time; the card is still open."];
+    return { subject: `About your reward claim`, html: layout("Not this one.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
   feedback(p: { name: string; email: string; orgName: string; role: string; page: string; body: string; replyOk: boolean }): Rendered {
     const meta = [`${p.name} <${p.email}>`, `${p.orgName}, ${p.role}`, `On ${p.page}`, p.replyOk ? "Happy to be emailed back." : "Asked not to be emailed."];
     const html = `<p style="margin:0 0 16px;white-space:pre-wrap">${esc(p.body)}</p><p style="margin:0;font-size:13px;color:#8a857a">${meta.map(esc).join("<br>")}</p>`;

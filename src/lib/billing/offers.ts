@@ -1,14 +1,15 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Organization } from "@/types/database";
+import { REFERRED_DISCOUNT } from "@/lib/rewards/config";
 
 /**
  * Discounts the app applies itself at checkout. Coupon ids are fixed and created by `pnpm stripe:setup --coupons`
  * in each Stripe mode; if a coupon is missing, checkout silently runs without it.
  */
 export interface Offer {
-  id: "trial15" | "comeback20";
-  coupon: "TRIAL15" | "COMEBACK20";
+  id: "trial15" | "comeback20" | "referral20";
+  coupon: "TRIAL15" | "COMEBACK20" | "REFERRAL20";
   percent: number;
   /** ISO timestamp after which the offer no longer applies. */
   until: string;
@@ -27,10 +28,16 @@ export function comebackUntil(sentAt: string | Date) {
   return d;
 }
 
-type Org = Pick<Organization, "id" | "plan" | "trial_ends_at" | "stripe_subscription_id">;
+type Org = Pick<Organization, "id" | "plan" | "trial_ends_at" | "stripe_subscription_id" | "referred_by_org_id">;
 
 export async function currentOffer(org: Org, now = Date.now()): Promise<Offer | null> {
   if (org.stripe_subscription_id && org.plan !== "canceled") return null;
+
+  // A referred team's discount beats the trial offer and never expires while they are unsubscribed.
+  if (org.referred_by_org_id) {
+    const until = new Date(now + 365 * DAY).toISOString();
+    return { id: "referral20", coupon: REFERRED_DISCOUNT.coupon, percent: REFERRED_DISCOUNT.percent, until, line: `${REFERRED_DISCOUNT.percent}% off your first ${REFERRED_DISCOUNT.months} months, because a team referred you. Applied at checkout.` };
+  }
 
   if (org.plan === "trial" && new Date(org.trial_ends_at).getTime() > now) {
     return { id: "trial15", coupon: "TRIAL15", percent: 15, until: org.trial_ends_at, line: "15% off your first three months if you upgrade before the trial ends. Applied at checkout." };

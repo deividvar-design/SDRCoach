@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import type Stripe from "stripe";
 import { requireManager } from "@/lib/auth";
-import { priceCatalog, stripe, stripeConfigured } from "@/lib/billing/stripe";
+import { priceCatalog, stripe, stripeConfigured, ensureCoupon } from "@/lib/billing/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SITE } from "@/lib/site";
 import { PLANS } from "@/lib/billing/plans";
@@ -33,6 +33,7 @@ export async function startCheckout(formData: FormData) {
   const price = priceCatalog().priceFor(parsed.data.plan, parsed.data.interval, { founding: Boolean(founding) });
   if (!price) redirect("/upgrade?error=price_missing");
   const offer = await currentOffer(viewer.org);
+  if (offer) await ensureCoupon(offer.coupon);
   await track("checkout_start", { plan: parsed.data.plan, interval: parsed.data.interval, currency: parsed.data.currency, seats: parsed.data.seats, offer: offer?.id ?? "", founding: Boolean(founding) }).catch(() => {});
 
   const db = createAdminClient();
