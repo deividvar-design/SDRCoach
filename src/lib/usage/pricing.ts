@@ -26,7 +26,7 @@ export function anthropicCost(model: string, u: TokenUsage) {
 
 /** Conversational voice, USD per minute, overridable per deployment. */
 /** Voice minutes plus the prospect model's tokens, both billed by ElevenLabs per minute of conversation. */
-export function voiceCost(seconds: number, perMinute = Number(process.env.ELEVENLABS_COST_PER_MIN ?? 0.1) + Number(process.env.ELEVENLABS_LLM_COST_PER_MIN ?? 0.02)) {
+export function voiceCost(seconds: number, perMinute = Number(process.env.ELEVENLABS_COST_PER_MIN ?? 0.08) + Number(process.env.ELEVENLABS_LLM_COST_PER_MIN ?? 0.02)) {
   return Math.round((seconds / 60) * perMinute * 100000) / 100000;
 }
 

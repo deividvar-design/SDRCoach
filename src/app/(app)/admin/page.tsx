@@ -30,18 +30,18 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Internal" title="Admin" description="Every workspace, what it uses and what it costs. Actions here are logged." actions={<span className="flex gap-4"><Link href="/admin/signups" className="text-sm underline underline-offset-4">Signups</Link><Link href="/admin/leads" className="text-sm underline underline-offset-4">Karen leads</Link><Link href="/admin/rewards" className="text-sm underline underline-offset-4">Rewards{pendingRewards ? ` (${pendingRewards})` : ""}</Link></span>} />
+      <PageHeader eyebrow="Internal" title="Admin" description="Every workspace, what it uses and what it costs. Actions here are logged." actions={<span className="flex gap-4"><Link href="/admin/signups" className="text-sm underline underline-offset-4">Signups</Link><Link href="/admin/leads" className="text-sm underline underline-offset-4">Karen leads</Link><Link href="/admin/usage" className="text-sm underline underline-offset-4">Usage</Link><Link href="/admin/rewards" className="text-sm underline underline-offset-4">Rewards{pendingRewards ? ` (${pendingRewards})` : ""}</Link></span>} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label="Workspaces" value={totals.orgs} hint={`${totals.trials} trial, ${totals.paid} paid, ${totals.canceled} canceled`} />
-        <StatTile label="Calls, 30 days" value={totals.calls30d} hint={`${totals.calls7d} in the last 7, ${totals.connected30d} connected`} />
+        <StatTile label="Calls, 30 days" value={totals.calls30d + totals.karen30d} hint={`${totals.calls30d} in workspaces, ${totals.karen30d} Karen`} />
         <StatTile label="Est. cost, 30 days" value={formatUsd(totals.cost30d)} hint={`${formatUsd(tokens.voiceCost)} voice, ${formatUsd(tokens.anthropicCost)} scoring`} />
         <StatTile label="Tokens, 30 days" value={fmtTokens(tokens.input + tokens.output)} hint={`${fmtTokens(tokens.input)} in, ${fmtTokens(tokens.output)} out, ${fmtTokens(tokens.cacheRead)} cached, ${Math.round(tokens.voiceSeconds / 60)} voice min`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="bg-card rounded-2xl border p-6">
-          <h2 className="mb-4 font-medium">Calls per day</h2>
+          <h2 className="mb-4 font-medium">Calls per day <span className="text-muted-foreground text-xs font-normal">workspaces and Karen</span></h2>
           <DailyBars data={daily} metric="calls" />
         </section>
         <section className="bg-card rounded-2xl border p-6">

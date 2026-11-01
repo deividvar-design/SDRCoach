@@ -111,8 +111,10 @@ export type RewardClaim = {
 export type BillingEvent = { id: string; type: string; received_at: string };
 export type UsageEvent = {
   id: string;
-  org_id: string;
+  /** Null for a Karen demo call, which belongs to no workspace. */
+  org_id: string | null;
   session_id: string | null;
+  demo_id: string | null;
   provider: "anthropic" | "elevenlabs";
   kind: "score" | "digest" | "voice";
   model: string | null;
@@ -359,7 +361,7 @@ export type Database = {
       reward_claims: Table<RewardClaim, Insert<RewardClaim, "id" | "user_id" | "url" | "status" | "calls" | "days" | "note" | "ref_org_id" | "ref_user_id" | "decided_at" | "decided_by" | "created_at">>;
       demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "email" | "domain" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "followup_sent_at" | "finalize_attempts" | "scoring_started_at" | "mints" | "share_slug" | "display_name" | "display_company" | "leaderboard_opt_in" | "shared_at" | "company" | "personal_email" | "gclid" | "gbraid" | "wbraid" | "email_added_at" | "method" | "created_at">>;
       funnel_events: Table<FunnelEvent, Insert<FunnelEvent, "id" | "reason" | "email_domain" | "email_hash" | "subject" | "dedupe_key" | "meta" | "created_at">>;
-      usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "session_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
+      usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "org_id" | "session_id" | "demo_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
       admin_actions: Table<AdminAction, Insert<AdminAction, "id" | "org_id" | "payload" | "created_at">>;
       email_log: Table<EmailLog, Insert<EmailLog, "id" | "user_id" | "sent_at">>;
       callback_calls: Table<CallbackCall, Insert<CallbackCall, "id" | "user_id" | "status" | "elevenlabs_conversation_id" | "outcome" | "duration_seconds" | "error" | "created_at">>;

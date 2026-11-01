@@ -8,6 +8,7 @@ import { fetchConversation } from "@/lib/elevenlabs/client";
 import { computeMetrics } from "@/lib/scoring/metrics";
 import { scoreCall } from "@/lib/scoring/score";
 import { hashPrompt } from "@/lib/calls/finalize";
+import { recordAnthropicUsage, recordVoiceUsage } from "@/lib/usage/record";
 import { sendMail, emailConfigured } from "@/lib/email/send";
 import { templates } from "@/lib/email/templates";
 import { reportError } from "@/lib/sentry";
@@ -118,6 +119,7 @@ export async function finalizeDemo(id: string) {
 
     const turns: TranscriptTurn[] = convo.turns.map((t) => ({ role: t.role, text: t.text, t_start_ms: t.t_start_ms, interrupted: t.interrupted }));
     const durationSecs = Math.min(DEMO_MAX_SECONDS + 60, convo.durationSecs || Math.round((new Date(demo.ended_at ?? Date.now()).getTime() - new Date(demo.started_at ?? demo.created_at).getTime()) / 1000));
+    if (durationSecs > 0) await recordVoiceUsage(db, { demoId: id, seconds: durationSecs });
     if (!turns.some((t) => t.role === "rep")) {
       await db.from("demo_calls").update({ status: "scored", outcome: "incomplete", outcome_reason: "No speech was captured from you. Check the microphone is allowed for this site.", duration_seconds: durationSecs, transcript: turns }).eq("id", id);
       return;
@@ -138,6 +140,7 @@ export async function finalizeDemo(id: string) {
       mood: MOODS.find((m) => m.id === "plain"),
       gatekeeper: false,
     });
+    await recordAnthropicUsage(db, { demoId: id, kind: "score", model: score.model, usage: score.usage });
     const outcome = prospectDecided ?? score.inferred_outcome;
     const outcomeReason = typeof convo.dataCollection.outcome_reason === "string" && convo.dataCollection.outcome_reason ? convo.dataCollection.outcome_reason : score.outcome_reason;
 

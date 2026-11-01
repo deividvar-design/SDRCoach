@@ -21,11 +21,12 @@ export interface OrgRow {
 export async function loadOverview() {
   const db = createAdminClient();
   const since30 = iso(30 * DAY);
-  const [{ data: orgs }, memberships, sessions, usage] = await Promise.all([
+  const [{ data: orgs }, memberships, sessions, usage, karen] = await Promise.all([
     db.from("organizations").select("*").order("created_at", { ascending: false }).limit(1000),
     fetchAll((a, b) => db.from("memberships").select("org_id, user_id, role").range(a, b)),
     fetchAll((a, b) => db.from("call_sessions").select("id, org_id, status, started_at, created_at").gte("created_at", since30).range(a, b)),
     fetchAll((a, b) => db.from("usage_events").select("*").gte("created_at", since30).range(a, b)),
+    fetchAll((a, b) => db.from("demo_calls").select("id, created_at").gte("created_at", since30).not("elevenlabs_conversation_id", "is", null).range(a, b)),
   ]);
 
   const allOrgs = orgs ?? [];
@@ -68,7 +69,7 @@ export async function loadOverview() {
     return {
       key,
       label: day.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
-      calls: sess.filter((x) => x.created_at.slice(0, 10) === key).length,
+      calls: sess.filter((x) => x.created_at.slice(0, 10) === key).length + karen.filter((x) => x.created_at.slice(0, 10) === key).length,
       cost: use.filter((x) => x.created_at.slice(0, 10) === key).reduce((a, b) => a + Number(b.cost_usd), 0),
     };
   });
@@ -94,6 +95,7 @@ export async function loadOverview() {
       paid: allOrgs.filter((o) => ["starter", "team", "enterprise"].includes(o.plan)).length,
       canceled: allOrgs.filter((o) => o.plan === "canceled").length,
       calls30d: sess.length,
+      karen30d: karen.length,
       calls7d: sess.filter((x) => x.created_at >= iso(7 * DAY)).length,
       connected30d: sess.filter((x) => x.started_at).length,
       cost30d: tokens.anthropicCost + tokens.voiceCost,

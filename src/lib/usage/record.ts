@@ -6,10 +6,11 @@ import { reportError } from "@/lib/sentry";
 
 type Db = SupabaseClient<Database>;
 
-export async function recordAnthropicUsage(db: Db, p: { orgId: string; sessionId?: string | null; kind: "score" | "digest"; model: string; usage: TokenUsage }) {
+export async function recordAnthropicUsage(db: Db, p: { orgId?: string | null; sessionId?: string | null; demoId?: string | null; kind: "score" | "digest"; model: string; usage: TokenUsage }) {
   const { error } = await db.from("usage_events").insert({
-    org_id: p.orgId,
+    org_id: p.orgId ?? null,
     session_id: p.sessionId ?? null,
+    demo_id: p.demoId ?? null,
     provider: "anthropic",
     kind: p.kind,
     model: p.model,
@@ -22,10 +23,11 @@ export async function recordAnthropicUsage(db: Db, p: { orgId: string; sessionId
   if (error) reportError(new Error(error.message), { where: "usage_record_anthropic", orgId: p.orgId, sessionId: p.sessionId });
 }
 
-export async function recordVoiceUsage(db: Db, p: { orgId: string; sessionId: string; seconds: number }) {
+export async function recordVoiceUsage(db: Db, p: { orgId?: string | null; sessionId?: string | null; demoId?: string | null; seconds: number }) {
   const { error } = await db.from("usage_events").insert({
-    org_id: p.orgId,
-    session_id: p.sessionId,
+    org_id: p.orgId ?? null,
+    session_id: p.sessionId ?? null,
+    demo_id: p.demoId ?? null,
     provider: "elevenlabs",
     kind: "voice",
     seconds: p.seconds,
@@ -34,7 +36,10 @@ export async function recordVoiceUsage(db: Db, p: { orgId: string; sessionId: st
   // 23505: the row was written when the token was minted (seconds 0) or by an earlier finalize. Set the real length
   // rather than counting the call twice.
   if (error?.code === "23505") {
-    if (p.seconds > 0) await db.from("usage_events").update({ seconds: p.seconds, cost_usd: voiceCost(p.seconds) }).eq("session_id", p.sessionId).eq("kind", "voice");
+    if (p.seconds > 0) {
+      const q = db.from("usage_events").update({ seconds: p.seconds, cost_usd: voiceCost(p.seconds) }).eq("kind", "voice");
+      await (p.demoId ? q.eq("demo_id", p.demoId) : q.eq("session_id", p.sessionId ?? ""));
+    }
     return;
   }
   if (error) reportError(new Error(error.message), { where: "usage_record_voice", orgId: p.orgId, sessionId: p.sessionId });
