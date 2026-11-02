@@ -24,7 +24,7 @@ const FAQ = [
   { q: "What happens when the team uses its allowance?", a: "Calls are pooled across seats, so one rep can use more than another. When the pool is empty, dialing pauses until the month resets. Adding a seat raises the pool immediately, and there is never a surprise charge." },
   { q: "Do unused calls roll over?", a: "No. Allowances reset monthly. Annual plans are billed up front with a 20% discount." },
   { q: "Which currency will we be charged in?", a: "Euros or US dollars, your choice at checkout. European companies see euro prices by default. Prices exclude VAT; EU companies with a VAT number are reverse-charged." },
-  { q: "Can we use our own call recordings?", a: "Yes, on every plan. Upload transcripts from Gong, Chorus or your dialler and prospects start sounding like your market within minutes. Starter holds 30 sources, Team 100." },
+  { q: "Can we use our own call recordings?", a: "Yes, on every plan. Upload transcripts from Gong, Chorus, Apollo or your dialler and prospects start sounding like your market within minutes. Starter holds 30 sources, Team 100." },
   { q: "Is our data used to train models?", a: "No. Your transcripts and recordings are used only to ground your own team's prospects and grading." },
   { q: "Why work email only?", a: "100 Dials is built for teams. The trial creates a workspace for your company domain, so one person can start and invite the rest." },
 ];
