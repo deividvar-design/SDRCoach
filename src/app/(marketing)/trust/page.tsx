@@ -1,3 +1,4 @@
+import { ANALYTICS_REGION_SHORT } from "@/lib/analytics-region";
 import { pageMetadata } from "@/lib/seo";
 import { Database, Globe, Lock, ShieldCheck, Trash2, Users } from "lucide-react";
 import { CtaBand, Eyebrow, H2, Section } from "@/components/marketing/sections";
@@ -23,7 +24,7 @@ const PROCESSING = [
   ["Storage and sign-in", "Your workspace data, recordings, transcripts and accounts", "European Union"],
   ["Real-time voice", "Runs the live conversation with the AI prospect and produces the recording", "EU or US, contractually bound, no training on your data"],
   ["Call scoring", "Grades transcripts and digests uploaded calls", "Contractually bound, no training on your data"],
-  ["Analytics", "Anonymous product usage, only after cookie consent", "European Union"],
+  ["Analytics", "Product usage, only after cookie consent (PostHog)", ANALYTICS_REGION_SHORT],
 ];
 
 export default function TrustPage() {

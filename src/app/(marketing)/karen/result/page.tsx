@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { ResultPoller } from "./result-poller";
 import { LeaderboardForm } from "./leaderboard-form";
 import { EmailStep } from "./email-step";
+import { TrackOnMount } from "@/components/analytics/identify";
 import { callKaren } from "../actions";
 import { ShareButton } from "../share-button";
 import { survivedLabel } from "@/lib/demo/share";
@@ -38,6 +39,7 @@ export default async function KarenResultPage() {
     <Section className="pt-14 md:pt-20">
       <ResultPoller pending={pending} />
       {demo.status === "scored" && <AdsConversion kind="karen" id={demo.id} email={demo.email} />}
+      {demo.status === "scored" && <TrackOnMount event="karen_scored" props={{ outcome: demo.outcome, overall: Number(demo.overall ?? 0), seconds: demo.duration_seconds ?? 0, has_email: Boolean(demo.email), method: demo.method }} />}
       <div className="mx-auto max-w-3xl">
         <Eyebrow>Your call with Karen</Eyebrow>
         {pending ? (

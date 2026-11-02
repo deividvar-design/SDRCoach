@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addDemoEmail, type EmailStepState } from "../actions";
+import { track } from "@/components/analytics/provider";
 
 /** After the call: where the scorecard goes. Unlocks the six-skill breakdown on this page and sends the report. */
 export function EmailStep({ pending: reviewing }: { pending: boolean }) {
@@ -15,8 +16,10 @@ export function EmailStep({ pending: reviewing }: { pending: boolean }) {
   const [state, action, pending] = useActionState<EmailStepState, FormData>(addDemoEmail, {});
 
   useEffect(() => {
-    if (state.done) router.refresh();
-  }, [state.done, router]);
+    if (!state.done) return;
+    track("karen_email_left", { personal: Boolean(state.personal) });
+    router.refresh();
+  }, [state.done, state.personal, router]);
 
   if (state.done) return <p className="text-muted-foreground text-sm">Saved. Loading your scorecard…</p>;
 

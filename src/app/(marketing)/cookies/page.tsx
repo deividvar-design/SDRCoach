@@ -1,6 +1,7 @@
 import { pageMetadata } from "@/lib/seo";
 import { LegalPage } from "@/components/marketing/legal";
 import { CookieSettingsLink } from "@/components/analytics/cookie-banner";
+import { ANALYTICS_REGION } from "@/lib/analytics-region";
 
 export const metadata = pageMetadata({ title: "Cookie policy", description: "Which cookies 100 Dials sets, what each one does, which wait for your consent, and how to change your choice later.", path: "/cookies", card: ["page", "legal"] });
 
@@ -24,11 +25,11 @@ export default function CookiesPage() {
       <p>We count page views with Vercel Web Analytics, which is built into the platform that hosts this site. It sets no cookie and stores nothing on your device. It records the page, the referring site, the country, the device type and any campaign tag in the link, and it derives a short-lived anonymous identifier from the request that is discarded after the visit and cannot identify you. This runs without asking because it does not touch your device.</p>
 
       <h2>Analytics (with consent)</h2>
-      <p>If you accept, we load an analytics tool hosted in the EU to understand which pages and features are used and where people get stuck. No advertising, no cross-site tracking, no data sold.</p>
+      <p>If you accept, we load PostHog, a product analytics tool hosted in {ANALYTICS_REGION}, to understand which pages and features are used and where people get stuck. Requests go through our own domain. No advertising, no cross-site tracking, no data sold.</p>
       <table>
         <thead><tr><th>Name</th><th>Purpose</th><th>Duration</th></tr></thead>
         <tbody>
-          <tr><td>Analytics cookies</td><td>Anonymous visitor id and session</td><td>12 months</td></tr>
+          <tr><td>PostHog analytics cookies</td><td>Anonymous visitor id and session; tied to your account once you sign in</td><td>12 months</td></tr>
         </tbody>
       </table>
 

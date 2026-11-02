@@ -7,6 +7,7 @@ import { SidebarNav } from "@/components/shell/sidebar-nav";
 import { UserMenu } from "@/components/shell/user-menu";
 import { FeedbackLink } from "@/components/shell/feedback-dialog";
 import { RewardsLink } from "@/components/shell/rewards-link";
+import { IdentifyUser } from "@/components/analytics/identify";
 import { TrialBanner } from "@/components/billing/trial-banner";
 import { TrialGate } from "@/components/billing/trial-gate";
 import { SITE } from "@/lib/site";
@@ -35,6 +36,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <div className="flex min-h-dvh">
+      <IdentifyUser userId={viewer.userId} props={{ org_id: viewer.org.id, org_name: viewer.org.name, plan: viewer.org.plan, role: viewer.membership.role, seat_limit: viewer.org.seat_limit }} />
       <aside className="bg-sidebar sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r p-3 md:flex">
         <Link href="/dashboard" className="px-2 py-3">
           <Logo descriptor />

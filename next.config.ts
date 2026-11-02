@@ -21,6 +21,16 @@ const nextConfig: NextConfig = {
   },
   images: { formats: ["image/avif", "image/webp"] },
   poweredByHeader: false,
+  // PostHog through our own domain: ad blockers drop requests to posthog.com, not to /ingest here.
+  async rewrites() {
+    const host = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com";
+    const assets = host.replace(/\/\/(eu|us)\./, "//$1-assets.");
+    return [
+      { source: "/ingest/static/:path*", destination: `${assets}/static/:path*` },
+      { source: "/ingest/:path*", destination: `${host}/:path*` },
+    ];
+  },
+  skipTrailingSlashRedirect: true,
   async redirects() {
     // Feed readers guess these paths; the one feed lives under /blog.
     return [
