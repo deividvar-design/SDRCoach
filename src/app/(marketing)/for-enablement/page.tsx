@@ -1,3 +1,4 @@
+import { TranscriptSources } from "@/components/marketing/transcript-sources";
 import { pageMetadata } from "@/lib/seo";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
 import Link from "next/link";
@@ -13,7 +14,7 @@ export const metadata = pageMetadata({
 });
 
 const FAQ: [string, string][] = [
-  ["Can AI roleplay be grounded in our own call recordings?", "Yes. Upload CSV exports of your real call transcripts from Gong, Chorus or your dialler. 100 Dials extracts how your buyers talk, the objections they raise and the phrasing they use, and puts that in the prospect's mouth. Delete a source and its digest goes with it."],
+  ["Can AI roleplay be grounded in our own call recordings?", "Yes. Upload CSV or text exports of your real call transcripts from Gong, Chorus, Apollo or your dialler. 100 Dials extracts how your buyers talk, the objections they raise and the phrasing they use, and puts that in the prospect's mouth. Delete a source and its digest goes with it."],
   ["How are reps scored?", "Every call is scored on the same six skills: opener, reason for call, discovery, objection handling, value proposition and close, each out of ten with a rationale that quotes the rep's own words. Sixteen objection types are tagged with how the rep handled each one."],
   ["Does 100 Dials train AI models on our transcripts?", "No. Your transcripts ground your prospects and nothing else. Database, authentication and file storage are hosted in the EU, and a data processing agreement with the named list of subprocessors is available on request for every plan."],
   ["How do we measure skill over time?", "Managers get a heatmap of the six skills by rep, a table of the objections the team fumbles, per-rep trend charts and a Monday digest, so a programme can be measured week over week instead of judged from a few listened-to calls."],
@@ -37,6 +38,7 @@ export default function ForEnablementPage() {
             <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>
             <Button size="lg" variant="outline" asChild><Link href="/trust">How we handle your data</Link></Button>
           </div>
+          <TranscriptSources className="mt-10" />
         </div>
       </Section>
 
@@ -44,7 +46,7 @@ export default function ForEnablementPage() {
         <FeatureRow
           eyebrow="Grounding"
           title="Upload a quarter of calls. Prospects start sounding like your buyers."
-          body={<><p>Drop in CSV exports from Gong, Chorus, Fireflies or your dialer. 100 Dials extracts the objections your market actually raises, in the phrasing it uses, plus tone and the moves that booked meetings.</p><p>That digest, never the raw transcript, is injected into every persona and into the grader. Your reps ramp against your market's real pushback.</p></>}
+          body={<><p>Drop in CSV or text exports from Gong, Chorus, Apollo, Fireflies or your dialer. 100 Dials extracts the objections your market actually raises, in the phrasing it uses, plus tone and the moves that booked meetings.</p><p>That digest, never the raw transcript, is injected into every persona and into the grader. Your reps ramp against your market's real pushback.</p></>}
           image="/screens/knowledge.png"
           alt="Knowledge page with uploaded transcripts and their digest status"
         />

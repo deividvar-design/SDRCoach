@@ -5,6 +5,7 @@ import { TRIAL } from "@/lib/billing/plans";
 import { SampleCall } from "@/components/marketing/sample-call";
 import { ProofCall } from "@/components/marketing/proof-call";
 import { ResearchCards } from "@/components/marketing/research-cards";
+import { TranscriptSources } from "@/components/marketing/transcript-sources";
 import { BossFights } from "@/components/marketing/boss-fights";
 import { Ladder } from "@/components/marketing/ladder";
 import { Heatmap } from "@/components/marketing/heatmap";
@@ -132,8 +133,9 @@ export default async function HomePage() {
           <div>
             <H2>Prospects that sound like your market, not like a chatbot.</H2>
             <p className="text-muted-foreground text-body mt-5">
-              Upload transcripts from Gong, Chorus or your dialer. 100 Dials extracts how your buyers talk, the objections they actually raise and the phrasing they use, then puts it in the prospect's mouth. The coach grades against your playbook, not a generic one.
+              Upload transcripts from Gong, Chorus, Apollo or your dialer. 100 Dials extracts how your buyers talk, the objections they actually raise and the phrasing they use, then puts it in the prospect's mouth. The coach grades against your playbook, not a generic one.
             </p>
+            <TranscriptSources className="mt-6" />
             <Button className="mt-6" variant="outline" asChild><Link href="/for-enablement">How enablement teams use it</Link></Button>
           </div>
           <div className="stage text-paper rounded-2xl p-6 md:p-8" data-ui>
