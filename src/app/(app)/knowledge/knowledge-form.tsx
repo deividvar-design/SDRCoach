@@ -58,7 +58,7 @@ export function KnowledgeForm() {
               <Label htmlFor="files">CSV or text files</Label>
               <Input id="files" name="files" type="file" accept=".csv,.tsv,.txt,.md,text/csv,text/plain" multiple required />
               <p className="text-muted-foreground text-xs">
-                CSV or text exports from Gong, Chorus, Apollo, Fireflies or a dialer work as is. One utterance per row (speaker + text) or one call per row (a transcript column). Up to 8 MB each.
+                CSV or text exports from Gong, Chorus, Apollo, Fireflies or a dialler work as is. One utterance per row (speaker + text) or one call per row (a transcript column). Up to 8 MB each.
               </p>
             </div>
             <KindSelect />

@@ -133,7 +133,7 @@ export default async function HomePage() {
           <div>
             <H2>Prospects that sound like your market, not like a chatbot.</H2>
             <p className="text-muted-foreground text-body mt-5">
-              Upload transcripts from Gong, Chorus, Apollo or your dialer. 100 Dials extracts how your buyers talk, the objections they actually raise and the phrasing they use, then puts it in the prospect's mouth. The coach grades against your playbook, not a generic one.
+              Upload transcripts from Gong, Chorus, Apollo or your dialler. 100 Dials extracts how your buyers talk, the objections they actually raise and the phrasing they use, then puts it in the prospect's mouth. The coach grades against your playbook, not a generic one.
             </p>
             <TranscriptSources className="mt-6" />
             <Button className="mt-6" variant="outline" asChild><Link href="/for-enablement">How enablement teams use it</Link></Button>

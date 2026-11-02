@@ -37,13 +37,13 @@ const MARKS: { name: string; mark: React.ReactNode }[] = [
 
 export function TranscriptSources({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
-    <div className={cn("flex flex-wrap items-center gap-x-6 gap-y-3", className)} aria-label="Works with transcripts from Gong, Chorus, Apollo and your dialer">
+    <div className={cn("flex flex-wrap items-center gap-x-6 gap-y-3", className)} aria-label="Works with transcripts from Gong, Chorus, Apollo and your dialler">
       <span className="text-muted-foreground text-sm">Works with transcripts from</span>
       <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
         {MARKS.map((m) => (
           <li key={m.name} className={cn("opacity-90", compact && "scale-90")} title={m.name}>{m.mark}</li>
         ))}
-        <li className="text-muted-foreground text-sm">and your dialer</li>
+        <li className="text-muted-foreground text-sm">and your dialler</li>
       </ul>
     </div>
   );

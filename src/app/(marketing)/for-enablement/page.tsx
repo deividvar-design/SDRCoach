@@ -46,7 +46,7 @@ export default function ForEnablementPage() {
         <FeatureRow
           eyebrow="Grounding"
           title="Upload a quarter of calls. Prospects start sounding like your buyers."
-          body={<><p>Drop in CSV or text exports from Gong, Chorus, Apollo, Fireflies or your dialer. 100 Dials extracts the objections your market actually raises, in the phrasing it uses, plus tone and the moves that booked meetings.</p><p>That digest, never the raw transcript, is injected into every persona and into the grader. Your reps ramp against your market's real pushback.</p></>}
+          body={<><p>Drop in CSV or text exports from Gong, Chorus, Apollo, Fireflies or your dialler. 100 Dials extracts the objections your market actually raises, in the phrasing it uses, plus tone and the moves that booked meetings.</p><p>That digest, never the raw transcript, is injected into every persona and into the grader. Your reps ramp against your market's real pushback.</p></>}
           image="/screens/knowledge.png"
           alt="Knowledge page with uploaded transcripts and their digest status"
         />
