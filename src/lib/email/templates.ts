@@ -118,6 +118,12 @@ export const templates = {
     return { subject: `Stalled trial: ${p.orgName} (${p.name})`, html: layout("A trial stalled.", html, cta), text: textOf(["Three days in, no call.", ...rows.map(([k, v]) => `${k}: ${v}`)], cta) };
   },
 
+  accessLink(p: { company: string; calls: number; days: number; link: string }): Rendered {
+    const cta = { label: "Choose a password and start", href: p.link };
+    const lines = [`We set up a ${SITE.name} workspace for ${p.company}: ${p.calls} calls over ${p.days} days, no card and no signup form.`, "Open the link, choose a password, and your first AI prospect picks up a minute later. Every call comes back scored on six skills with the one thing to fix.", "The link works once and is yours alone."];
+    return { subject: `Your ${SITE.name} workspace for ${p.company} is ready`, html: layout("You're in.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
   invite(p: { inviterName: string; orgName: string; role: string; link: string }): Rendered {
     const cta = { label: "Accept invite", href: p.link };
     const lines = [`${p.inviterName} invited you to join ${p.orgName} on ${SITE.name} as a ${p.role}.`, "Dial AI prospects built from your team's targets and get a scored coaching report after every call.", "The link works for 7 days."];

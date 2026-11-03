@@ -10,13 +10,15 @@ import { logFunnel } from "@/lib/funnel";
 import { sendMail, emailConfigured } from "@/lib/email/send";
 import { templates } from "@/lib/email/templates";
 import { absoluteUrl } from "@/lib/site";
+import { randomBytes } from "node:crypto";
+import { ACCESS_LINK_DAYS, accessUrl } from "@/lib/access/links";
 
 export interface AdminState {
   error?: string;
   ok?: string;
 }
 
-async function log(adminEmail: string, orgId: string, action: string, payload: Record<string, string | number | boolean | null>) {
+async function log(adminEmail: string, orgId: string | null, action: string, payload: Record<string, string | number | boolean | null>) {
   await createAdminClient().from("admin_actions").insert({ admin_email: adminEmail, org_id: orgId, action, payload });
 }
 
@@ -101,5 +103,64 @@ export async function rejectClaim(claimId: string, formData: FormData): Promise<
   }
   revalidatePath("/admin/rewards");
   revalidatePath("/rewards");
+  return { ok: true };
+}
+
+export interface AccessLinkState {
+  error?: string;
+  ok?: string;
+  /** The link just created, for the copy button. */
+  link?: string;
+}
+
+/** An email, a company and a call allowance become a link that creates the account and workspace when opened. */
+export async function createAccessLink(_prev: AccessLinkState, formData: FormData): Promise<AccessLinkState> {
+  const parsed = z
+    .object({
+      email: z.string().trim().toLowerCase().email("Enter a valid email"),
+      company: z.string().trim().min(2, "Give the company a name").max(80),
+      calls: z.coerce.number().int().min(1).max(1000),
+      days: z.coerce.number().int().min(1).max(365),
+      note: z.string().trim().max(200).optional(),
+    })
+    .safeParse({ email: formData.get("email"), company: formData.get("company"), calls: formData.get("calls"), days: formData.get("days"), note: formData.get("note") || undefined });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const admin = await requireAdmin();
+  const db = createAdminClient();
+  const { data: open } = await db.from("access_links").select("id").eq("email", parsed.data.email).is("claimed_at", null).is("revoked_at", null).gt("expires_at", new Date().toISOString()).limit(1).maybeSingle();
+  if (open) return { error: "An open link for this address already exists below. Revoke it first to issue another." };
+  const { data: row, error } = await db
+    .from("access_links")
+    .insert({ token: randomBytes(24).toString("hex"), email: parsed.data.email, company: parsed.data.company, calls: parsed.data.calls, days: parsed.data.days, note: parsed.data.note ?? null, created_by: admin.email, expires_at: new Date(Date.now() + ACCESS_LINK_DAYS * 86_400_000).toISOString() })
+    .select("id, token")
+    .single();
+  if (error || !row) return { error: error?.message ?? "Could not create the link." };
+  await log(admin.email, null, "access_link_created", { link: row.id, email: parsed.data.email, company: parsed.data.company, calls: parsed.data.calls, days: parsed.data.days });
+  revalidatePath("/admin/access");
+  return { ok: `Link created for ${parsed.data.email}.`, link: accessUrl(row.token) };
+}
+
+export async function revokeAccessLink(id: string): Promise<{ ok: true } | { error: string }> {
+  const admin = await requireAdmin();
+  const { error } = await createAdminClient().from("access_links").update({ revoked_at: new Date().toISOString() }).eq("id", id).is("claimed_at", null);
+  if (error) return { error: error.message };
+  await log(admin.email, null, "access_link_revoked", { link: id });
+  revalidatePath("/admin/access");
+  return { ok: true };
+}
+
+/** Sends the link to the address it was made for, from our own template. */
+export async function emailAccessLink(id: string): Promise<{ ok: true } | { error: string }> {
+  const admin = await requireAdmin();
+  if (!emailConfigured()) return { error: "Email is not configured." };
+  const db = createAdminClient();
+  const { data: link } = await db.from("access_links").select("*").eq("id", id).maybeSingle();
+  if (!link || link.claimed_at || link.revoked_at) return { error: "That link is not open." };
+  try {
+    await sendMail({ to: link.email, ...templates.accessLink({ company: link.company, calls: link.calls, days: link.days, link: accessUrl(link.token) }) });
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "The email could not be sent." };
+  }
+  await log(admin.email, null, "access_link_emailed", { link: id, email: link.email });
   return { ok: true };
 }
