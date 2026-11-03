@@ -1,5 +1,6 @@
 import { MarketingHeader } from "@/components/marketing/header";
 import { MarketingFooter } from "@/components/marketing/footer";
+import { StickyKarenBar } from "@/components/marketing/sticky-karen-bar";
 
 export default function MarketingLayout({ children }: LayoutProps<"/">) {
   return (
@@ -10,6 +11,8 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
       <MarketingHeader />
       <main id="content" className="flex-1">{children}</main>
       <MarketingFooter />
+      {/* Phones, content pages only: the free call, once the reader has scrolled a quarter of the page. */}
+      <StickyKarenBar />
     </div>
   );
 }
