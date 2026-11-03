@@ -24,6 +24,15 @@ async function makeNonce() {
   return { raw, hashed };
 }
 
+/** Resolves once the page has loaded and the main thread is idle, so Google's script never competes with the first paint. */
+function afterIdle(): Promise<void> {
+  return new Promise((resolve) => {
+    const go = () => ("requestIdleCallback" in window ? requestIdleCallback(() => resolve(), { timeout: 2500 }) : setTimeout(resolve, 1500));
+    if (document.readyState === "complete") go();
+    else window.addEventListener("load", go, { once: true });
+  });
+}
+
 function loadScript(): Promise<void> {
   const w = window as GoogleWindow;
   if (w.google?.accounts?.id) return Promise.resolve();
@@ -51,6 +60,7 @@ function ensureSetup(mode: Mode) {
     const supabase = createClient();
     const { data } = await supabase.auth.getSession();
     if (data.session) return null;
+    await afterIdle();
     const [{ raw, hashed }] = await Promise.all([makeNonce(), loadScript()]);
     const id = (window as GoogleWindow).google?.accounts?.id;
     if (!id) return null;

@@ -11,6 +11,7 @@ import { GoogleMark } from "@/app/(auth)/auth-form";
 import { getObjectionPage } from "@/lib/objections";
 import { cleanObjection, cleanSourcePath } from "@/lib/demo/source";
 import { RememberKarenSource } from "./remember-source";
+import { PrefetchCall } from "./prefetch-call";
 
 export const metadata = pageMetadata({
   title: "Practice cold calls free: can you survive Karen?",
@@ -37,6 +38,7 @@ export default async function KarenPage({ searchParams }: PageProps<"/karen">) {
   return (
     <>
       <RememberKarenSource from={source.source_path} objection={source.objection} />
+      <PrefetchCall />
       <JsonLd data={faqLd(FAQ.map(([q, a]) => ({ q, a })))} />
       <Section className="pt-14 md:pt-20">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">

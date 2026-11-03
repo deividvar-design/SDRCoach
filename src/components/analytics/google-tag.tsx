@@ -12,11 +12,9 @@ export function GoogleTag() {
 (function(){var g=null;try{var c=JSON.parse(localStorage.getItem('cookie-consent')||'null');if(c&&typeof c.marketing==='boolean')g=c.marketing}catch(e){}
 if(g===null){g=/(?:^|; )cr=row(?:;|$)/.test(document.cookie)}
 var s=g?'granted':'denied';gtag('consent','default',{ad_storage:s,ad_user_data:s,ad_personalization:s,analytics_storage:s,wait_for_update:g?0:500});})();
-gtag('js',new Date());gtag('config',${JSON.stringify(ID)},{allow_enhanced_conversions:true});`;
-  return (
-    <>
-      <script async src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ID)}`} />
-      <script dangerouslySetInnerHTML={{ __html: inline }} />
-    </>
-  );
+gtag('js',new Date());gtag('config',${JSON.stringify(ID)},{allow_enhanced_conversions:true});
+(function(){var go=function(){var s=document.createElement('script');s.async=true;s.src=${JSON.stringify(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ID)}`)};document.head.appendChild(s)};var idle=function(){('requestIdleCallback' in window)?requestIdleCallback(go,{timeout:2000}):setTimeout(go,1)};if(document.readyState==='complete'){idle()}else{window.addEventListener('load',idle,{once:true})}})();`;
+  // Calls made before the library arrives queue in the dataLayer and are delivered when it loads, so nothing is
+  // lost by letting the page paint first. Conversions happen on later clicks and connects anyway.
+  return <script dangerouslySetInnerHTML={{ __html: inline }} />;
 }

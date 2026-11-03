@@ -43,10 +43,10 @@ export function KarenHero() {
             <CallKarenSubmit className="focus-visible:ring-paper/50" />
           </form>
           <form action={signInWithGoogle}>
-            <input type="hidden" name="next" value="/karen/start" />
-            <button type="submit" className="text-paper focus-visible:ring-paper/40 flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/20 text-[15px] font-medium outline-none transition-colors hover:bg-white/10 focus-visible:ring-[3px]">
+            <input type="hidden" name="next" value="/onboarding" />
+            <button type="submit" aria-label="Create account with Google" className="text-paper focus-visible:ring-paper/40 flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/20 text-[15px] font-medium outline-none transition-colors hover:bg-white/10 focus-visible:ring-[3px]">
               <span className="grid size-5 place-items-center rounded-full bg-white"><GoogleMark /></span>
-              Call Karen with Google
+              Create account
             </button>
           </form>
           <p className="text-paper/60 text-xs leading-relaxed">No email to start. Allow the microphone and she picks up. After the call you say where the scorecard goes. One call per person; it is recorded and scored.</p>

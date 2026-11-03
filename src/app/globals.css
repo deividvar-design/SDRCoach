@@ -301,3 +301,8 @@
 .prose hr { border: 0; border-top: 1px solid var(--border); margin: 2.5em 0; }
 .prose img { border-radius: var(--radius); border: 1px solid var(--border); }
 .prose strong { font-weight: 600; }
+
+/* The cookie banner is in every page's HTML; the head script shows it before first paint when a choice is owed. */
+html[data-consent="pending"] [data-consent-banner] {
+  display: block;
+}
