@@ -16,6 +16,9 @@ import { ShareButton } from "../share-button";
 import { survivedLabel } from "@/lib/demo/share";
 import { createClient } from "@/lib/supabase/server";
 import { absoluteUrl } from "@/lib/site";
+import { authMethod } from "@/lib/demo/source";
+import { getObjectionPage } from "@/lib/objections";
+import { CtaLink } from "@/components/analytics/cta-link";
 
 export const metadata = { title: "Your call with Karen", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -33,13 +36,16 @@ export default async function KarenResultPage() {
     data: { user },
   } = await (await createClient()).auth.getUser();
   const viaGoogle = Boolean(user?.email && demo.email && user.email.toLowerCase() === demo.email);
+  // The objection card that sent them here. Karen did not necessarily raise it; the line only reflects the page they came from.
+  const cameFrom = demo.objection ? getObjectionPage(demo.objection) : null;
   const forward = `mailto:?subject=${encodeURIComponent("Cold call practice for the team")}&body=${encodeURIComponent(`I just tried a cold call against an AI prospect on 100 Dials${demo.share_slug ? ` (my scorecard: ${absoluteUrl(`/karen/score/${demo.share_slug}`)})` : ""}. It does this for a whole SDR team, on prospects built from our own accounts. Ten free calls to try it: ${absoluteUrl("/signup")}`)}`;
 
   return (
     <Section className="pt-14 md:pt-20">
       <ResultPoller pending={pending} />
       {demo.status === "scored" && <AdsConversion kind="karen" id={demo.id} email={demo.email} />}
-      {demo.status === "scored" && <TrackOnMount event="karen_scored" props={{ outcome: demo.outcome, overall: Number(demo.overall ?? 0), seconds: demo.duration_seconds ?? 0, has_email: Boolean(demo.email), method: demo.method }} />}
+      {/* Scored calls are reported from the server to the analytics id the call started with; this covers a call that started before consent. */}
+      {demo.status === "scored" && !demo.analytics_id && <TrackOnMount event="karen_call_completed" props={{ source_path: demo.source_path, objection: demo.objection, auth_method: authMethod(demo.method), duration_seconds: demo.duration_seconds ?? 0, score: Number(demo.overall ?? 0), outcome: demo.outcome, demo_id: demo.id }} />}
       <div className="mx-auto max-w-3xl">
         <Eyebrow>Your call with Karen</Eyebrow>
         {pending ? (
@@ -75,6 +81,18 @@ export default async function KarenResultPage() {
                   </div>
                 ))}
               </dl>
+            </div>
+            <div className="bg-card mt-6 flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="font-medium">Your team's reps face these same objections.</div>
+                <div className="text-muted-foreground text-sm">Build their prospects from your own calls — 10 free calls, no card.</div>
+                {cameFrom && (
+                  <div className="text-muted-foreground mt-2 text-sm">
+                    You came from: &lsquo;{cameFrom.phrasings[0] ?? cameFrom.label}&rsquo;. <CtaLink ctaId="report_objection_page" href={`/objections/${cameFrom.slug}`} className="text-foreground underline underline-offset-4">Read how to handle it →</CtaLink>
+                  </div>
+                )}
+              </div>
+              <Button variant="signal" className="shrink-0" asChild><CtaLink ctaId="report_trial" href={signup}>Start the team trial</CtaLink></Button>
             </div>
             <div className={cn("mt-8 grid gap-6 md:grid-cols-2", locked && "pointer-events-none select-none blur-sm")} aria-hidden={locked}>
               <div>

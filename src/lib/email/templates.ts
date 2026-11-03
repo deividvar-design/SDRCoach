@@ -219,8 +219,8 @@ export const templates = {
     return { subject: `Welcome to ${SITE.name} ${p.plan}`, html: layout("You're all set.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
   },
 
-  demoScorecard(p: { firstName: string; email: string; overall: number; outcome: string; outcomeReason: string; dimensions: ScoreDimensions; strengths: string[]; improvements: string[]; coachSummary: string; unsubscribeUrl: string; shareUrl?: string | null; personalEmail?: boolean }): Rendered {
-    const cta = p.personalEmail ? { label: "Start a free trial with your work email", href: absoluteUrl("/signup") } : { label: "Start a free trial with this address", href: absoluteUrl(`/signup?email=${encodeURIComponent(p.email)}`) };
+  demoScorecard(p: { firstName: string; email: string; overall: number; outcome: string; outcomeReason: string; dimensions: ScoreDimensions; strengths: string[]; improvements: string[]; coachSummary: string; unsubscribeUrl: string; shareUrl?: string | null; personalEmail?: boolean; cameFrom?: { text: string; url: string } | null }): Rendered {
+    const cta = { label: "Start the team trial", href: p.personalEmail ? absoluteUrl("/signup") : absoluteUrl(`/signup?email=${encodeURIComponent(p.email)}`) };
     const rows = (Object.keys(RUBRIC) as RubricKey[]).map((k) => ({ label: RUBRIC[k].label, score: p.dimensions[k].score, note: p.dimensions[k].rationale }));
     const outcome = OUTCOME_TEXT[p.outcome] ?? p.outcome;
     const html = [
@@ -231,6 +231,8 @@ export const templates = {
       `<p style="margin:0 0 6px;font-weight:600">What worked</p>${p.strengths.map((x) => `<p style="margin:0 0 6px">${esc(x)}</p>`).join("")}`,
       `<p style="margin:12px 0 6px;font-weight:600">What to fix first</p>${p.improvements.map((x) => `<p style="margin:0 0 6px">${esc(x)}</p>`).join("")}`,
       `<p style="margin:16px 0 0;color:#3b3833">${esc(p.coachSummary)}</p>`,
+      `<p style="margin:20px 0 0;font-weight:600">Your team's reps face these same objections.</p><p style="margin:4px 0 0">Build their prospects from your own calls — 10 free calls, no card.</p>`,
+      p.cameFrom ? `<p style="margin:12px 0 0;font-size:14px">You came from: ‘${esc(p.cameFrom.text)}’. <a href="${p.cameFrom.url}" style="color:#1c1b19">Read how to handle it →</a></p>` : "",
       p.shareUrl ? `<p style="margin:16px 0 0;font-size:14px">Your scorecard has a public page: <a href="${p.shareUrl}" style="color:#1c1b19">${esc(p.shareUrl)}</a>. Post it, or put yourself on the leaderboard from the results page.</p>` : "",
       `<p style="margin:16px 0 0;font-size:13px;color:#8a857a">Karen is one of the prospects in ${esc(SITE.name)}. Reps dial prospects built from their own targets, at three levels, and every call is scored like this one. Ten calls are free.</p>`,
       p.personalEmail ? `<p style="margin:12px 0 0;font-size:13px;color:#3b3833">The trial needs a work email, so the workspace belongs to your company and your team can join it. Sign up with yours and the ten free calls are waiting.</p>` : "",
@@ -249,6 +251,9 @@ export const templates = {
       ...p.improvements,
       "",
       p.coachSummary,
+      "",
+      "Your team's reps face these same objections. Build their prospects from your own calls — 10 free calls, no card.",
+      ...(p.cameFrom ? [`You came from: ‘${p.cameFrom.text}’. Read how to handle it: ${p.cameFrom.url}`] : []),
       "",
       ...(p.shareUrl ? [`Your public scorecard: ${p.shareUrl}`, ""] : []),
       ...(p.personalEmail ? ["The trial needs a work email, so the workspace belongs to your company and your team can join it.", ""] : []),
