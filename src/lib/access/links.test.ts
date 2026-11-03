@@ -15,9 +15,9 @@ function table(name: string) {
   const chain = () => q;
   Object.assign(q, {
     select: chain, eq: (col: string, v: unknown) => { q.filter = { col, v }; return q; },
-    maybeSingle: async () => ({ data: name === "access_links" ? state.link : null }),
+    maybeSingle: async () => ({ data: name === "access_links" && !q.inserted ? state.link : name === "targets" && q.inserted ? { id: "target-1" } : null }),
     update: (payload: unknown) => { writes.push({ table: name, op: "update", payload }); return q; },
-    insert: async (payload: unknown) => { writes.push({ table: name, op: "insert", payload }); return { error: null }; },
+    insert: (payload: unknown) => { writes.push({ table: name, op: "insert", payload }); q.inserted = true; return q; },
     then: (resolve: (v: unknown) => void) => resolve({ error: null }),
   });
   return q;
@@ -32,7 +32,13 @@ vi.mock("@/lib/supabase/admin", () => ({
 
 const { claimAccessLink, linkStatus } = await import("./links");
 const TOKEN = "a".repeat(48);
-const openLink = () => ({ id: "link-1", token: TOKEN, email: "Lead@Example.com", company: "Example Co", calls: 25, days: 21, claimed_at: null, revoked_at: null, expires_at: new Date(Date.now() + 86_400_000).toISOString() });
+const openLink = () => ({ id: "link-1", token: TOKEN, email: "Lead@Example.com", company: "Example Co", calls: 25, days: 21, claimed_at: null, revoked_at: null, draft: null, expires_at: new Date(Date.now() + 86_400_000).toISOString() });
+const DRAFT = {
+  company_description: "Example Co sells renewals software to procurement teams.",
+  product_description: "A renewals desk that chases contract owners before auto-renew dates.",
+  ideal_customer_profile: "Heads of procurement at 200 to 2,000 person companies.",
+  target: { name: "Dana Whitfield", title: "Head of Procurement", company: "Northwind Freight", industry: "Logistics", company_size: "500–1,000 employees", persona_notes: "Busy, direct.", pain_points: ["missed auto-renewals"], objections: ["We have a spreadsheet for that."], voice_id: "not-a-real-voice" },
+};
 
 describe("linkStatus", () => {
   it("reads the row", () => {
@@ -48,7 +54,7 @@ describe("claimAccessLink", () => {
 
   it("creates the user, the workspace with the link's allowance, the prospects, and marks the link claimed", async () => {
     const r = await claimAccessLink(TOKEN, { password: "hunter22hunter", fullName: "Sam" });
-    expect(r).toEqual({ ok: true, email: "lead@example.com", orgId: "org-1" });
+    expect(r).toEqual({ ok: true, email: "lead@example.com", orgId: "org-1", targetId: null });
     const user = writes.find((w) => w.op === "createUser")!.payload as Record<string, unknown>;
     expect(user).toMatchObject({ email: "lead@example.com", password: "hunter22hunter", email_confirm: true, user_metadata: { full_name: "Sam" } });
     const rpc = writes.find((w) => w.table === "rpc")!.payload as Record<string, unknown>;
@@ -62,6 +68,17 @@ describe("claimAccessLink", () => {
     const claimed = writes.find((w) => w.table === "access_links")!.payload as Record<string, unknown>;
     expect(claimed).toMatchObject({ org_id: "org-1", user_id: "user-1" });
     expect(claimed.claimed_at).toBeTruthy();
+  });
+
+  it("applies the website draft: context on the workspace and the drafted buyer as the first target", async () => {
+    state.link = { ...openLink(), draft: DRAFT };
+    const r = await claimAccessLink(TOKEN, { password: "hunter22hunter" });
+    expect(r).toMatchObject({ ok: true, targetId: "target-1" });
+    const orgUpdates = writes.filter((w) => w.table === "organizations").map((w) => w.payload as Record<string, unknown>);
+    expect(orgUpdates.some((u) => u.company_description === DRAFT.company_description && u.ideal_customer_profile === DRAFT.ideal_customer_profile)).toBe(true);
+    const targetInserts = writes.filter((w) => w.table === "targets").map((w) => w.payload);
+    const drafted = targetInserts.find((t) => !Array.isArray(t)) as Record<string, unknown>;
+    expect(drafted).toMatchObject({ name: "Dana Whitfield", org_id: "org-1", created_by: "user-1", kind: "practice", voice_id: null });
   });
 
   it("refuses a used, revoked, expired or malformed link before touching auth", async () => {

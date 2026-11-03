@@ -5,7 +5,9 @@ import { BOSS_PERSONAS } from "@/content/boss-personas";
 import { logFunnel } from "@/lib/funnel";
 import { absoluteUrl } from "@/lib/site";
 import { isPast } from "@/lib/utils";
-import type { AccessLink } from "@/types/database";
+import { VOICE_IDS } from "@/lib/domain/voices";
+import type { AccessLink, Json } from "@/types/database";
+import type { WorkspaceDraft } from "@/lib/onboarding/draft";
 
 export const ACCESS_LINK_DAYS = 30;
 
@@ -33,7 +35,17 @@ function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
 }
 
-export type ClaimResult = { ok: true; email: string; orgId: string } | { error: string; code: "invalid" | "exists" | "failed" };
+/** What is stored on the link: the draft without its token usage. */
+export type StoredDraft = Omit<WorkspaceDraft, "usage">;
+
+export function storedDraft(value: Json | null): StoredDraft | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const d = value as Partial<StoredDraft>;
+  if (typeof d.company_description !== "string" || typeof d.product_description !== "string" || typeof d.ideal_customer_profile !== "string") return null;
+  return d as StoredDraft;
+}
+
+export type ClaimResult = { ok: true; email: string; orgId: string; targetId: string | null } | { error: string; code: "invalid" | "exists" | "failed" };
 
 /**
  * Turns a link into an account and a workspace: the auth user with the chosen password, the organisation with the
@@ -65,7 +77,23 @@ export async function claimAccessLink(token: string, p: { password: string; full
     ...PRACTICE_PERSONAS.map((t) => ({ ...t, pain_points: [...t.pain_points], objections: [...t.objections], org_id: orgId, created_by: userId, kind: "practice" as const })),
     ...BOSS_PERSONAS.map((t) => ({ ...t, pain_points: [...t.pain_points], objections: [...t.objections], org_id: orgId, created_by: userId, kind: "boss" as const })),
   ]);
+  // The context drafted from their website when the link was made, and the first buyer to call, so the first
+  // screen they see is the dial screen rather than a form.
+  let targetId: string | null = null;
+  const draft = storedDraft(link.draft);
+  if (draft) {
+    await db.from("organizations").update({ company_description: draft.company_description, product_description: draft.product_description, ideal_customer_profile: draft.ideal_customer_profile }).eq("id", orgId);
+    if (draft.target) {
+      const { voice_id, ...t } = draft.target;
+      const { data: row } = await db
+        .from("targets")
+        .insert({ ...t, pain_points: [...t.pain_points], objections: [...t.objections], voice_id: VOICE_IDS.includes(voice_id) ? voice_id : null, org_id: orgId, created_by: userId, kind: "practice" })
+        .select("id")
+        .maybeSingle();
+      targetId = row?.id ?? null;
+    }
+  }
   await db.from("access_links").update({ claimed_at: new Date().toISOString(), org_id: orgId, user_id: userId }).eq("id", link.id);
-  await logFunnel("signup_completed", { email, subject: userId, dedupeKey: `signup_completed:${userId}`, meta: { provider: "access_link", link: link.id } });
-  return { ok: true, email, orgId };
+  await logFunnel("signup_completed", { email, subject: userId, dedupeKey: `signup_completed:${userId}`, meta: { provider: "access_link", link: link.id, enriched: Boolean(draft) } });
+  return { ok: true, email, orgId, targetId };
 }

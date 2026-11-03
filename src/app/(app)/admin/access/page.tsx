@@ -14,6 +14,8 @@ import { AccessRowActions } from "./row-actions";
 
 export const metadata = { title: "Access links" };
 export const dynamic = "force-dynamic";
+// Creating a link reads the company website and drafts the context, which can take half a minute.
+export const maxDuration = 60;
 
 const PATH = "/admin/access";
 const FILTERS = [{ key: "status", label: "Status", options: (["open", "claimed", "expired", "revoked"] as LinkStatus[]).map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) })) }];
@@ -61,6 +63,7 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
                   <TableCell>
                     <div className="font-medium">{l.company}</div>
                     <div className="text-muted-foreground text-xs">{l.email}{l.note ? ` · ${l.note}` : ""}</div>
+                    {l.website && <div className="mt-1 text-xs">{l.draft ? <span className="text-success">Enriched from {new URL(l.website).hostname}</span> : <span className="text-warning">Not enriched: {l.draft_error ?? "pending"}</span>}</div>}
                   </TableCell>
                   <TableCell className="text-sm">{l.calls} calls, {l.days} days</TableCell>
                   <TableCell>

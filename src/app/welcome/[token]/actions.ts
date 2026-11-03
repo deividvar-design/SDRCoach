@@ -27,10 +27,11 @@ export async function claimAccess(token: string, _prev: ClaimState, formData: Fo
   if ("error" in result) return { error: result.error, exists: result.code === "exists" };
 
   after(() => sendLifecycle(result.orgId, "welcome").catch((err) => reportError(err, { where: "welcome_email", orgId: result.orgId })));
-  await track("workspace_created", { with_site: false, access_link: true }).catch(() => {});
+  await track("workspace_created", { with_site: Boolean(result.targetId), access_link: true }).catch(() => {});
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email: result.email, password: parsed.data.password });
   if (error) redirect(`/login?email=${encodeURIComponent(result.email)}`);
-  redirect("/onboarding/context");
+  // With the website drafted in advance, the first screen is the call screen with the drafted buyer selected.
+  redirect(result.targetId ? `/practice?target=${result.targetId}&difficulty=warm` : "/onboarding/context");
 }

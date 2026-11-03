@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import type { Json } from "@/types/database";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { grantCalls, notifyReward } from "@/lib/rewards/grant";
@@ -12,6 +13,9 @@ import { templates } from "@/lib/email/templates";
 import { absoluteUrl } from "@/lib/site";
 import { randomBytes } from "node:crypto";
 import { ACCESS_LINK_DAYS, accessUrl } from "@/lib/access/links";
+import { DRAFT_MODEL, SiteError, draftWorkspace, fetchSiteText, normaliseSite } from "@/lib/onboarding/draft";
+import { recordAnthropicUsage } from "@/lib/usage/record";
+import { reportError } from "@/lib/sentry";
 
 export interface AdminState {
   error?: string;
@@ -122,22 +126,43 @@ export async function createAccessLink(_prev: AccessLinkState, formData: FormDat
       calls: z.coerce.number().int().min(1).max(1000),
       days: z.coerce.number().int().min(1).max(365),
       note: z.string().trim().max(200).optional(),
+      website: z.string().trim().max(200).optional(),
     })
-    .safeParse({ email: formData.get("email"), company: formData.get("company"), calls: formData.get("calls"), days: formData.get("days"), note: formData.get("note") || undefined });
+    .safeParse({ email: formData.get("email"), company: formData.get("company"), calls: formData.get("calls"), days: formData.get("days"), note: formData.get("note") || undefined, website: formData.get("website") || undefined });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const site = parsed.data.website ? normaliseSite(parsed.data.website) : null;
+  if (parsed.data.website && !site) return { error: "That website address doesn't look right. Try the form example.com." };
   const admin = await requireAdmin();
   const db = createAdminClient();
   const { data: open } = await db.from("access_links").select("id").eq("email", parsed.data.email).is("claimed_at", null).is("revoked_at", null).gt("expires_at", new Date().toISOString()).limit(1).maybeSingle();
   if (open) return { error: "An open link for this address already exists below. Revoke it first to issue another." };
   const { data: row, error } = await db
     .from("access_links")
-    .insert({ token: randomBytes(24).toString("hex"), email: parsed.data.email, company: parsed.data.company, calls: parsed.data.calls, days: parsed.data.days, note: parsed.data.note ?? null, created_by: admin.email, expires_at: new Date(Date.now() + ACCESS_LINK_DAYS * 86_400_000).toISOString() })
+    .insert({ token: randomBytes(24).toString("hex"), email: parsed.data.email, company: parsed.data.company, calls: parsed.data.calls, days: parsed.data.days, note: parsed.data.note ?? null, website: site?.href ?? null, created_by: admin.email, expires_at: new Date(Date.now() + ACCESS_LINK_DAYS * 86_400_000).toISOString() })
     .select("id, token")
     .single();
   if (error || !row) return { error: error?.message ?? "Could not create the link." };
-  await log(admin.email, null, "access_link_created", { link: row.id, email: parsed.data.email, company: parsed.data.company, calls: parsed.data.calls, days: parsed.data.days });
+  await log(admin.email, null, "access_link_created", { link: row.id, email: parsed.data.email, company: parsed.data.company, calls: parsed.data.calls, days: parsed.data.days, website: site?.href ?? null });
+
+  // The website is read and the workspace context drafted now, so the recipient lands ready to dial. A failure
+  // never loses the link: it is noted on the row and the recipient gets the context step instead.
+  let note = "";
+  if (site) {
+    try {
+      const text = await fetchSiteText(site);
+      const { usage, ...draft } = await draftWorkspace({ orgName: parsed.data.company, site: site.href, text });
+      await recordAnthropicUsage(db, { kind: "digest", model: DRAFT_MODEL, usage });
+      await db.from("access_links").update({ draft: draft as unknown as Json, draft_error: null }).eq("id", row.id);
+      note = ` Context and a first buyer drafted from ${site.hostname}.`;
+    } catch (err) {
+      const reason = err instanceof SiteError ? err.message : "the draft did not come through";
+      if (!(err instanceof SiteError)) reportError(err, { where: "access_link_draft", extra: { link: row.id, site: site.href } });
+      await db.from("access_links").update({ draft_error: reason }).eq("id", row.id);
+      note = ` Could not draft from ${site.hostname} (${reason}); they will get the context step instead.`;
+    }
+  }
   revalidatePath("/admin/access");
-  return { ok: `Link created for ${parsed.data.email}.`, link: accessUrl(row.token) };
+  return { ok: `Link created for ${parsed.data.email}.${note}`, link: accessUrl(row.token) };
 }
 
 export async function revokeAccessLink(id: string): Promise<{ ok: true } | { error: string }> {

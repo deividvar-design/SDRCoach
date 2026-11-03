@@ -19,7 +19,7 @@ export default async function WelcomePage({ params }: PageProps<"/welcome/[token
             <div className="space-y-2">
               <h1 className="text-2xl font-semibold tracking-tight">Your workspace is ready, {link.company}.</h1>
               <p className="text-muted-foreground text-sm">
-                We set you up with {link.calls} calls over {link.days} days, no card and no signup form. Choose a password and you are in.
+                We set you up with {link.calls} calls over {link.days} days, no card and no signup form.{link.draft ? " Your prospects already know what you sell: choose a password and the first one picks up." : " Choose a password and you are in."}
               </p>
             </div>
             <ClaimForm token={token} email={link.email} />

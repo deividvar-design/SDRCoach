@@ -106,6 +106,10 @@ export type AccessLink = {
   revoked_at: string | null;
   org_id: string | null;
   user_id: string | null;
+  /** The company website, and the context plus first buyer drafted from it when the link was created. */
+  website: string | null;
+  draft: Json | null;
+  draft_error: string | null;
   created_at: string;
 };
 
@@ -415,7 +419,7 @@ export type Database = {
           { foreignKeyName: "memberships_manager_id_fkey"; columns: ["manager_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ]
       >;
-      access_links: Table<AccessLink, Insert<AccessLink, "id" | "token" | "calls" | "days" | "note" | "expires_at" | "claimed_at" | "revoked_at" | "org_id" | "user_id" | "created_at">>;
+      access_links: Table<AccessLink, Insert<AccessLink, "id" | "token" | "calls" | "days" | "note" | "expires_at" | "claimed_at" | "revoked_at" | "org_id" | "user_id" | "website" | "draft" | "draft_error" | "created_at">>;
       invites: Table<
         Invite,
         Insert<Invite, "id" | "role" | "token" | "invited_by" | "expires_at" | "accepted_at" | "created_at">,

@@ -30,18 +30,23 @@ export function AccessLinkForm({ defaultDays }: { defaultDays: number }) {
           <Input id="al-days" name="days" type="number" min={1} max={365} defaultValue={defaultDays} required />
         </div>
         <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="al-website">Company website</Label>
+          <Input id="al-website" name="website" inputMode="url" maxLength={200} placeholder="example.com · drafts the context and a first buyer now, so they land ready to dial" />
+        </div>
+        <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="al-note">Note, for you only</Label>
           <Input id="al-note" name="note" maxLength={200} placeholder="Where the lead came from, what was promised" />
         </div>
       </div>
       {state.error && <p className="text-destructive text-sm">{state.error}</p>}
+      {state.ok && <p className="text-muted-foreground text-sm">{state.ok}</p>}
       {state.link && (
         <div className="bg-muted/60 flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3">
           <code className="text-xs break-all">{state.link}</code>
           <CopyLink link={state.link} label="Copy link" />
         </div>
       )}
-      <Button type="submit" disabled={pending}>{pending ? "Creating…" : "Create link"}</Button>
+      <Button type="submit" disabled={pending}>{pending ? "Creating, reading the website takes up to half a minute…" : "Create link"}</Button>
     </form>
   );
 }
