@@ -27,10 +27,18 @@ export interface Plan {
 }
 
 /**
- * Founding pricing: the first ten paying teams keep Starter at the launch price for as long as they stay subscribed.
- * Active only while the founding Stripe prices exist and spots remain; see src/lib/billing/founding.ts.
+ * Founding pricing: every team that subscribes before the deadline keeps these prices for as long as it stays
+ * subscribed. Shown only while the founding Stripe prices exist and the date has not passed; see founding.ts.
+ * The quarterly and annual figures carry the same 10% and 20% off as the list prices.
  */
-export const FOUNDING = { teams: 10, price: { usd: 47, eur: 44 } as Record<Currency, number> };
+export const FOUNDING = {
+  until: "2026-11-30T23:59:59Z",
+  untilLabel: "30 November",
+  price: {
+    starter: { usd: { month: 49, quarter: 44, year: 39 }, eur: { month: 46, quarter: 41, year: 37 } },
+    team: { usd: { month: 79, quarter: 71, year: 63 }, eur: { month: 74, quarter: 67, year: 59 } },
+  } as Record<"starter" | "team", Record<Currency, PriceTable>>,
+};
 
 export const PLANS: Plan[] = [
   {
@@ -57,9 +65,9 @@ export const PLANS: Plan[] = [
     name: "Team",
     tagline: "For managers who coach with data.",
     prices: { usd: { month: 159, quarter: 143, year: 127 }, eur: { month: 149, quarter: 134, year: 119 } },
-    callsPerSeat: 100,
-    minSeats: 3,
-    features: ["Everything in Starter", "100 calls per seat a month instead of 40", "Up to 100 knowledge sources instead of 30", "Priority support, same-day reply on working days"],
+    callsPerSeat: 80,
+    minSeats: 1,
+    features: ["Everything in Starter", "80 calls per seat a month instead of 40, pooled across the team", "Up to 100 knowledge sources instead of 30", "Personalised setup: we build your first prospects from your target accounts", "Priority support, same-day reply on working days"],
     cta: "Start free trial",
     highlight: true,
   },

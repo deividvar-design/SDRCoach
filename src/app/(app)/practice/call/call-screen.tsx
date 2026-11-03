@@ -14,6 +14,7 @@ import { track } from "@/components/analytics/provider";
 import { startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
 import type { Ambience } from "@/lib/domain/moods";
 import { stripVoiceTags } from "@/lib/elevenlabs/tags";
+import { MAX_CALL_SECONDS, WRAP_UP_AT_SECONDS, WRAP_UP_MESSAGE } from "@/lib/calls/limits";
 
 interface TargetCard {
   id: string;
@@ -152,12 +153,29 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
     },
   });
 
-  // Timer
+  // Timer, with the cap: a minute before the limit the prospect is told to wrap up, so the call ends the way a real
+  // one does; the hard stop a minute later only catches a prospect that would not let go.
   useEffect(() => {
     if (stage !== "live") return;
     const start = Date.now();
-    const id = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 500);
+    let warned = false;
+    const id = setInterval(() => {
+      const secs = Math.floor((Date.now() - start) / 1000);
+      setElapsed(secs);
+      if (!warned && secs >= WRAP_UP_AT_SECONDS) {
+        warned = true;
+        try {
+          conversation.sendContextualUpdate(WRAP_UP_MESSAGE);
+        } catch {}
+      }
+      if (secs >= MAX_CALL_SECONDS) {
+        clearInterval(id);
+        setStage("ending");
+        conversation.endSession();
+      }
+    }, 500);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
 
   // Mic meter. If the SDK hears nothing from the rep for the first eight seconds, say so: a muted headset or the wrong
@@ -303,6 +321,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
                 <span className="text-muted-foreground">Ended</span>
               )}
               <span>{formatDuration(elapsed)}</span>
+              {stage === "live" && MAX_CALL_SECONDS - elapsed <= 60 && <span className="text-muted-foreground">· {formatDuration(Math.max(0, MAX_CALL_SECONDS - elapsed))} left</span>}
             </div>
           )}
 

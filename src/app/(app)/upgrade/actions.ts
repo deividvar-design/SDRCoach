@@ -28,11 +28,12 @@ export async function startCheckout(formData: FormData) {
   const viewer = await requireManager();
   const minSeats = PLANS.find((p) => p.id === parsed.data.plan)?.minSeats ?? 1;
   if (parsed.data.seats < minSeats) redirect("/upgrade?error=invalid");
-  // Starter checks out at the founding price while spots remain; the plan on the subscription stays "starter".
-  const founding = parsed.data.plan === "starter" ? await foundingOffer() : null;
+  // Both plans check out at the founding price until the deadline; the plan on the subscription is unchanged.
+  const founding = await foundingOffer();
   const price = priceCatalog().priceFor(parsed.data.plan, parsed.data.interval, { founding: Boolean(founding) });
   if (!price) redirect("/upgrade?error=price_missing");
-  const offer = await currentOffer(viewer.org);
+  // Founding pricing does not stack with the trial, comeback or referral discounts.
+  const offer = founding ? null : await currentOffer(viewer.org);
   if (offer) await ensureCoupon(offer.coupon);
   await track("checkout_start", { plan: parsed.data.plan, interval: parsed.data.interval, currency: parsed.data.currency, seats: parsed.data.seats, offer: offer?.id ?? "", founding: Boolean(founding) }).catch(() => {});
 

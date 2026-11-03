@@ -23,7 +23,7 @@ const stripe = new Stripe(key);
 // Amounts in cents per seat per month; the script multiplies by the interval. Keep in sync with src/lib/billing/plans.ts.
 const PLANS = [
   { id: "starter", name: "100 Dials Starter", calls: 40, usd: { monthly: 7900, quarterly: 7100, annual: 6300 }, eur: { monthly: 7500, quarterly: 6700, annual: 5900 } },
-  { id: "team", name: "100 Dials Team", calls: 100, usd: { monthly: 15900, quarterly: 14300, annual: 12700 }, eur: { monthly: 14900, quarterly: 13400, annual: 11900 } },
+  { id: "team", name: "100 Dials Team", calls: 80, usd: { monthly: 15900, quarterly: 14300, annual: 12700 }, eur: { monthly: 14900, quarterly: 13400, annual: 11900 } },
 ];
 const MONTHS = { monthly: 1, quarterly: 3, annual: 12 };
 const RECURRING = { monthly: { interval: "month" }, quarterly: { interval: "month", interval_count: 3 }, annual: { interval: "year" } };
@@ -42,16 +42,22 @@ function priceParams(product, p, period) {
   };
 }
 
-// `--founding`: one product, three prices, at the locked launch price. Checkout uses them for Starter while spots remain.
+// `--founding`: two products, six prices, at the founding amounts in src/lib/billing/plans.ts. Checkout uses them for
+// both plans until the founding deadline; existing subscriptions keep whatever price they were created on.
 if (process.argv.includes("--founding")) {
-  const f = { id: "founding", name: "100 Dials Starter, founding pricing", calls: 40, usd: { monthly: 4700, quarterly: 4700, annual: 4700 }, eur: { monthly: 4400, quarterly: 4400, annual: 4400 } };
-  const product = await stripe.products.create({ name: f.name, description: `${f.calls} calls per seat per month, founding price`, tax_code: "txcd_10103001", metadata: { plan: "starter", founding: "true" } });
+  const FOUNDING = [
+    { id: "starter", key: "STARTER", name: "100 Dials Starter, founding pricing", calls: 40, usd: { monthly: 4900, quarterly: 4400, annual: 3900 }, eur: { monthly: 4600, quarterly: 4100, annual: 3700 } },
+    { id: "team", key: "TEAM", name: "100 Dials Team, founding pricing", calls: 80, usd: { monthly: 7900, quarterly: 7100, annual: 6300 }, eur: { monthly: 7400, quarterly: 6700, annual: 5900 } },
+  ];
   const lines = [];
-  for (const period of ["monthly", "quarterly", "annual"]) {
-    const price = await stripe.prices.create({ ...priceParams(product.id, f, period), metadata: { plan: "starter", interval: INTERVAL_KEY[period], founding: "true" } });
-    lines.push(`STRIPE_PRICE_FOUNDING_${period === "monthly" ? "MONTHLY" : period === "quarterly" ? "QUARTERLY" : "ANNUAL"}=${price.id}`);
+  for (const f of FOUNDING) {
+    const product = await stripe.products.create({ name: f.name, description: `${f.calls} calls per seat per month, founding price`, tax_code: "txcd_10103001", metadata: { plan: f.id, founding: "true" } });
+    for (const period of ["monthly", "quarterly", "annual"]) {
+      const price = await stripe.prices.create({ ...priceParams(product.id, f, period), nickname: `${f.id} founding ${period}`, metadata: { plan: f.id, interval: INTERVAL_KEY[period], founding: "true" } });
+      lines.push(`STRIPE_PRICE_FOUNDING_${f.key}_${period === "monthly" ? "MONTHLY" : period === "quarterly" ? "QUARTERLY" : "ANNUAL"}=${price.id}`);
+    }
   }
-  console.log(`\nAdd to your environment:\n${lines.join("\n")}\n\nThen in Billing → Customer portal, add the founding prices to the products customers may switch between, or leave them out so a founding team cannot accidentally switch off its price.`);
+  console.log(`\nAdd to your environment:\n${lines.join("\n")}\n\nThen in Billing → Customer portal, leave the founding prices out of the products customers may switch between, so a founding team cannot accidentally switch off its price.`);
   process.exit(0);
 }
 

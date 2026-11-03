@@ -18,11 +18,11 @@ export type PaidPlanId = "starter" | "team";
 export type Interval = "month" | "quarter" | "year";
 
 export interface PriceCatalog {
-  /** price id -> plan + interval. Founding prices map to the Starter plan. */
+  /** price id -> plan + interval. Founding prices carry their plan too. */
   byPrice: Record<string, { plan: PaidPlanId; interval: Interval; founding?: boolean }>;
-  /** plan + interval -> price id. With `founding`, the locked launch price for Starter when it is configured. */
+  /** plan + interval -> price id. With `founding`, the locked founding price for that plan when it is configured. */
   priceFor(plan: PaidPlanId, interval: Interval, opts?: { founding?: boolean }): string | null;
-  /** All three founding prices exist in the environment. */
+  /** All six founding prices exist in the environment. */
   foundingConfigured: boolean;
 }
 
@@ -35,9 +35,12 @@ export function priceCatalog(env: NodeJS.ProcessEnv = process.env): PriceCatalog
     ["team", "month", env.STRIPE_PRICE_TEAM_MONTHLY, false],
     ["team", "quarter", env.STRIPE_PRICE_TEAM_QUARTERLY, false],
     ["team", "year", env.STRIPE_PRICE_TEAM_ANNUAL, false],
-    ["starter", "month", env.STRIPE_PRICE_FOUNDING_MONTHLY, true],
-    ["starter", "quarter", env.STRIPE_PRICE_FOUNDING_QUARTERLY, true],
-    ["starter", "year", env.STRIPE_PRICE_FOUNDING_ANNUAL, true],
+    ["starter", "month", env.STRIPE_PRICE_FOUNDING_STARTER_MONTHLY, true],
+    ["starter", "quarter", env.STRIPE_PRICE_FOUNDING_STARTER_QUARTERLY, true],
+    ["starter", "year", env.STRIPE_PRICE_FOUNDING_STARTER_ANNUAL, true],
+    ["team", "month", env.STRIPE_PRICE_FOUNDING_TEAM_MONTHLY, true],
+    ["team", "quarter", env.STRIPE_PRICE_FOUNDING_TEAM_QUARTERLY, true],
+    ["team", "year", env.STRIPE_PRICE_FOUNDING_TEAM_ANNUAL, true],
   ];
   const byPrice: PriceCatalog["byPrice"] = {};
   for (const [plan, interval, id, founding] of table) if (id) byPrice[id] = founding ? { plan, interval, founding } : { plan, interval };
