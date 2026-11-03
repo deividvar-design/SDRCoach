@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FeatureRow } from "@/components/marketing/feature-row";
 import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/marketing/sections";
 import { Button } from "@/components/ui/button";
+import { CtaLink } from "@/components/analytics/cta-link";
 
 export const metadata = pageMetadata({
   title: "For sales enablement: your call library, as practice",
@@ -49,6 +50,7 @@ export default function ForEnablementPage() {
           body={<><p>Drop in CSV or text exports from Gong, Chorus, Apollo, Fireflies or your dialler. 100 Dials extracts the objections your market actually raises, in the phrasing it uses, plus tone and the moves that booked meetings.</p><p>That digest, never the raw transcript, is injected into every persona and into the grader. Your reps ramp against your market's real pushback.</p></>}
           image="/screens/knowledge.png"
           alt="Knowledge page with uploaded transcripts and their digest status"
+          cta={<CtaLink ctaId="enablement_grounding_karen" href="/karen?from=/for-enablement" className="text-foreground font-medium underline underline-offset-4">See a prospect built from a real call →</CtaLink>}
         />
         <FeatureRow
           flip
@@ -57,6 +59,7 @@ export default function ForEnablementPage() {
           body={<><p>Six dimensions anchored in published cold-call research and weighted toward what books meetings: reason for call, objection handling and the close carry the most.</p><p>Each score comes with a rationale quoting the rep's own words, plus deterministic stats the model cannot fudge: talk ratio, longest monologue, questions asked, filler words, time to first objection.</p></>}
           image="/screens/report.png"
           alt="Post-call report with overall score, coach summary, stats and dimension breakdown"
+          cta={<CtaLink ctaId="enablement_rubric_report" href="/sample-report" className="text-foreground font-medium underline underline-offset-4">See a sample scored report →</CtaLink>}
         />
         <FeatureRow
           eyebrow="Measurement"
@@ -64,6 +67,7 @@ export default function ForEnablementPage() {
           body={<><p>Trend lines per rep. Weakest dimension highlighted. Levels recommended on evidence, three calls averaging seven or better, never locked. A team heatmap and an objection league table on the coaching view. CSV export per rep for the QBR instead of anecdotes.</p></>}
           image="/screens/rep.png"
           alt="Per-rep view with trend chart and dimension averages"
+          cta={<Button size="lg" asChild><CtaLink ctaId="enablement_measurement_trial" href="/signup?from=/for-enablement">Start the 10-call trial</CtaLink></Button>}
         />
       </Section>
 
@@ -101,7 +105,13 @@ export default function ForEnablementPage() {
       </Section>
 
       <ProofSection />
-      <CtaBand title="Ground a prospect in your calls this afternoon." body="Ten free calls. Upload transcripts during the trial. Work email only." />
+      <CtaBand
+        title="Ground a prospect in your calls this afternoon."
+        body="Ten free calls. Upload transcripts during the trial. Work email only."
+        primary={{ href: "/karen?from=/for-enablement", label: "Call Karen — 3 min, no signup", ctaId: "enablement_bottom_karen" }}
+        secondary={null}
+        link={{ href: "/signup", label: "Start free trial", ctaId: "enablement_bottom_trial" }}
+      />
     </>
   );
 }

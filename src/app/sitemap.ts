@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/trust"), lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: absoluteUrl("/refer"), lastModified: new Date("2026-10-30"), changeFrequency: "monthly", priority: 0.5 },
     { url: absoluteUrl("/research"), lastModified: new Date("2026-10-25"), changeFrequency: "monthly", priority: 0.6 },
+    { url: absoluteUrl("/sample-report"), lastModified: new Date("2026-11-03"), changeFrequency: "monthly", priority: 0.6 },
     { url: absoluteUrl("/company"), lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: absoluteUrl("/privacy"), lastModified: legal, changeFrequency: "yearly", priority: 0.2 },
     { url: absoluteUrl("/terms"), lastModified: legal, changeFrequency: "yearly", priority: 0.2 },

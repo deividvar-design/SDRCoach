@@ -19,6 +19,7 @@ export const PAGE_CARDS: Record<string, OgCardSpec> = {
   company: { title: "The company behind 100 Dials.", kicker: "Vilnius, Lithuania", footer: "Hosted in the EU" },
   refer: { title: "Refer a sales team. Get a month free.", kicker: "Referrals and rewards", footer: "They get 20% off for three months" },
   research: { title: "Built on what the research says about practice.", kicker: "Research", footer: "Nine studies, limits included" },
+  "sample-report": { title: "What a scored call looks like.", kicker: "Sample report", footer: "Six skills, the objections tagged, one thing to fix" },
 };
 
 /** The URL of a card, versioned so a changed design busts the CDN and social caches. */

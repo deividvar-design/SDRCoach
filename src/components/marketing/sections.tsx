@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROOF } from "@/content/proof";
 import { TRIAL } from "@/lib/billing/plans";
+import { CtaLink } from "@/components/analytics/cta-link";
 
 export function Section({ children, className, id, ...rest }: { children: React.ReactNode; className?: string; id?: string } & Record<`data-${string}`, string>) {
   return (
@@ -53,17 +54,43 @@ export function ProofSection() {
   );
 }
 
-export function CtaBand({ title = "Ten free calls. Then decide.", body = "Work email, no card. Your first prospect picks up in under two minutes.", secondary = { href: "/pricing", label: "See pricing" } }: { title?: string; body?: string; secondary?: { href: string; label: string } | null }) {
+interface BandLink {
+  href: string;
+  label: string;
+  /** When set, the click is reported as `cta_clicked` with this id. */
+  ctaId?: string;
+}
+
+const TRIAL_NOTE = `${TRIAL.calls} calls, ${TRIAL.days} days, work email only`;
+
+/** A band link: reported when it has a cta id, a plain link otherwise. Takes the button's classes when used as its child. */
+function Anchor({ to, children, ...rest }: { to: BandLink; children: React.ReactNode; className?: string }) {
+  return to.ctaId ? <CtaLink ctaId={to.ctaId} href={to.href} {...rest}>{children}</CtaLink> : <Link href={to.href} {...rest}>{children}</Link>;
+}
+
+/**
+ * The closing band on every marketing page. By default it sells the trial; a page can swap the primary button (the
+ * free Karen call on content pages), keep or drop the outline button, and add a quieter text link under them.
+ */
+export function CtaBand({
+  title = "Ten free calls. Then decide.",
+  body = "Work email, no card. Your first prospect picks up in under two minutes.",
+  primary = { href: "/signup", label: "Start free trial" },
+  secondary = { href: "/pricing", label: "See pricing" },
+  link = null,
+  note = primary.href === "/signup" ? TRIAL_NOTE : null,
+}: { title?: string; body?: string; primary?: BandLink; secondary?: BandLink | null; link?: BandLink | null; note?: string | null }) {
   return (
     <Section>
       <div className="stage text-paper rounded-3xl px-8 py-14 text-center md:px-16">
         <h2 className="font-display text-5xl text-balance md:text-6xl">{title}</h2>
         <p className="mx-auto mt-4 max-w-md text-balance opacity-80">{body}</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>
-          {secondary && <Button size="lg" variant="outline" className="border-paper/30 bg-transparent text-paper hover:bg-paper/10" asChild><Link href={secondary.href}>{secondary.label}</Link></Button>}
+          <Button size="lg" variant="signal" asChild><Anchor to={primary}>{primary.label}</Anchor></Button>
+          {secondary && <Button size="lg" variant="outline" className="border-paper/30 bg-transparent text-paper hover:bg-paper/10" asChild><Anchor to={secondary}>{secondary.label}</Anchor></Button>}
         </div>
-        <p className="mt-4 text-sm opacity-70">{TRIAL.calls} calls, {TRIAL.days} days, work email only</p>
+        {link && <p className="mt-5 text-sm"><Anchor to={link} className="underline underline-offset-4 opacity-80 hover:opacity-100">{link.label}</Anchor></p>}
+        {note && <p className="mt-4 text-sm opacity-70">{note}</p>}
       </div>
     </Section>
   );

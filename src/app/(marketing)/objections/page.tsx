@@ -1,8 +1,11 @@
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
+import { Fragment } from "react";
 import { getAllObjectionPages } from "@/lib/objections";
 import { CtaBand, Eyebrow, Section } from "@/components/marketing/sections";
 import { JsonLd, breadcrumbLd, faqLd } from "@/components/seo/json-ld";
+import { Button } from "@/components/ui/button";
+import { CtaLink } from "@/components/analytics/cta-link";
 
 const FAQ = [
   { q: "What are the most common cold call objections?", a: "The ones reps hear most are not interested, send me an email, I don't have time, we already have a solution, no budget, call me back later, I'm not the decision maker and too expensive. Most of them are reflexes to being cold called rather than decisions about the product, which is why the answer to each starts with one question rather than a defence." },
@@ -32,15 +35,26 @@ export default function ObjectionIndex() {
 
       <Section className="pt-0 md:pt-0">
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {pages.map((p) => (
-            <li key={p.slug}>
-              <Link href={`/objections/${p.slug}`} className="bg-card group flex h-full flex-col rounded-2xl border p-6 transition-shadow hover:shadow-lg">
+          {pages.map((p, i) => (
+            <Fragment key={p.slug}>
+              <li className="bg-card flex h-full flex-col rounded-2xl border p-6 transition-shadow hover:shadow-lg">
                 <div className="text-muted-foreground text-xs">Prospect says</div>
-                <h2 className="font-display mt-2 text-2xl leading-tight group-hover:underline underline-offset-4">“{p.phrasings[0] ?? p.label}”</h2>
+                <h2 className="font-display mt-2 text-2xl leading-tight"><Link href={`/objections/${p.slug}`} className="hover:underline underline-offset-4">“{p.phrasings[0] ?? p.label}”</Link></h2>
                 <p className="text-muted-foreground mt-3 flex-1 text-sm">{p.coaching}</p>
-                <div className="mt-4 text-xs font-medium">How to handle {p.label.toLowerCase()}</div>
-              </Link>
-            </li>
+                <div className="mt-4 flex flex-col gap-1.5 text-xs font-medium">
+                  <Link href={`/objections/${p.slug}`} className="hover:underline underline-offset-4">How to handle {p.label.toLowerCase()}</Link>
+                  <CtaLink ctaId="objections_card_karen" href={`/karen?objection=${p.slug}&from=/objections`} className="text-signal-ink hover:underline underline-offset-4">Hear it said to you →</CtaLink>
+                </div>
+              </li>
+              {i === 4 && (
+                <li className="stage text-paper rounded-3xl px-8 py-10 text-center sm:col-span-2 md:px-12 lg:col-span-3">
+                  <h2 className="font-display text-4xl text-balance md:text-5xl">These are easier to read than to answer.</h2>
+                  <p className="mx-auto mt-3 max-w-md text-balance opacity-80">Karen will throw three of them at you in a 3-minute call. No account, no card.</p>
+                  <Button size="lg" variant="signal" className="mt-6" asChild><CtaLink ctaId="objections_mid_karen" href="/karen?from=/objections">Call Karen now</CtaLink></Button>
+                  <p className="mt-3 text-xs opacity-70">takes 3 minutes</p>
+                </li>
+              )}
+            </Fragment>
           ))}
         </ul>
       </Section>
@@ -57,7 +71,13 @@ export default function ObjectionIndex() {
         </dl>
       </Section>
 
-      <CtaBand title="Hear them said out loud." body="An AI prospect raises these on every ramp call and the coach tags how you handled each one. Ten calls are free." />
+      <CtaBand
+        title="Hear them said out loud."
+        body="An AI prospect raises these on every ramp call and the coach tags how you handled each one. Ten calls are free."
+        primary={{ href: "/karen?from=/objections", label: "Call Karen — 3 min, no signup", ctaId: "objections_bottom_karen" }}
+        secondary={null}
+        link={{ href: "/signup", label: "Start the 10-call team trial", ctaId: "objections_bottom_trial" }}
+      />
     </>
   );
 }
