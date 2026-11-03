@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
   // Blog posts are read from disk at request/build time; make sure they ship with the server bundle.
   outputFileTracingIncludes: {
     "/": ["./content/objections/**/*"],
+    // The Karen pages and the scorecard email name the objection card the caller came from.
+    "/karen": ["./content/objections/**/*"],
+    "/karen/result": ["./content/objections/**/*"],
+    "/api/demo/end": ["./content/objections/**/*"],
+    "/api/demo/finalize": ["./content/objections/**/*"],
     "/blog/[slug]": ["./content/blog/**/*"],
     "/blog": ["./content/blog/**/*"],
     "/blog/rss.xml": ["./content/blog/**/*"],

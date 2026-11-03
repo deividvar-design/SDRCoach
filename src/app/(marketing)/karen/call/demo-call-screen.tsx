@@ -11,9 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { track } from "@/components/analytics/provider";
 import { reportAdsConversion } from "@/components/analytics/ads-conversion";
 import { stripVoiceTags } from "@/lib/elevenlabs/tags";
+import { authMethod, readKarenSource } from "@/lib/demo/source";
 
 interface Props {
-  demo: { id: string; email: string | null };
+  demo: { id: string; email: string | null; method: string | null; source_path: string | null; objection: string | null };
   prospect: { name: string; title: string; company: string; notes: string };
   maxSeconds: number;
   voiceConfigured: boolean;
@@ -57,6 +58,9 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
       // the page. Waiting for the scored result lost every caller who closed the tab or locked the phone first; the
       // result page still reports it too, and the shared transaction id stops Google counting it twice.
       reportAdsConversion("karen", demo.id, { email: demo.email });
+      // Where they came from: this tab's memory first (it survived any sign-in redirect), else what the call row knows.
+      const src = readKarenSource();
+      track("karen_call_started", { source_path: src.source_path ?? demo.source_path, objection: src.objection ?? demo.objection, auth_method: authMethod(demo.method), demo_id: demo.id });
       linkedRef.current = fetch("/api/demo/link", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ conversationId }) }).catch(() => {});
     },
     onMessage: ({ message, role }) => {

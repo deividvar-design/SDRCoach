@@ -18,6 +18,7 @@ import { PLANS } from "@/lib/billing/plans";
 import { track } from "@vercel/analytics/server";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { recordAnthropicUsage, recordVoiceUsage } from "@/lib/usage/record";
+import { captureServer } from "@/lib/analytics/server";
 
 const OUTCOMES: CallOutcome[] = ["meeting_booked", "callback", "info_sent", "rejected", "hung_up", "incomplete"];
 
@@ -203,6 +204,7 @@ export async function finalizeCall(sessionId: string) {
     });
 
     await db.from("call_sessions").update({ status: "scored", outcome, outcome_reason: outcomeReason, error: null }).eq("id", sessionId);
+    await afterScore(db, claimed.org_id, claimed.user_id, score.overall);
   } catch (err) {
     await db
       .from("call_sessions")
@@ -210,6 +212,14 @@ export async function finalizeCall(sessionId: string) {
       .eq("id", sessionId);
     throw err;
   }
+}
+
+/** The first scored call a person makes in a trial workspace, reported once per user. The dedupe key in the funnel table is the guard. */
+async function afterScore(db: Db, orgId: string, userId: string, overall: number) {
+  const { data: org } = await db.from("organizations").select("plan").eq("id", orgId).maybeSingle();
+  if (org?.plan !== "trial") return;
+  const first = await logFunnel("first_trial_call", { subject: userId, dedupeKey: `first_trial_call:${userId}`, meta: { org_id: orgId } });
+  if (first) await captureServer(userId, "first_trial_call_completed", { org_id: orgId, score: Math.round(overall * 10) / 10 }, { identified: true });
 }
 
 /** A paid workspace past its included calls this month is drawing on earned bonus calls: take one off. */

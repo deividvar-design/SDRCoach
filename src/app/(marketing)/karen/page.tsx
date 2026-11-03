@@ -8,6 +8,9 @@ import { callKaren } from "./actions";
 import { DEMO_ERRORS } from "@/lib/demo/start";
 import { signInWithGoogle } from "@/app/(auth)/actions";
 import { GoogleMark } from "@/app/(auth)/auth-form";
+import { getObjectionPage } from "@/lib/objections";
+import { cleanObjection, cleanSourcePath } from "@/lib/demo/source";
+import { RememberKarenSource } from "./remember-source";
 
 export const metadata = pageMetadata({
   title: "Practice cold calls free: can you survive Karen?",
@@ -24,10 +27,16 @@ const FAQ: [string, string][] = [
 ];
 
 export default async function KarenPage({ searchParams }: PageProps<"/karen">) {
-  const { error, busy } = await searchParams;
+  const { error, busy, from, objection } = await searchParams;
   const notice = busy ? "Karen has taken all the calls she will take today. Come back tomorrow, or start a free trial, where she picks up every time." : typeof error === "string" ? DEMO_ERRORS[error] ?? null : null;
+  // Tracking only: which page sent the caller and which objection card they clicked. The call itself does not change.
+  const source = { source_path: cleanSourcePath(from), objection: cleanObjection(objection) };
+  const objectionPage = source.objection ? getObjectionPage(source.objection) : null;
+  if (!objectionPage) source.objection = null;
+  const sourceQuery = new URLSearchParams({ ...(source.source_path ? { from: source.source_path } : {}), ...(source.objection ? { objection: source.objection } : {}) }).toString();
   return (
     <>
+      <RememberKarenSource from={source.source_path} objection={source.objection} />
       <JsonLd data={faqLd(FAQ.map(([q, a]) => ({ q, a })))} />
       <Section className="pt-14 md:pt-20">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
@@ -53,14 +62,19 @@ export default async function KarenPage({ searchParams }: PageProps<"/karen">) {
           </div>
           <div className="space-y-4">
             {notice && <p className="border-destructive/40 text-destructive rounded-xl border p-4 text-sm">{notice}</p>}
+            {objectionPage && (
+              <p className="text-muted-foreground text-sm">You came from &lsquo;{objectionPage.phrasings[0] ?? objectionPage.label}&rsquo; — Karen will give you a mix of pushbacks like it.</p>
+            )}
             <div className="bg-card space-y-4 rounded-2xl border p-6">
               <form action={callKaren}>
+                {source.source_path && <input type="hidden" name="from" value={source.source_path} />}
+                {source.objection && <input type="hidden" name="objection" value={source.objection} />}
                 <CallKarenSubmit />
               </form>
               <p className="text-muted-foreground text-sm">No email to start. Allow the microphone, Karen picks up, and after the call you say where the scorecard goes.</p>
               <div className="text-muted-foreground flex items-center gap-3 text-xs"><span className="bg-border h-px flex-1" />or<span className="bg-border h-px flex-1" /></div>
               <form action={signInWithGoogle}>
-                <input type="hidden" name="next" value="/karen/start" />
+                <input type="hidden" name="next" value={sourceQuery ? `/karen/start?${sourceQuery}` : "/karen/start"} />
                 <button type="submit" className="hover:bg-accent focus-visible:ring-ring/50 flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border text-[15px] font-medium outline-none focus-visible:ring-[3px]">
                   <span className="grid size-5 place-items-center rounded-full bg-white"><GoogleMark /></span>
                   Call Karen with Google

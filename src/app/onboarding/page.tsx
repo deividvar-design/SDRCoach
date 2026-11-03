@@ -5,6 +5,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { Logo } from "@/components/logo";
 import { AdsConversion } from "@/components/analytics/ads-conversion";
 import { logFunnel } from "@/lib/funnel";
+import { captureServer } from "@/lib/analytics/server";
+import { currentDemo } from "@/lib/demo/session";
 import { readAdClick } from "@/lib/ads/click";
 import { reportError } from "@/lib/sentry";
 import { OnboardingForm } from "./onboarding-form";
@@ -53,7 +55,13 @@ export default async function OnboardingPage() {
   }
 
   // The account exists and the person is here: that is the completed signup, whichever way they came in.
-  await logFunnel("signup_completed", { email: user.email, subject: user.id, dedupeKey: `signup_completed:${user.id}`, meta: { provider: user.app_metadata?.provider ?? "email" } });
+  const provider = user.app_metadata?.provider === "google" ? "google" : "email";
+  const first = await logFunnel("signup_completed", { email: user.email, subject: user.id, dedupeKey: `signup_completed:${user.id}`, meta: { provider } });
+  if (first) {
+    // The Karen cookie lives for the session: a scored call on it means this person called Karen before signing up.
+    const demo = await currentDemo();
+    await captureServer(user.id, "signup_completed", { method: provider, from_karen: demo?.status === "scored", source_path: demo?.source_path ?? null }, { identified: true });
+  }
   if (process.env.SDRCOACH_DEMO !== "1") {
     const [click, jar] = await Promise.all([readAdClick(), cookies()]);
     const planIntent = jar.get("plan_intent")?.value ?? null;

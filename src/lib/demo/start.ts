@@ -6,6 +6,8 @@ import { checkDemoLimits, sendDemoScorecard } from "@/lib/demo/boss";
 import { clientIp } from "@/lib/demo/session";
 import { newShareSlug } from "@/lib/demo/share";
 import { logFunnel } from "@/lib/funnel";
+import { analyticsIdentity } from "@/lib/analytics/server";
+import type { KarenSource } from "@/lib/demo/source";
 import { readAdClick } from "@/lib/ads/click";
 
 /** What each refusal says to the caller. Shared by the call button, the Google button, One Tap and the email step. */
@@ -40,7 +42,7 @@ const skipMx = (method: StartMethod) => process.env.SDRCOACH_DEMO === "1" || pro
  * Karen has hung up (attachDemoEmail). Google sign-in and One Tap arrive with an address and keep the per-address
  * rule. Every outcome is logged to the funnel.
  */
-export async function startDemo(p: { email?: string | null; company?: string | null; newsletter?: boolean; method: StartMethod }): Promise<StartResult> {
+export async function startDemo(p: { email?: string | null; company?: string | null; newsletter?: boolean; method: StartMethod; source?: KarenSource | null }): Promise<StartResult> {
   // A rematch is the one second call an address gets: the scorecard said what to fix, this is where they try it.
   const perEmail = p.method === "rematch" ? 2 : 1;
   const company = p.company?.replace(/\s+/g, " ").trim() || null;
@@ -66,7 +68,7 @@ export async function startDemo(p: { email?: string | null; company?: string | n
   }
   if (limit) return reject(limit);
 
-  const click = await readAdClick();
+  const [click, analytics] = await Promise.all([readAdClick(), analyticsIdentity()]);
   const { data: demo, error } = await db
     .from("demo_calls")
     .insert({
@@ -79,6 +81,10 @@ export async function startDemo(p: { email?: string | null; company?: string | n
       share_slug: newShareSlug(),
       email_added_at: known ? new Date().toISOString() : null,
       method: p.method,
+      source_path: p.source?.source_path ?? null,
+      objection: p.source?.objection ?? null,
+      analytics_id: analytics?.distinctId ?? null,
+      analytics_session: analytics?.sessionId ?? null,
       ...click,
     })
     .select("id")

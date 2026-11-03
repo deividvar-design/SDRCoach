@@ -1,5 +1,8 @@
 import "server-only";
 import { logFunnel } from "@/lib/funnel";
+import { captureServer } from "@/lib/analytics/server";
+import { authMethod } from "@/lib/demo/source";
+import { getObjectionPage } from "@/lib/objections";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { BOSS_PERSONAS } from "@/content/boss-personas";
 import { buildPersonaPrompt, firstMessage } from "@/lib/prompts/persona";
@@ -159,7 +162,16 @@ export async function finalizeDemo(id: string) {
       })
       .eq("id", id);
     await track("demo_scored", { outcome, overall: Math.round(score.overall * 10) / 10 }).catch(() => {});
-    await logFunnel("karen_call_completed", { email: demo.email, subject: id, dedupeKey: `karen_completed:${id}`, meta: { outcome, overall: Math.round(score.overall * 10) / 10, personal: demo.personal_email } });
+    const first = await logFunnel("karen_call_completed", { email: demo.email, subject: id, dedupeKey: `karen_completed:${id}`, meta: { outcome, overall: Math.round(score.overall * 10) / 10, personal: demo.personal_email } });
+    // The caller may have closed the tab a minute ago; the report is reported from here, to their analytics id.
+    if (first && demo.analytics_id) {
+      await captureServer(
+        demo.analytics_id,
+        "karen_call_completed",
+        { source_path: demo.source_path, objection: demo.objection, auth_method: authMethod(demo.method), duration_seconds: durationSecs, score: Math.round(score.overall * 10) / 10, outcome, demo_id: id },
+        { sessionId: demo.analytics_session },
+      );
+    }
 
     // The scorecard goes out now when the caller already gave an address; otherwise the email step sends it.
     if (demo.email) await sendDemoScorecard(id);
@@ -182,6 +194,7 @@ export async function sendDemoScorecard(id: string) {
   if (!claimed) return;
   try {
     const { repName } = demoPrompt(demo);
+    const cameFrom = demo.objection ? getObjectionPage(demo.objection) : null;
     const mail = templates.demoScorecard({
       firstName: repName,
       email: demo.email,
@@ -195,6 +208,7 @@ export async function sendDemoScorecard(id: string) {
       unsubscribeUrl: unsubscribeUrl(id),
       shareUrl: demo.share_slug ? absoluteUrl(`/karen/score/${demo.share_slug}`) : null,
       personalEmail: demo.personal_email,
+      cameFrom: cameFrom ? { text: cameFrom.phrasings[0] ?? cameFrom.label, url: absoluteUrl(`/objections/${cameFrom.slug}`) } : null,
     });
     await sendMail({ to: demo.email, ...mail });
   } catch (err) {

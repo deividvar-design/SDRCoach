@@ -167,6 +167,12 @@ export type DemoCall = {
   email_added_at: string | null;
   /** How the call was started: "call" (the button), "google" or the old "email" form. */
   method: string | null;
+  /** The page the caller came from (?from=) and the objection card they clicked (?objection=), for analytics only. */
+  source_path: string | null;
+  objection: string | null;
+  /** The browser's product-analytics id and session at the time of the call, so the scored report can be reported from the server. */
+  analytics_id: string | null;
+  analytics_session: string | null;
   created_at: string;
 };
 
@@ -359,7 +365,7 @@ export type Database = {
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
       reward_claims: Table<RewardClaim, Insert<RewardClaim, "id" | "user_id" | "url" | "status" | "calls" | "days" | "note" | "ref_org_id" | "ref_user_id" | "decided_at" | "decided_by" | "created_at">>;
-      demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "email" | "domain" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "followup_sent_at" | "finalize_attempts" | "scoring_started_at" | "mints" | "share_slug" | "display_name" | "display_company" | "leaderboard_opt_in" | "shared_at" | "company" | "personal_email" | "gclid" | "gbraid" | "wbraid" | "email_added_at" | "method" | "created_at">>;
+      demo_calls: Table<DemoCall, Insert<DemoCall, "id" | "email" | "domain" | "ip" | "newsletter" | "status" | "elevenlabs_conversation_id" | "prompt_hash" | "started_at" | "ended_at" | "duration_seconds" | "outcome" | "outcome_reason" | "overall" | "score" | "transcript" | "error" | "email_sent_at" | "followup_sent_at" | "finalize_attempts" | "scoring_started_at" | "mints" | "share_slug" | "display_name" | "display_company" | "leaderboard_opt_in" | "shared_at" | "company" | "personal_email" | "gclid" | "gbraid" | "wbraid" | "email_added_at" | "method" | "source_path" | "objection" | "analytics_id" | "analytics_session" | "created_at">>;
       funnel_events: Table<FunnelEvent, Insert<FunnelEvent, "id" | "reason" | "email_domain" | "email_hash" | "subject" | "dedupe_key" | "meta" | "created_at">>;
       usage_events: Table<UsageEvent, Insert<UsageEvent, "id" | "org_id" | "session_id" | "demo_id" | "model" | "input_tokens" | "output_tokens" | "cache_read_tokens" | "cache_write_tokens" | "seconds" | "cost_usd" | "created_at">>;
       admin_actions: Table<AdminAction, Insert<AdminAction, "id" | "org_id" | "payload" | "created_at">>;

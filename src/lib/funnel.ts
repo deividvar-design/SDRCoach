@@ -19,6 +19,7 @@ export type FunnelKind =
   | "signup_rejected"
   | "signup_completed"
   | "first_call"
+  | "first_trial_call"
   | "trial_to_paid";
 
 /**
@@ -26,8 +27,8 @@ export type FunnelKind =
  * the same person across steps. A dedupe key makes milestone events idempotent. Never throws; a failed log is
  * reported and the user's request carries on.
  */
-export async function logFunnel(kind: FunnelKind, p: { email?: string | null; reason?: string | null; subject?: string | null; dedupeKey?: string | null; meta?: Record<string, unknown> } = {}) {
-  if (process.env.SDRCOACH_DEMO === "1") return;
+export async function logFunnel(kind: FunnelKind, p: { email?: string | null; reason?: string | null; subject?: string | null; dedupeKey?: string | null; meta?: Record<string, unknown> } = {}): Promise<boolean> {
+  if (process.env.SDRCOACH_DEMO === "1") return false;
   try {
     const email = p.email?.trim().toLowerCase() || null;
     const { error } = await createAdminClient()
@@ -41,9 +42,11 @@ export async function logFunnel(kind: FunnelKind, p: { email?: string | null; re
         dedupe_key: p.dedupeKey ?? null,
         meta: p.meta ?? {},
       });
-    // 23505: the dedupe key already exists, which is the point of it.
+    // 23505: the dedupe key already exists, which is the point of it. Returns whether this was the first time.
     if (error && error.code !== "23505") reportError(new Error(error.message), { where: "funnel_log", extra: { kind } });
+    return !error;
   } catch (err) {
     reportError(err, { where: "funnel_log", extra: { kind } });
+    return false;
   }
 }

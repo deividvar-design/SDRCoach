@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { DEMO_COOKIE, currentDemo } from "@/lib/demo/session";
 import { DEMO_COOKIE_OPTIONS, attachDemoEmail, startDemo } from "@/lib/demo/start";
+import { cleanObjection, cleanSourcePath } from "@/lib/demo/source";
 
 /**
  * The call button. No form, no email: Karen picks up and the caller is asked where to send the scorecard after.
@@ -22,7 +23,11 @@ export async function callKaren(formData?: FormData) {
   // A rematch keeps the address from the first call, so the result page needs no email step the second time.
   const previous = rematch ? await currentDemo() : null;
   const email = previous?.email ?? user?.email ?? null;
-  const result = await startDemo({ email, method: rematch ? "rematch" : email ? "google" : "call" });
+  // Where the caller came from rides along as hidden inputs; a rematch keeps the first call's.
+  const source = previous
+    ? { source_path: previous.source_path, objection: previous.objection }
+    : { source_path: cleanSourcePath(formData?.get("from")), objection: cleanObjection(formData?.get("objection")) };
+  const result = await startDemo({ email, method: rematch ? "rematch" : email ? "google" : "call", source });
   if ("waitlisted" in result) redirect("/karen?busy=1");
   if ("error" in result) redirect(`/karen?error=${encodeURIComponent(result.code)}`);
   (await cookies()).set(DEMO_COOKIE, result.id, DEMO_COOKIE_OPTIONS);

@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { recordOneTap } from "@/app/(auth)/actions";
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+type Mode = "login" | "signup" | "karen";
 
 interface GoogleId {
   initialize(config: Record<string, unknown>): void;
@@ -36,50 +38,70 @@ function loadScript(): Promise<void> {
 }
 
 /**
+ * One Tap is set up once per page load. Google's library is a singleton: calling initialize() again on every
+ * client-side navigation re-registered the prompt, logged a warning each time and tripped a FedCM NetworkError on
+ * mobile Chrome. The page that is currently showing the prompt registers its handler here; the single callback
+ * forwards the credential to whichever handler is current.
+ */
+let setup: Promise<{ id: GoogleId; nonce: string } | null> | null = null;
+let current: { mode: Mode; next: string; router: ReturnType<typeof useRouter> } | null = null;
+
+function ensureSetup(mode: Mode) {
+  setup ??= (async () => {
+    const supabase = createClient();
+    const { data } = await supabase.auth.getSession();
+    if (data.session) return null;
+    const [{ raw, hashed }] = await Promise.all([makeNonce(), loadScript()]);
+    const id = (window as GoogleWindow).google?.accounts?.id;
+    if (!id) return null;
+    id.initialize({
+      client_id: CLIENT_ID,
+      nonce: hashed,
+      context: mode === "login" ? "signin" : mode === "karen" ? "use" : "signup",
+      use_fedcm_for_prompt: true,
+      itp_support: true,
+      auto_select: false,
+      cancel_on_tap_outside: true,
+      callback: async ({ credential }: { credential: string }) => {
+        const target = current;
+        if (!target) return;
+        const { error } = await supabase.auth.signInWithIdToken({ provider: "google", token: credential, nonce: raw });
+        if (error) {
+          target.router.replace(`/login?error=google`);
+          return;
+        }
+        await recordOneTap(target.mode).catch(() => {});
+        window.location.assign(target.next);
+      },
+    });
+    return { id, nonce: raw };
+  })().catch(() => null);
+  return setup;
+}
+
+/**
  * Google One Tap: the "Continue as …" prompt Chrome shows over the page. The ID token goes straight to Supabase
  * (signInWithIdToken), so it creates or signs in the same account the Google button does. Shown only to signed-out
  * visitors, on the homepage and the sign-in and sign-up pages, and off until NEXT_PUBLIC_GOOGLE_CLIENT_ID is set.
  */
-export function GoogleOneTap({ mode, next }: { mode: "login" | "signup" | "karen"; next: string }) {
+export function GoogleOneTap({ mode, next }: { mode: Mode; next: string }) {
   const router = useRouter();
-  const started = useRef(false);
 
   useEffect(() => {
-    if (!CLIENT_ID || started.current) return;
-    started.current = true;
+    if (!CLIENT_ID) return;
+    const mine = { mode, next, router };
+    current = mine;
     let cancelled = false;
-    const supabase = createClient();
-
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session || cancelled) return;
-      const [{ raw, hashed }] = await Promise.all([makeNonce(), loadScript()]);
-      const id = (window as GoogleWindow).google?.accounts?.id;
-      if (!id || cancelled) return;
-      id.initialize({
-        client_id: CLIENT_ID,
-        nonce: hashed,
-        context: mode === "login" ? "signin" : mode === "karen" ? "use" : "signup",
-        use_fedcm_for_prompt: true,
-        itp_support: true,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-        callback: async ({ credential }: { credential: string }) => {
-          const { error } = await supabase.auth.signInWithIdToken({ provider: "google", token: credential, nonce: raw });
-          if (error) {
-            router.replace(`/login?error=google`);
-            return;
-          }
-          await recordOneTap(mode).catch(() => {});
-          window.location.assign(next);
-        },
-      });
-      id.prompt();
-    })().catch(() => {});
-
+    ensureSetup(mode).then((ready) => {
+      if (!ready || cancelled || current !== mine) return;
+      ready.id.prompt();
+    });
     return () => {
       cancelled = true;
-      (window as GoogleWindow).google?.accounts?.id?.cancel();
+      if (current === mine) {
+        current = null;
+        (window as GoogleWindow).google?.accounts?.id?.cancel();
+      }
     };
   }, [mode, next, router]);
 
