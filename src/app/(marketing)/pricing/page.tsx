@@ -41,7 +41,7 @@ export default async function PricingPage() {
     <>
       <JsonLd data={faqLd(FAQ)} />
       <div className="mx-auto w-full max-w-6xl px-6">
-        <section className="py-16 text-center">
+        <section className="pt-14 pb-10 text-center md:pt-16 md:pb-12">
           <h1 className="font-display text-5xl text-balance md:text-7xl">Practise on Karen before you practise on prospects.</h1>
           <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-balance">
             Per seat, with a monthly call allowance pooled across the team. Free trial: {TRIAL.calls} calls, {TRIAL.days} days, no card.
@@ -54,15 +54,15 @@ export default async function PricingPage() {
         </section>
       </div>
 
-      <AnchorStrip price={starterPrice} currency={currency} />
-      <PricingCalculator starterPrice={starterPrice} teamPrice={teamPrice} currency={currency} />
-
-      <div id="plans" className="mx-auto w-full max-w-6xl px-6 py-11 md:py-16">
-        <p className="text-muted-foreground mb-6 text-center text-sm">Less than one burned conversation per week.</p>
+      {/* The cards first: a buyer who came for the price sees it without scrolling. The cost anchor and the calculator follow for the one who wants the case. */}
+      <div id="plans" className="mx-auto w-full max-w-6xl px-6 pb-11 md:pb-16">
         <PlanGrid marketing currency={currency} founding={founding} />
+        <p className="text-muted-foreground mt-6 text-center text-sm">Less than one burned conversation per week.</p>
         <Guarantee className="mx-auto mt-8 max-w-3xl" />
       </div>
 
+      <AnchorStrip price={starterPrice} currency={currency} />
+      <PricingCalculator starterPrice={starterPrice} teamPrice={teamPrice} currency={currency} />
       <CompareTable starterPrice={starterPrice} teamPrice={teamPrice} currency={currency} />
 
       <div className="mx-auto w-full max-w-6xl px-6 pb-8">
