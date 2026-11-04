@@ -5,6 +5,8 @@ import { KAREN } from "@/lib/demo/boss";
 import { signInWithGoogle } from "@/app/(auth)/actions";
 import { GoogleMark } from "@/app/(auth)/auth-form";
 import { CallKarenSubmit } from "./call-karen-button";
+import { TestimonialStrip } from "./testimonial";
+import { SALESFORGE, SHOW_TESTIMONIAL_STRIP } from "@/content/testimonials";
 import { callKaren } from "@/app/(marketing)/karen/actions";
 
 const POINTS = [
@@ -65,6 +67,7 @@ export function KarenHero() {
             <Link href="/signup" className="font-medium underline-offset-4 hover:underline">Skip to the {TRIAL.calls}-call team trial →</Link>
             <p className="text-muted-foreground text-sm">{TRIAL.calls} free calls · {TRIAL.days} days access · no credit card</p>
           </div>
+          {SHOW_TESTIMONIAL_STRIP && <TestimonialStrip t={SALESFORGE} className="border-t pt-5" />}
         </div>
       </div>
     </section>
