@@ -18,6 +18,8 @@ import { getAllObjectionPages } from "@/lib/objections";
 import { pageMetadata } from "@/lib/seo";
 import { GoogleOneTap } from "@/components/auth/google-one-tap";
 import { KarenHero } from "@/components/marketing/karen-hero";
+import { TestimonialCard } from "@/components/marketing/testimonial";
+import { SALESFORGE } from "@/content/testimonials";
 import { cn } from "@/lib/utils";
 
 export const metadata = pageMetadata({
@@ -83,6 +85,9 @@ export default async function HomePage() {
         </div>
       </Section>
       )}
+
+      {/* 1b. A customer, in their words, between the sample scorecard and how it works. */}
+      <TestimonialCard t={SALESFORGE} />
 
       {/* 2. How it works */}
       <Section id="how-it-works" className="border-t">
