@@ -172,12 +172,12 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
               {stage === "live" && <span className={cn("text-muted-foreground", remaining <= 30 && "text-destructive")}>· {formatDuration(remaining)} left</span>}
             </div>
           )}
-          <p className="text-muted-foreground mt-6 h-5 text-sm">
-            {stage === "idle" && (voiceConfigured ? "Headset on. She picks up as soon as it connects." : "Voice service is not configured yet.")}
-            {stage === "dialing" && "Ringing…"}
-            {stage === "live" && (speaking ? "Karen is speaking" : "Listening to you")}
-            {stage === "ending" && "Call ended. The coach is reviewing it…"}
-            {stage === "error" && <span className="text-destructive">{error}</span>}
+          <p className="text-muted-foreground mt-6 h-5 text-sm" translate="no">
+            {stage === "idle" && <span key="idle">{voiceConfigured ? "Headset on. She picks up as soon as it connects." : "Voice service is not configured yet."}</span>}
+            {stage === "dialing" && <span key="dialing">Ringing…</span>}
+            {stage === "live" && <span key="live">{speaking ? "Karen is speaking" : "Listening to you"}</span>}
+            {stage === "ending" && <span key="ending">Call ended. The coach is reviewing it…</span>}
+            {stage === "error" && <span key="error" className="text-destructive">{error}</span>}
           </p>
           <div className="mt-8 flex items-center gap-3">
             {stage === "idle" ? (

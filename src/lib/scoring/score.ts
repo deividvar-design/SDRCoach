@@ -22,8 +22,8 @@ const ScoreSchema = z.object({
   objection_handling: dimension,
   value_prop: dimension,
   close: dimension,
-  strengths: z.array(z.string()).min(1).max(3).describe("Specific things the rep did well, each citing a moment"),
-  improvements: z.array(z.string()).min(1).max(3).describe("The highest-leverage changes, phrased as what to do next time, each citing a moment"),
+  strengths: z.array(z.string()).min(1).max(6).describe("Specific things the rep did well, each citing a moment. At most three."),
+  improvements: z.array(z.string()).min(1).max(6).describe("The highest-leverage changes, phrased as what to do next time, each citing a moment. At most three."),
   coach_summary: z.string().describe("What a good sales manager would say to this rep right after the call, in two to four short sentences, at most 70 words. Lead with the single thing that decided the outcome. Direct, warm, specific. Second person."),
   moments: z
     .array(
@@ -160,8 +160,9 @@ ${renderTranscript(input.turns, input.repName, input.prospect.name)}
   return {
     dimensions,
     overall: weightedOverall(dimensions),
-    strengths: parsed.strengths,
-    improvements: parsed.improvements,
+    // Three is the report's shape; a model that offers more loses the extras rather than the whole score.
+    strengths: parsed.strengths.slice(0, 3),
+    improvements: parsed.improvements.slice(0, 3),
     coach_summary: parsed.coach_summary,
     moments: parsed.moments,
     objections: parsed.objections.map((o) => ({ ...o, kind: (OBJECTION_KEYS as string[]).includes(o.kind) ? (o.kind as ObjectionKind) : "other" })),
