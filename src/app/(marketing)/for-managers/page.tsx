@@ -4,6 +4,8 @@ import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/market
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
+import { TestimonialCard } from "@/components/marketing/testimonial";
+import { SALESFORGE } from "@/content/testimonials";
 
 export const metadata = pageMetadata({
   title: "For sales managers: ramp SDRs on fake calls first",
@@ -72,6 +74,9 @@ export default function ForManagersPage() {
           alt="Rep dashboard with streak, average score, meetings booked and leaderboard"
         />
       </Section>
+
+      {/* A manager, in his words, after the product tour and before the numbers. */}
+      <TestimonialCard t={SALESFORGE} />
 
       <ProofSection />
 
