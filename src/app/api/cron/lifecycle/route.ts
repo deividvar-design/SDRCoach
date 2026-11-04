@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { sweepStaleSessions } from "@/lib/calls/sweep";
+import { finalizeDemo } from "@/lib/demo/boss";
 import { orgManagers, orgOwner } from "@/lib/email/lifecycle";
 import { adminEmails } from "@/lib/auth";
 import { reasonLabel } from "@/lib/marketing/signup-intent";
@@ -65,7 +66,7 @@ export async function GET(request: Request) {
 
   const db = createAdminClient();
   const now = Date.now();
-  const results = { quick: 0, stalled: 0, three_days: 0, ended: 0, chased: 0, demo_followups: 0, digests: 0, swept: { failed: 0, finalized: 0 } };
+  const results = { quick: 0, stalled: 0, three_days: 0, ended: 0, chased: 0, demo_followups: 0, digests: 0, swept: { failed: 0, finalized: 0 }, demos_retried: 0 };
 
   const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at, stripe_subscription_id").eq("plan", "trial").is("stripe_subscription_id", null).gt("trial_ends_at", new Date(now - 30 * DAY).toISOString()).limit(1000);
   for (const org of trials ?? []) {
@@ -158,5 +159,20 @@ export async function GET(request: Request) {
 
   const swept = await sweepStaleSessions(db, { limit: 10 });
   results.swept = { failed: swept.failed, finalized: swept.finalized };
+
+  // Karen calls whose scoring failed and whose caller left before the result page could retry it. finalizeDemo
+  // keeps its own attempt count, so this never loops on a call that cannot be scored.
+  const { data: stuckDemos } = await db
+    .from("demo_calls")
+    .select("id")
+    .eq("status", "ended")
+    .lt("finalize_attempts", 3)
+    .lte("ended_at", new Date(now - 15 * 60 * 1000).toISOString())
+    .gte("created_at", new Date(now - 3 * DAY).toISOString())
+    .limit(5);
+  for (const d of stuckDemos ?? []) {
+    await finalizeDemo(d.id).catch((err) => reportError(err, { where: "cron_demo_finalize", extra: { demoId: d.id } }));
+    results.demos_retried += 1;
+  }
   return NextResponse.json(results);
 }
