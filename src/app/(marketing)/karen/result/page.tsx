@@ -53,6 +53,16 @@ export default async function KarenResultPage() {
             <h1 className="font-display mt-4 text-5xl text-balance">The coach is reviewing it.</h1>
             <p className="text-muted-foreground mt-4 text-lg">About a minute. The transcript is being pulled, then six skills are scored and your report is written. This page updates itself.</p>
             {locked && <div className="mt-8"><EmailStep pending /></div>}
+            {/* The minute of waiting is the most attentive minute of the visit. The trial opens in a new tab so this page keeps polling. */}
+            <div className="bg-card mt-8 flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="font-medium">While the coach works: this, for your whole team.</div>
+                <div className="text-muted-foreground text-sm">Prospects built from your own target accounts, three levels, every call scored like this one. Ten free calls, no card. Opens in a new tab; your scorecard stays here.</div>
+              </div>
+              <Button variant="signal" className="shrink-0" asChild>
+                <CtaLink ctaId="result_pending_trial" href={signup} target="_blank" rel="noopener">Start the team trial</CtaLink>
+              </Button>
+            </div>
           </>
         ) : demo.status === "failed" || !demo.score ? (
           <>
