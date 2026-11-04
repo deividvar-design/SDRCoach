@@ -5,6 +5,7 @@ import { authMethod } from "@/lib/demo/source";
 import { getObjectionPage } from "@/lib/objections";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { BOSS_PERSONAS } from "@/content/boss-personas";
+import { KAREN_BRIEF, KAREN_BRIEF_TEXT } from "@/content/karen-brief";
 import { buildPersonaPrompt, firstMessage } from "@/lib/prompts/persona";
 import { MOODS } from "@/lib/domain/moods";
 import { fetchConversation } from "@/lib/elevenlabs/client";
@@ -39,12 +40,6 @@ export const DEMO_LIMITS = {
 
 type Db = ReturnType<typeof createAdminClient>;
 
-/** "acme.co.uk" becomes "Acme": the only thing the demo knows about the caller's company. */
-export function companyFromDomain(domain: string) {
-  const label = domain.split(".")[0] ?? domain;
-  return label.charAt(0).toUpperCase() + label.slice(1);
-}
-
 /**
  * Limits count calls that actually minted a voice token (prompt_hash set). Waitlisted rows, abandoned forms and
  * mic-denied attempts never count, so a failed first try is not a lifetime ban.
@@ -66,15 +61,36 @@ export async function checkDemoLimits(db: Db, { email, domain, ip, personal = fa
   return null;
 }
 
-/** Karen's brief for a caller we know only by their company name. */
-export function demoPrompt(demo: Pick<DemoCall, "email" | "domain" | "company" | "personal_email">) {
-  const name = demo.company?.trim() || (demo.domain && !demo.personal_email ? companyFromDomain(demo.domain) : "a company she has not heard of");
-  const org = { name, company_description: null, product_description: null, ideal_customer_profile: null };
+/** Karen's brief. Every caller sells the same made-up product, shown to them on the page and on the call screen. */
+export function demoPrompt(demo: Pick<DemoCall, "email">) {
+  const org = {
+    name: KAREN_BRIEF.company,
+    company_description: KAREN_BRIEF.oneLine,
+    product_description: KAREN_BRIEF_TEXT,
+    ideal_customer_profile: "Procurement teams at mid-size and large companies with many suppliers.",
+  };
   const repName = demo.email?.split("@")[0]?.split(/[._-]/)[0] || "the rep";
   const mood = MOODS.find((m) => m.id === "plain")!;
-  const prompt = buildPersonaPrompt({ target: KAREN, difficulty: "cold", org, repName: capitalise(repName), mood, gatekeeper: null, ttsModel: process.env.ELEVENLABS_TTS_MODEL });
+  const prompt = buildPersonaPrompt({ target: KAREN, difficulty: "cold", org, repName: capitalise(repName), mood, gatekeeper: null, ttsModel: process.env.ELEVENLABS_TTS_MODEL }) + KAREN_SIGN_OFF;
   return { prompt, firstMessage: firstMessage({ target: KAREN, difficulty: "cold", gatekeeper: null }), voiceId: KAREN.voice_id, repName: capitalise(repName), org };
 }
+
+/**
+ * Public demo only: Karen's parting line nods at practising, once, as she hangs up. Paid practice calls never get
+ * this. The caller had a five-line brief and a minute to read it, so the line is about how they handled her, never
+ * about their product. No line offers a callback, because the outcome is read from the transcript.
+ */
+export const KAREN_SIGN_OFF = `
+
+## Your parting line
+The caller was handed a five-line brief about this product a minute before dialling. They are not expected to know it deeply, so never mock their product knowledge or tell them to learn their product; judge only how they handled you.
+
+Your very last line, once you have made your decision clear and immediately before you use the end_call tool, is one dry parting remark that nods at practising. Say it exactly once, in your own flat voice, as a throwaway on your way out. Never earlier in the call, never as a pitch, never explained. Pick the one that fits how the call went, or say something close to it:
+- They lost you: "Practise on someone who isn't me. I hear there's a free trial for that." or "Go get some reps in first. Apparently the first ten are free." or "You're not ready for me yet. Practising is free, I checked."
+- They nearly had you: "Not bad. A few more rounds and you'd have had me. I'm told those are free."
+- They earned the meeting: "Fine. Now go teach your team to do that." or "You got me. There are harder people than me, so keep practising."
+
+Never name a company, website, product, plan or price in this line, and never invite them to call you back. If the rep asks what you mean, you have already hung up.`;
 
 const capitalise = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import { KAREN } from "@/lib/demo/boss";
+import { KAREN_BRIEF } from "@/content/karen-brief";
 import { Eyebrow, H2, Section } from "@/components/marketing/sections";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
 import { CallKarenSubmit } from "@/components/marketing/call-karen-button";
@@ -85,6 +86,16 @@ export default async function KarenPage({ searchParams }: PageProps<"/karen">) {
               <p className="text-muted-foreground text-[13px] leading-relaxed">
                 One call per person, three minutes max. The call is recorded and scored. See the <Link href="/privacy" className="underline underline-offset-4">privacy policy</Link>.
               </p>
+            </div>
+            {/* Every caller sells the same made-up product, so nobody dials with nothing to say. It stays on screen during the call. */}
+            <div className="rounded-2xl border p-6">
+              <div className="text-muted-foreground text-xs">What you will be selling</div>
+              <p className="mt-2 text-sm"><span className="font-medium">{KAREN_BRIEF.company}.</span> {KAREN_BRIEF.oneLine}</p>
+              <ul className="text-muted-foreground mt-3 list-disc space-y-1 pl-4 text-sm">
+                {KAREN_BRIEF.points.map((p) => <li key={p}>{p}</li>)}
+              </ul>
+              <p className="text-muted-foreground mt-3 text-sm">{KAREN_BRIEF.proof}</p>
+              <p className="mt-3 text-sm">Your ask: {KAREN_BRIEF.ask} The brief stays on screen during the call.</p>
             </div>
           </div>
         </div>

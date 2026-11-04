@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { track } from "@/components/analytics/provider";
 import { reportAdsConversion } from "@/components/analytics/ads-conversion";
 import { stripVoiceTags } from "@/lib/elevenlabs/tags";
+import { KAREN_BRIEF } from "@/content/karen-brief";
+import { DEMO_WRAP_UP_BEFORE_SECONDS, DEMO_WRAP_UP_MESSAGE } from "@/lib/calls/limits";
 import { authMethod, readKarenSource } from "@/lib/demo/source";
 
 interface Props {
@@ -83,9 +85,17 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
   useEffect(() => {
     if (stage !== "live") return;
     const start = Date.now();
+    let warned = false;
     const id = setInterval(() => {
       const secs = Math.floor((Date.now() - start) / 1000);
       setElapsed(secs);
+      // Karen closes on her own just before the cap, so the caller hears her decision and sign-off, not a dead line.
+      if (!warned && secs >= maxSeconds - DEMO_WRAP_UP_BEFORE_SECONDS) {
+        warned = true;
+        try {
+          conversation.sendContextualUpdate(DEMO_WRAP_UP_MESSAGE);
+        } catch {}
+      }
       if (secs >= maxSeconds) {
         clearInterval(id);
         setStage("ending");
@@ -173,7 +183,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
             </div>
           )}
           <p className="text-muted-foreground mt-6 h-5 text-sm" translate="no">
-            {stage === "idle" && <span key="idle">{voiceConfigured ? "Headset on. She picks up as soon as it connects." : "Voice service is not configured yet."}</span>}
+            {stage === "idle" && <span key="idle">{voiceConfigured ? "Read your brief, headset on. She picks up as soon as it connects." : "Voice service is not configured yet."}</span>}
             {stage === "dialing" && <span key="dialing">Ringing…</span>}
             {stage === "live" && <span key="live">{speaking ? "Karen is speaking" : "Listening to you"}</span>}
             {stage === "ending" && <span key="ending">Call ended. The coach is reviewing it…</span>}
@@ -196,6 +206,15 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
           {stage === "idle" && <p className="text-muted-foreground mt-8 max-w-sm text-xs text-balance">One call, three minutes. She decides how it ends. Your scorecard is on screen a minute after and in your inbox right behind it.</p>}
         </section>
         <aside className="flex flex-col gap-4">
+          <div className="bg-card rounded-2xl border p-5">
+            <div className="text-muted-foreground mb-2 text-xs">You are selling</div>
+            <p className="text-sm"><span className="font-medium">{KAREN_BRIEF.company}.</span> {KAREN_BRIEF.oneLine}</p>
+            <ul className="text-muted-foreground mt-2 list-disc space-y-1 pl-4 text-sm">
+              {KAREN_BRIEF.points.map((p) => <li key={p}>{p}</li>)}
+            </ul>
+            <p className="text-muted-foreground mt-2 text-sm">{KAREN_BRIEF.proof}</p>
+            <p className="mt-2 text-sm">Your ask: {KAREN_BRIEF.ask}</p>
+          </div>
           <div className="bg-card rounded-2xl border p-5">
             <div className="text-muted-foreground mb-2 text-xs">Your research</div>
             <p className="text-sm">{prospect.name} is {prospect.title} at {prospect.company}.</p>
