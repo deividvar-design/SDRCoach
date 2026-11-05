@@ -284,7 +284,8 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
   const prospectSpeaking = stage === "live" && conversation.isSpeaking;
 
   return (
-    <div className="mx-auto max-w-5xl">
+    // translate="no": browser page translation rewrites the DOM under React, and this screen updates every second.
+    <div className="mx-auto max-w-5xl" translate="no">
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         {/* Stage */}
         <section className="bg-card paper-grain relative flex min-h-[540px] flex-col items-center justify-center overflow-hidden rounded-2xl border p-8 text-center">

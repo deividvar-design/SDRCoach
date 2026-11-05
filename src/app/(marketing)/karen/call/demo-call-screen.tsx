@@ -155,7 +155,9 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
   const remaining = Math.max(0, maxSeconds - elapsed);
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 py-10">
+    // translate="no": Chrome's page translation wraps every text node in <font>, and the timer, status line and live
+    // transcript then update under it. React's removeChild hits a node that moved and the screen dies mid-call.
+    <div className="mx-auto w-full max-w-5xl px-6 py-10" translate="no">
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <section className="bg-card paper-grain relative flex min-h-[520px] flex-col items-center justify-center overflow-hidden rounded-2xl border p-8 text-center">
           <div className="absolute top-5 left-5 flex items-center gap-2">
@@ -182,7 +184,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
               {stage === "live" && <span className={cn("text-muted-foreground", remaining <= 30 && "text-destructive")}>· {formatDuration(remaining)} left</span>}
             </div>
           )}
-          <p className="text-muted-foreground mt-6 h-5 text-sm" translate="no">
+          <p className="text-muted-foreground mt-6 h-5 text-sm">
             {stage === "idle" && <span key="idle">{voiceConfigured ? "Read your brief, headset on. She picks up as soon as it connects." : "Voice service is not configured yet."}</span>}
             {stage === "dialing" && <span key="dialing">Ringing…</span>}
             {stage === "live" && <span key="live">{speaking ? "Karen is speaking" : "Listening to you"}</span>}

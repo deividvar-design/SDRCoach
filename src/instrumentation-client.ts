@@ -19,6 +19,11 @@ Sentry.init({
     /AbortError/,
     // An ad or tracking blocker refusing a Google beacon; the page is unaffected.
     /Failed to fetch \([a-z0-9.-]*(?:doubleclick|google)[a-z0-9.-]*\)/,
+    // Browser page translation (Chrome, Safari) moving DOM nodes under React. The live screens opt out of
+    // translation, so what is left comes from pages where the change is cosmetic and React recovers.
+    /The object can not be found here/,
+    /Failed to execute 'removeChild' on 'Node'/,
+    /Failed to execute 'insertBefore' on 'Node'/,
     // The ElevenLabs SDK raises this when the rep denies the mic; the UI already explains it.
     /NotAllowedError/,
   ],
