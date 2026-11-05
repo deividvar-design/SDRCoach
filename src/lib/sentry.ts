@@ -39,8 +39,21 @@ export function callContext(sessionId: string, extra: Record<string, unknown> = 
  */
 export function reportError(err: unknown, ctx: { where: string; sessionId?: string | null; orgId?: string | null; extra?: Record<string, unknown> }) {
   console.error(`[${ctx.where}]`, ctx.sessionId ?? ctx.orgId ?? "", err);
+  Sentry.captureException(err, { tags: contextTags(ctx), extra: { where: ctx.where, ...ctx.extra } });
+}
+
+/**
+ * Something outside our code went wrong and was handled: a provider dropped a call, a third party timed out. It is
+ * counted in Sentry as a warning, so a pattern is visible, without paging anyone the way an error does.
+ */
+export function reportWarning(message: string, ctx: { where: string; sessionId?: string | null; orgId?: string | null; extra?: Record<string, unknown> }) {
+  console.warn(`[${ctx.where}]`, ctx.sessionId ?? ctx.orgId ?? "", message);
+  Sentry.captureMessage(message, { level: "warning", tags: contextTags(ctx), extra: { where: ctx.where, ...ctx.extra } });
+}
+
+function contextTags(ctx: { sessionId?: string | null; orgId?: string | null }) {
   const tags: Record<string, string> = {};
   if (ctx.sessionId) tags.session_id = ctx.sessionId;
   if (ctx.orgId) tags.org_id = ctx.orgId;
-  Sentry.captureException(err, { tags, extra: { where: ctx.where, ...ctx.extra } });
+  return tags;
 }

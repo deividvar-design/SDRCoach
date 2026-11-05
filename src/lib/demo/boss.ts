@@ -15,7 +15,7 @@ import { hashPrompt } from "@/lib/calls/finalize";
 import { recordAnthropicUsage, recordVoiceUsage } from "@/lib/usage/record";
 import { sendMail, emailConfigured } from "@/lib/email/send";
 import { templates } from "@/lib/email/templates";
-import { reportError } from "@/lib/sentry";
+import { reportError, reportWarning } from "@/lib/sentry";
 import { track } from "@vercel/analytics/server";
 import type { CallOutcome, DemoCall, TranscriptTurn } from "@/types/database";
 import { absoluteUrl } from "@/lib/site";
@@ -126,7 +126,16 @@ export async function finalizeDemo(id: string) {
 
   try {
     const convo = await fetchConversation(demo.elevenlabs_conversation_id);
-    if (convo.status === "failed") throw new Error("The voice provider reported the conversation as failed");
+    if (convo.status === "failed") {
+      // ElevenLabs could not run the call (a dropped link, a provider-side error). No retry changes that, so the
+      // caller gets a plain answer now instead of a day of "the coach is reviewing it".
+      reportWarning("The voice provider reported the conversation as failed", { where: "demo_finalize", extra: { demoId: id, conversationId: demo.elevenlabs_conversation_id, turns: convo.turns.length } });
+      await db
+        .from("demo_calls")
+        .update({ status: "failed", error: "voice provider failed", outcome: "incomplete", outcome_reason: "The line dropped before the call got going, so there was nothing to score. Try again.", duration_seconds: convo.durationSecs || null })
+        .eq("id", id);
+      return;
+    }
     if (convo.status !== "done" && attempts < MAX_ATTEMPTS) {
       await retryOrFail("Waiting for the transcript");
       return;
