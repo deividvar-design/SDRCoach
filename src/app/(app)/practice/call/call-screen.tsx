@@ -14,6 +14,7 @@ import { track } from "@/components/analytics/provider";
 import { startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
 import type { Ambience } from "@/lib/domain/moods";
 import { stripVoiceTags } from "@/lib/elevenlabs/tags";
+import { NO_WEB_AUDIO_MESSAGE, useWebAudioSupported } from "@/lib/audio/support";
 import { MAX_CALL_SECONDS, WRAP_UP_AT_SECONDS, WRAP_UP_MESSAGE } from "@/lib/calls/limits";
 
 interface TargetCard {
@@ -282,6 +283,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
   }
 
   const prospectSpeaking = stage === "live" && conversation.isSpeaking;
+  const audioOk = useWebAudioSupported();
 
   return (
     // translate="no": browser page translation rewrites the DOM under React, and this screen updates every second.
@@ -327,7 +329,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
           )}
 
           <p className="text-muted-foreground mt-6 h-5 text-sm">
-            {stage === "idle" && (voiceConfigured ? "Ready when you are." : "Voice service is not configured yet.")}
+            {stage === "idle" && (!voiceConfigured ? "Voice service is not configured yet." : !audioOk ? "This browser cannot play the call." : "Ready when you are.")}
             {stage === "dialing" && "Ringing…"}
             {stage === "live" && (prospectSpeaking ? `${target.name.split(" ")[0]} is speaking` : "Listening to you")}
             {stage === "ending" && "Call ended. Your coach is reviewing it…"}
@@ -347,7 +349,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
           <div className="mt-8 flex items-center gap-3">
             {stage === "idle" || stage === "error" ? (
               <>
-                <Button size="lg" variant="signal" onClick={dial} disabled={!voiceConfigured}>
+                <Button size="lg" variant="signal" onClick={dial} disabled={!voiceConfigured || !audioOk}>
                   <Mic /> {stage === "error" ? "Try again" : "Dial"}
                 </Button>
                 <Button size="lg" variant="ghost" asChild>
@@ -370,6 +372,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
               </Button>
             )}
           </div>
+          {stage === "idle" && !audioOk && <p className="text-destructive mt-6 max-w-sm text-sm text-balance">{NO_WEB_AUDIO_MESSAGE} No call has been used.</p>}
 
           {stage === "live" && silentMic && !conversation.isMuted && (
             <p className="text-destructive mt-6 max-w-sm text-sm text-balance" role="status">

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { track } from "@/components/analytics/provider";
 import { reportAdsConversion } from "@/components/analytics/ads-conversion";
 import { stripVoiceTags } from "@/lib/elevenlabs/tags";
+import { NO_WEB_AUDIO_MESSAGE, useWebAudioSupported } from "@/lib/audio/support";
 import { KAREN_BRIEF } from "@/content/karen-brief";
 import { DEMO_WRAP_UP_BEFORE_SECONDS, DEMO_WRAP_UP_MESSAGE } from "@/lib/calls/limits";
 import { authMethod, readKarenSource } from "@/lib/demo/source";
@@ -153,6 +154,8 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
 
   const speaking = stage === "live" && conversation.isSpeaking;
   const remaining = Math.max(0, maxSeconds - elapsed);
+  const audioOk = useWebAudioSupported();
+  const canDial = voiceConfigured && audioOk;
 
   return (
     // translate="no": Chrome's page translation wraps every text node in <font>, and the timer, status line and live
@@ -185,7 +188,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
             </div>
           )}
           <p className="text-muted-foreground mt-6 h-5 text-sm">
-            {stage === "idle" && <span key="idle">{voiceConfigured ? "Read your brief, headset on. She picks up as soon as it connects." : "Voice service is not configured yet."}</span>}
+            {stage === "idle" && <span key="idle">{!voiceConfigured ? "Voice service is not configured yet." : !audioOk ? "This browser cannot play the call." : "Read your brief, headset on. She picks up as soon as it connects."}</span>}
             {stage === "dialing" && <span key="dialing">Ringing…</span>}
             {stage === "live" && <span key="live">{speaking ? "Karen is speaking" : "Listening to you"}</span>}
             {stage === "ending" && <span key="ending">Call ended. The coach is reviewing it…</span>}
@@ -193,7 +196,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
           </p>
           <div className="mt-8 flex items-center gap-3">
             {stage === "idle" ? (
-              <Button size="lg" variant="signal" onClick={dial} disabled={!voiceConfigured}><Mic /> Dial Karen</Button>
+              <Button size="lg" variant="signal" onClick={dial} disabled={!canDial}><Mic /> Dial Karen</Button>
             ) : stage === "error" ? (
               <Button size="lg" variant="outline" asChild><Link href="/karen">Back</Link></Button>
             ) : stage === "live" ? (
@@ -205,6 +208,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
               <Button size="lg" variant="outline" disabled>{stage === "dialing" ? "Connecting…" : "Wrapping up…"}</Button>
             )}
           </div>
+          {stage === "idle" && !audioOk && <p className="text-destructive mt-6 max-w-sm text-sm text-balance">{NO_WEB_AUDIO_MESSAGE} Your free call is still unused.</p>}
           {stage === "idle" && <p className="text-muted-foreground mt-8 max-w-sm text-xs text-balance">One call, three minutes. She decides how it ends. Your scorecard is on screen a minute after and in your inbox right behind it.</p>}
         </section>
         <aside className="flex flex-col gap-4">
