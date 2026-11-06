@@ -32,7 +32,7 @@ export function PartnerBar({ spots }: { spots: number | null }) {
       <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-6 py-2 text-sm">
         {/* Phones get the short form, and the whole line is the link so nothing hides behind an ellipsis. */}
         <Link href={href} onClick={() => trackCta("partner_bar", pathname, href)} className="min-w-0 flex-1 truncate sm:hidden">
-          <span className="font-medium">Founding partners:</span> {spots !== null ? `${spots} of ${PARTNER.spots} spots left.` : `ten ${PARTNER.pilotDays}-day pilots.`} <span className="underline underline-offset-4">Apply →</span>
+          <span className="font-medium">Founding partners:</span> {spots !== null ? `${spots} of ${PARTNER.spots} spots left.` : `ten ${PARTNER.pilotDays}-day pilots.`} <span className="underline underline-offset-4">Apply</span>
         </Link>
         <p className="hidden min-w-0 flex-1 truncate sm:block">
           <span className="font-medium">Founding partners:</span> ten {PARTNER.pilotDays}-day pilots, set up for your team.{" "}
