@@ -1,12 +1,13 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { issueAccessLink } from "@/lib/access/issue";
 import { accessUrl } from "@/lib/access/links";
 import { normaliseSite } from "@/lib/onboarding/draft";
 import { spotsLeft } from "@/lib/partners/program";
+import { SPOTS_TAG } from "@/lib/partners/spots";
 import { PARTNER, pilotCalls } from "@/content/founding-partners";
 import { sendMail, emailConfigured } from "@/lib/email/send";
 import { templates } from "@/lib/email/templates";
@@ -52,6 +53,7 @@ export async function approvePartner(id: string): Promise<Result> {
       .catch((err) => (reportError(err, { where: "partner_approve_email", extra: { application: id } }), " The welcome email failed: copy the link from Access links and send it yourself."));
   }
   revalidatePath("/admin/partners");
+  revalidateTag(SPOTS_TAG, "max");
   return { ok: `${app.company} approved: ${calls} calls over ${PARTNER.pilotDays} days.${issued.draftNote}${mailNote}` };
 }
 

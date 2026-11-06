@@ -19,6 +19,8 @@ import { formatDate } from "@/lib/utils";
 import { randomBytes } from "node:crypto";
 import { PARTNER } from "@/content/founding-partners";
 import { buildPartnerReport, reportSummary } from "@/lib/partners/program";
+import { SPOTS_TAG } from "@/lib/partners/spots";
+import { revalidateTag } from "next/cache";
 
 export const maxDuration = 300;
 
@@ -146,6 +148,7 @@ export async function GET(request: Request) {
       const { data: released } = await db.from("partner_applications").update({ status: "released", released_at: new Date(now).toISOString() }).eq("id", app.id).eq("status", "approved").select("id").maybeSingle();
       if (!released) continue;
       results.partners_released += 1;
+      revalidateTag(SPOTS_TAG, "max");
       if (emailConfigured()) await sendMail({ to: app.email, ...templates.partnerReleased({ firstName, company: app.company, days: PARTNER.releaseAfterDays }) }).catch((err) => reportError(err, { where: "cron_partner_released", extra: { application: app.id } }));
       continue;
     }
