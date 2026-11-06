@@ -10,6 +10,8 @@ export type FunnelKind =
   | "karen_email"
   | "site_fetch_failed"
   | "reward_claimed"
+  | "affiliate_signup"
+  | "affiliate_joined"
   | "reward_granted"
   | "reward_rejected"
   | "referral_signup"

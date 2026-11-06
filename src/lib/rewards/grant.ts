@@ -156,13 +156,30 @@ export async function referralPaidReward(referredOrgId: string, applyFreeMonth: 
   await notifyReward(db, referrer.id, { title: "A team you referred subscribed", calls: REFERRAL_PAID_FALLBACK_CALLS, days: 0, detail: `${referred.name} is now a customer.` });
 }
 
-/** Attach a referral to a new workspace from the code the browser arrived with. Self-referrals and unknown codes are ignored. */
+/**
+ * Attach a referral to a new workspace from the code the browser arrived with. The code belongs to a workspace or to
+ * an affiliate; self-referrals and unknown codes are ignored. An affiliate hears about the signup, with no names.
+ */
 export async function attachReferral(db: Db, orgId: string, code: string | null | undefined) {
   if (!code || !/^[a-z0-9]{6,12}$/.test(code)) return;
   const { data: referrer } = await db.from("organizations").select("id").eq("referral_code", code).maybeSingle();
-  if (!referrer || referrer.id === orgId) return;
-  await db.from("organizations").update({ referred_by_org_id: referrer.id }).eq("id", orgId).is("referred_by_org_id", null);
-  await logFunnel("referral_signup", { subject: orgId, meta: { referrer: referrer.id } });
+  if (referrer) {
+    if (referrer.id === orgId) return;
+    await db.from("organizations").update({ referred_by_org_id: referrer.id }).eq("id", orgId).is("referred_by_org_id", null);
+    await logFunnel("referral_signup", { subject: orgId, meta: { referrer: referrer.id } });
+    return;
+  }
+  const { data: affiliate } = await db.from("affiliates").select("id, name, email").eq("code", code).eq("status", "active").maybeSingle();
+  if (!affiliate) return;
+  const { data: org } = await db.from("organizations").select("trial_domain").eq("id", orgId).maybeSingle();
+  // The affiliate's own company does not count. The domain is the only thing we know about either side here.
+  const affiliateDomain = affiliate.email.split("@")[1]?.toLowerCase();
+  if (org?.trial_domain && affiliateDomain && org.trial_domain.toLowerCase() === affiliateDomain) return;
+  await db.from("organizations").update({ affiliate_id: affiliate.id }).eq("id", orgId).is("affiliate_id", null).is("referred_by_org_id", null);
+  await logFunnel("affiliate_signup", { subject: orgId, meta: { affiliate: affiliate.id } });
+  if (emailConfigured()) {
+    await sendMail({ to: affiliate.email, ...templates.affiliateSignup({ firstName: affiliate.name.split(/\s+/)[0] ?? "there" }) }).catch((err) => reportError(err, { where: "affiliate_signup_email", extra: { affiliate: affiliate.id } }));
+  }
 }
 
 export type { Organization };

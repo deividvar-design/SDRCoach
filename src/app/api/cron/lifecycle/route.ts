@@ -20,6 +20,9 @@ import { randomBytes } from "node:crypto";
 import { PARTNER } from "@/content/founding-partners";
 import { buildPartnerReport, reportSummary } from "@/lib/partners/program";
 import { SPOTS_TAG } from "@/lib/partners/spots";
+import { affiliateStatement } from "@/lib/affiliates/program";
+import { isStatementDay, money, previousQuarter, statementLines } from "@/lib/affiliates/statements";
+import { AFFILIATE } from "@/content/affiliates";
 import { revalidateTag } from "next/cache";
 
 export const maxDuration = 300;
@@ -72,7 +75,7 @@ export async function GET(request: Request) {
 
   const db = createAdminClient();
   const now = Date.now();
-  const results = { quick: 0, stalled: 0, three_days: 0, ended: 0, chased: 0, demo_followups: 0, digests: 0, swept: { failed: 0, finalized: 0 }, demos_retried: 0, demos_swept: 0, partners_released: 0, partner_reports: 0 };
+  const results = { quick: 0, stalled: 0, three_days: 0, ended: 0, chased: 0, demo_followups: 0, digests: 0, swept: { failed: 0, finalized: 0 }, demos_retried: 0, demos_swept: 0, partners_released: 0, partner_reports: 0, affiliate_statements: 0 };
 
   const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at, stripe_subscription_id, partner_since").eq("plan", "trial").is("stripe_subscription_id", null).gt("trial_ends_at", new Date(now - 30 * DAY).toISOString()).limit(1000);
   for (const org of trials ?? []) {
@@ -161,6 +164,33 @@ export async function GET(request: Request) {
       if (!done) continue;
       results.partner_reports += 1;
       if (emailConfigured()) await sendMail({ to: app.email, ...templates.partnerReport({ firstName, company: app.company, summary: reportSummary(report), link: absoluteUrl(`/partner-report/${token}`) }) }).catch((err) => reportError(err, { where: "cron_partner_report_email", extra: { application: app.id } }));
+    }
+  }
+
+  // First Monday of a quarter: every active affiliate gets a statement for the quarter just ended, and the admins get
+  // the list of who is over the floor. The email log keys on the period, so a re-run the same day sends nothing twice.
+  if (isStatementDay(new Date(now)) && emailConfigured()) {
+    const period = previousQuarter(new Date(now));
+    const { data: affiliates } = await db.from("affiliates").select("id, name, email, payout_method, payout_details").eq("status", "active").limit(500);
+    const owed: string[] = [];
+    for (const a of affiliates ?? []) {
+      const key = `affiliate_statement:${period.label}:${a.id}`;
+      const { data: already } = await db.from("funnel_events").select("id").eq("dedupe_key", key).maybeSingle();
+      if (already) continue;
+      const s = await affiliateStatement(db, a, period).catch((err) => (reportError(err, { where: "cron_affiliate_statement", extra: { affiliate: a.id } }), null));
+      if (!s) continue;
+      const payable = Object.keys(s.payable).length > 0;
+      const ok = await sendMail({ to: a.email, ...templates.affiliateStatement({ firstName: a.name.split(/\s+/)[0] ?? "there", period: period.label, lines: statementLines(s), payable, minimum: AFFILIATE.minimumPayout, withinDays: AFFILIATE.payoutWithinDays }) })
+        .then(() => true)
+        .catch((err) => (reportError(err, { where: "cron_affiliate_statement_email", extra: { affiliate: a.id } }), false));
+      if (!ok) continue;
+      await db.from("funnel_events").insert({ kind: "affiliate_statement", subject: a.id, dedupe_key: key, meta: { period: period.label, payable } });
+      results.affiliate_statements += 1;
+      for (const [c, cents] of Object.entries(s.payable) as ["usd" | "eur", number][]) owed.push(`${a.name} <${a.email}>: ${money(cents, c)} by ${a.payout_method === "paypal" ? "PayPal" : "bank"} to ${a.payout_details}`);
+    }
+    if (owed.length) {
+      const text = [`Affiliate payouts for ${period.label}, due within ${AFFILIATE.payoutWithinDays} days:`, "", ...owed, "", `Record each one at ${absoluteUrl("/admin/affiliates")} once sent.`].join("\n");
+      for (const to of adminEmails()) await sendMail({ to, subject: `Affiliate payouts due: ${period.label}`, text, html: `<pre style="font-family:inherit;white-space:pre-wrap">${text.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</pre>` }).catch((err) => reportError(err, { where: "cron_affiliate_payout_list" }));
     }
   }
 

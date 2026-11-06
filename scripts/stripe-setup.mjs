@@ -164,11 +164,11 @@ let webhookLine = "";
 if (appUrl && process.argv.includes("--webhook")) {
   const endpoint = await stripe.webhookEndpoints.create({
     url: `${appUrl.replace(/\/$/, "")}/api/webhooks/stripe`,
-    enabled_events: ["checkout.session.completed", "customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted", "invoice.payment_failed"],
+    enabled_events: ["checkout.session.completed", "customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted", "invoice.payment_failed", "invoice.paid", "credit_note.created"],
     description: "100 Dials billing sync",
   });
   webhookLine = `STRIPE_WEBHOOK_SECRET=${endpoint.secret}`;
   out.push(webhookLine);
 }
 
-console.log(`\nAdd to your environment (${key.includes("_live_") ? "LIVE" : "TEST"} mode):\n${out.join("\n")}\n\nPortal configuration: ${portal.id} (set as default in the Stripe dashboard under Billing → Customer portal)\n${webhookLine ? "Webhook endpoint registered and its signing secret is in the list above." : `Then create a webhook endpoint for ${appUrl ?? "https://your-domain"}/api/webhooks/stripe (or re-run with --webhook and NEXT_PUBLIC_APP_URL set) with events:`}\n  checkout.session.completed, customer.subscription.created, customer.subscription.updated, customer.subscription.deleted, invoice.payment_failed\nand put its signing secret in STRIPE_WEBHOOK_SECRET.\n`);
+console.log(`\nAdd to your environment (${key.includes("_live_") ? "LIVE" : "TEST"} mode):\n${out.join("\n")}\n\nPortal configuration: ${portal.id} (set as default in the Stripe dashboard under Billing → Customer portal)\n${webhookLine ? "Webhook endpoint registered and its signing secret is in the list above." : `Then create a webhook endpoint for ${appUrl ?? "https://your-domain"}/api/webhooks/stripe (or re-run with --webhook and NEXT_PUBLIC_APP_URL set) with events:`}\n  checkout.session.completed, customer.subscription.created, customer.subscription.updated, customer.subscription.deleted, invoice.payment_failed, invoice.paid, credit_note.created\nand put its signing secret in STRIPE_WEBHOOK_SECRET.\n`);

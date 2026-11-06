@@ -51,7 +51,10 @@ export default function TermsPage() {
       <h2>11. Data protection</h2>
       <p>Where you upload personal data, we act as your processor under our data processing agreement, which forms part of these terms and is available on request.</p>
 
-      <h2>12. General</h2>
+      <h2>12. Affiliate programme</h2>
+      <p>Anyone may join the affiliate programme at /affiliates and earn a share of payments made by workspaces created through their link, on the terms and rules shown on that page at the time of joining. Commission accrues only on payments that have become non-refundable, is paid quarterly above the stated minimum, and is forfeited if the rules are broken. We may change or end the programme with 30 days&apos; notice; commission already earned is still paid.</p>
+
+      <h2>13. General</h2>
       <p>These terms are governed by the laws of {c.country}, and disputes go to the courts of Vilnius, without prejudice to mandatory consumer protections where they apply. If any provision is unenforceable the rest remains in force. These terms, the pricing page and the DPA are the entire agreement. We may update these terms with 30 days' notice by email to workspace owners.</p>
 
       <p>Questions: <a href={`mailto:${c.email}`}>{c.email}</a>.</p>

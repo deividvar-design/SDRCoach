@@ -19,6 +19,7 @@ export const PAGE_CARDS: Record<string, OgCardSpec> = {
   company: { title: "The company behind 100 Dials.", kicker: "Vilnius, Lithuania", footer: "Hosted in the EU" },
   refer: { title: "Refer a sales team. Get a month free.", kicker: "Referrals and rewards", footer: "They get 20% off for three months" },
   research: { title: "Built on what the research says about practice.", kicker: "Research", footer: "Nine studies, limits included" },
+  affiliates: { title: "Keep 25% of what they pay for a year.", kicker: "Affiliate programme", footer: "Quarterly payouts, no dashboard" },
   "founding-partners": { title: "Ten SDR teams. A 30-day pilot we set up for you.", kicker: "Founding partners", footer: "Apply on 100dials.com" },
   "sample-report": { title: "What a scored call looks like.", kicker: "Sample report", footer: "Six skills, the objections tagged, one thing to fix" },
 };

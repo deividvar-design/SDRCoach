@@ -8,6 +8,7 @@ import { sendLifecycle } from "@/lib/email/lifecycle";
 import { track } from "@vercel/analytics/server";
 import { logFunnel } from "@/lib/funnel";
 import { referralPaidReward } from "@/lib/rewards/grant";
+import { recordCredit, recordPayment } from "@/lib/affiliates/ledger";
 
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -51,6 +52,8 @@ export async function POST(request: Request) {
       if (error) throw new Error(error.message);
     },
     retrieveSubscription: (id) => stripe().subscriptions.retrieve(id),
+    recordPayment: (p) => recordPayment(db, p),
+    recordCredit: (invoiceId, cents) => recordCredit(db, invoiceId, cents),
     cancelSubscription: async (id) => {
       await stripe().subscriptions.cancel(id, { prorate: true });
     },

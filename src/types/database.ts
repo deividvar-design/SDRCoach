@@ -90,6 +90,46 @@ export type Organization = {
   referred_by_org_id: string | null;
   /** Set when a founding partner's access link was claimed: checkout offers the founding price after the public window. */
   partner_since: string | null;
+  /** The affiliate whose link brought this workspace, when it was not another workspace's referral. */
+  affiliate_id: string | null;
+  created_at: string;
+};
+
+/** Someone outside the product who shares a referral link for a share of what referred teams pay. */
+export type Affiliate = {
+  id: string;
+  name: string;
+  email: string;
+  code: string;
+  channel: string | null;
+  payout_method: "paypal" | "bank";
+  payout_details: string;
+  status: "active" | "paused" | "closed";
+  terms_accepted_at: string;
+  ip: string | null;
+  created_at: string;
+};
+
+/** A paid invoice, with any refund netted off later. The id is Stripe's invoice id. */
+export type Payment = {
+  id: string;
+  org_id: string;
+  amount_cents: number;
+  refunded_cents: number;
+  currency: "usd" | "eur";
+  paid_at: string;
+  created_at: string;
+};
+
+export type AffiliatePayout = {
+  id: string;
+  affiliate_id: string;
+  currency: "usd" | "eur";
+  amount_cents: number;
+  period: string;
+  paid_at: string;
+  paid_by: string;
+  note: string | null;
   created_at: string;
 };
 
@@ -430,7 +470,7 @@ export type Database = {
     Tables: {
       organizations: Table<
         Organization,
-        Insert<Organization, "id" | "plan" | "seat_limit" | "bonus_calls" | "referral_code" | "referred_by_org_id" | "partner_since" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
+        Insert<Organization, "id" | "plan" | "seat_limit" | "bonus_calls" | "referral_code" | "referred_by_org_id" | "partner_since" | "affiliate_id" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
       reward_claims: Table<RewardClaim, Insert<RewardClaim, "id" | "user_id" | "url" | "status" | "calls" | "days" | "note" | "ref_org_id" | "ref_user_id" | "decided_at" | "decided_by" | "created_at">>;
@@ -466,6 +506,9 @@ export type Database = {
           { foreignKeyName: "memberships_manager_id_fkey"; columns: ["manager_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ]
       >;
+      affiliates: Table<Affiliate, Insert<Affiliate, "id" | "channel" | "status" | "terms_accepted_at" | "ip" | "created_at">>;
+      payments: Table<Payment, Insert<Payment, "refunded_cents" | "created_at">>;
+      affiliate_payouts: Table<AffiliatePayout, Insert<AffiliatePayout, "id" | "note" | "paid_at" | "created_at">>;
       partner_applications: Table<PartnerApplication, Insert<PartnerApplication, "id" | "role" | "website" | "kickoff_wanted" | "kickoff_times" | "notes" | "status" | "access_link_id" | "decided_at" | "decided_by" | "released_at" | "report" | "report_token" | "report_sent_at" | "checkin" | "quote" | "quote_approved_at" | "ip" | "created_at">>;
       access_links: Table<AccessLink, Insert<AccessLink, "id" | "token" | "calls" | "days" | "note" | "expires_at" | "claimed_at" | "revoked_at" | "org_id" | "user_id" | "website" | "draft" | "draft_error" | "created_at">>;
       invites: Table<

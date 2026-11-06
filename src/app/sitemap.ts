@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/karen/leaderboard"), lastModified: now, changeFrequency: "weekly", priority: 0.4 },
     { url: absoluteUrl("/trust"), lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: absoluteUrl("/refer"), lastModified: new Date("2026-10-30"), changeFrequency: "monthly", priority: 0.5 },
+    { url: absoluteUrl("/affiliates"), lastModified: new Date("2026-11-06"), changeFrequency: "monthly", priority: 0.5 },
     { url: absoluteUrl("/research"), lastModified: new Date("2026-10-25"), changeFrequency: "monthly", priority: 0.6 },
     { url: absoluteUrl("/founding-partners"), lastModified: new Date("2026-11-06"), changeFrequency: "weekly", priority: 0.7 },
     { url: absoluteUrl("/sample-report"), lastModified: new Date("2026-11-03"), changeFrequency: "monthly", priority: 0.6 },

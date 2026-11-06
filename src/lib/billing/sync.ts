@@ -77,6 +77,10 @@ export interface SyncDeps {
   /** Cancels a subscription that should never have been created (a second checkout racing the first). */
   cancelSubscription?(id: string): Promise<void>;
   notify?(orgId: string, kind: "subscription_started" | "payment_failed" | "subscription_canceled"): Promise<void>;
+  /** A paid invoice goes into the payments ledger, which affiliate commission is computed from. */
+  recordPayment?(p: { id: string; orgId: string; amountCents: number; currency: "usd" | "eur"; paidAt: string }): Promise<void>;
+  /** A credit note (a refund issued from the invoice) is netted off that invoice. */
+  recordCredit?(invoiceId: string, creditedCents: number): Promise<void>;
 }
 
 export type SyncResult = { handled: boolean; reason?: string; orgId?: string };
@@ -119,6 +123,26 @@ export async function handleStripeEvent(event: Stripe.Event, deps: SyncDeps): Pr
       await deps.patchOrg(org.id, patch);
       if (event.type === "customer.subscription.deleted") await deps.notify?.(org.id, "subscription_canceled");
       return { handled: true, orgId: org.id };
+    }
+    case "invoice.paid": {
+      const invoice = event.data.object;
+      // Nothing to ledger for a zero invoice, and nothing to attribute without an org.
+      if (!invoice.amount_paid || !invoice.id) return { handled: false, reason: "nothing paid" };
+      const currency = invoice.currency === "eur" ? "eur" : invoice.currency === "usd" ? "usd" : null;
+      if (!currency) return { handled: false, reason: `currency ${invoice.currency}` };
+      const customer = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id ?? null;
+      const org = await deps.findOrg({ customerId: customer });
+      if (!org) return { handled: false, reason: "org not found" };
+      const paidAt = invoice.status_transitions?.paid_at ?? event.created;
+      await deps.recordPayment?.({ id: invoice.id, orgId: org.id, amountCents: invoice.amount_paid, currency, paidAt: new Date(paidAt * 1000).toISOString() });
+      return { handled: true, orgId: org.id };
+    }
+    case "credit_note.created": {
+      const note = event.data.object;
+      const invoiceId = typeof note.invoice === "string" ? note.invoice : note.invoice.id;
+      if (!note.amount) return { handled: false, reason: "empty credit note" };
+      await deps.recordCredit?.(invoiceId, note.amount);
+      return { handled: true };
     }
     case "invoice.payment_failed": {
       const invoice = event.data.object;

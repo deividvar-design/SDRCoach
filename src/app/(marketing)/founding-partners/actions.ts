@@ -22,13 +22,13 @@ export interface ApplyState {
 const DAY = 86_400_000;
 
 const Schema = z.object({
-  name: z.string().trim().min(2, "Add your name").max(80),
-  email: z.string().trim().toLowerCase().email("Enter a valid work email"),
+  name: z.string({ message: "Add your name" }).trim().min(2, "Add your name").max(80),
+  email: z.string({ message: "Enter a valid work email" }).trim().toLowerCase().email("Enter a valid work email"),
   role: z.string().trim().max(80).optional(),
-  company: z.string().trim().min(2, "Add your company").max(80),
+  company: z.string({ message: "Add your company" }).trim().min(2, "Add your company").max(80),
   website: z.string().trim().max(200).optional(),
   sdr_count: z.coerce.number({ message: "How many SDRs make cold calls?" }).int().min(1, "How many SDRs make cold calls?").max(500),
-  start_by: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Pick a start date"),
+  start_by: z.string({ message: "Pick a start date" }).regex(/^\d{4}-\d{2}-\d{2}$/, "Pick a start date"),
   kickoff_wanted: z.literal("on").optional(),
   kickoff_times: z.string().trim().max(200).optional(),
   notes: z.string().trim().max(600).optional(),

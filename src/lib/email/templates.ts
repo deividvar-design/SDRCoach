@@ -340,4 +340,35 @@ export const templates = {
     const lines = [`Hi ${p.firstName},`, `${p.company}'s 30-day pilot is done. Here is what your team's calls show:`, ...p.summary, "Open the link to check the numbers, answer five short questions, and approve what we can publish. Nothing goes out without your approval."];
     return { subject: `${p.company}'s 30-day pilot report`, html: layout("Your pilot, in numbers.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
   },
+
+  affiliateWelcome(p: { firstName: string; link: string; sharePercent: number; months: number; minimum: number }): Rendered {
+    const lines = [
+      `Hi ${p.firstName},`,
+      `Your ${SITE.name} affiliate link is ready: ${p.link}`,
+      `Anyone who opens it and starts a workspace within ninety days is yours. You earn ${p.sharePercent}% of what they pay for their first ${p.months} months, after VAT and refunds.`,
+      `You get one email when a team signs up through your link and one when it first pays. Statements go out on the first Monday of each quarter and are paid within two weeks; balances under $${p.minimum} roll into the next quarter.`,
+      "The rules are short: no ads on our brand name, no coupon sites, no spam, no referring yourself. Reply to this email with any question; it reaches a person.",
+    ];
+    return { subject: `Your ${SITE.name} affiliate link`, html: layout("You're in.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("")), text: textOf(lines) };
+  },
+
+  affiliateSignup(p: { firstName: string }): Rendered {
+    const lines = [`Hi ${p.firstName},`, "A team just signed up through your link. They have a free trial first; you'll get another note when they start paying.", "That's the whole message. Nothing to do."];
+    return { subject: "A team signed up through your link", html: layout("Your link worked.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("")), text: textOf(lines) };
+  },
+
+  affiliateFirstPayment(p: { firstName: string }): Rendered {
+    const lines = [`Hi ${p.firstName},`, "A team you referred has made its first payment. Your share lands on your next quarterly statement once the 30-day money-back window has passed.", "Nothing to do."];
+    return { subject: "A team you referred is now paying", html: layout("First payment in.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("")), text: textOf(lines) };
+  },
+
+  affiliateStatement(p: { firstName: string; period: string; lines: string[]; payable: boolean; minimum: number; withinDays: number }): Rendered {
+    const body = [
+      `Hi ${p.firstName},`,
+      `Your ${SITE.name} affiliate statement for ${p.period}:`,
+      ...p.lines,
+      p.payable ? `Payment goes out within ${p.withinDays} days to the details you gave us. If they have changed, reply to this email before then.` : `Balances under $${p.minimum} carry over, so this one rolls into the next quarter.`,
+    ];
+    return { subject: `Affiliate statement, ${p.period}`, html: layout("Your statement.", body.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("")), text: textOf(body) };
+  },
 };

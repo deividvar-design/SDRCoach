@@ -34,7 +34,7 @@ export default function ReferPage() {
         <div className="max-w-3xl">
           <Eyebrow>Referrals and rewards</Eyebrow>
           <h1 className="font-display mt-4 text-5xl text-balance md:text-6xl">Refer a sales team. You get a month free, they get {REFERRED_DISCOUNT.percent}% off.</h1>
-          <p className="text-muted-foreground mt-6 text-lg">Every workspace has a referral link. Send it to a sales manager who is ramping reps. When their team starts practising you get calls; when they subscribe you get a month free. No forms, no payout thresholds, no affiliate dashboard to log in to.</p>
+          <p className="text-muted-foreground mt-6 text-lg">Every workspace has a referral link. Send it to a sales manager who is ramping reps. When their team starts practising you get calls; when they subscribe you get a month free. No forms, no payout thresholds, no affiliate dashboard to log in to. Not a customer? The <Link href="/affiliates" className="text-foreground underline underline-offset-4">affiliate programme</Link> pays cash instead.</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button size="lg" variant="signal" asChild><Link href="/signup">Start a free trial</Link></Button>
             <Button size="lg" variant="outline" asChild><Link href="/login?next=/rewards">Get my link</Link></Button>

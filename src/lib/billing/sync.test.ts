@@ -113,6 +113,26 @@ describe("handleStripeEvent", () => {
     expect(r.reason).toBe("stale subscription");
     expect(patches).toHaveLength(0);
   });
+  it("ledgers a paid invoice against the org that owns the customer", async () => {
+    const payments: unknown[] = [];
+    const { d } = deps({ recordPayment: async (p) => { payments.push(p); } });
+    const r = await handleStripeEvent(event("invoice.paid", { id: "in_1", customer: "cus_1", amount_paid: 14700, currency: "usd", status_transitions: { paid_at: 1_800_000_000 } }), d);
+    expect(r).toMatchObject({ handled: true, orgId: "org-1" });
+    expect(payments).toEqual([{ id: "in_1", orgId: "org-1", amountCents: 14700, currency: "usd", paidAt: "2027-01-15T08:00:00.000Z" }]);
+  });
+  it("skips zero invoices and unknown currencies", async () => {
+    const payments: unknown[] = [];
+    const { d } = deps({ recordPayment: async (p) => { payments.push(p); } });
+    expect((await handleStripeEvent(event("invoice.paid", { id: "in_0", customer: "cus_1", amount_paid: 0, currency: "usd" }), d)).handled).toBe(false);
+    expect((await handleStripeEvent(event("invoice.paid", { id: "in_2", customer: "cus_1", amount_paid: 100, currency: "gbp" }), d)).handled).toBe(false);
+    expect(payments).toHaveLength(0);
+  });
+  it("nets a credit note off its invoice", async () => {
+    const credits: unknown[] = [];
+    const { d } = deps({ recordCredit: async (id, cents) => { credits.push([id, cents]); } });
+    await handleStripeEvent(event("credit_note.created", { invoice: "in_1", amount: 4900 }), d);
+    expect(credits).toEqual([["in_1", 4900]]);
+  });
   it("ignores unrelated events", async () => {
     const { d } = deps();
     expect((await handleStripeEvent(event("charge.succeeded", {}), d)).handled).toBe(false);

@@ -36,6 +36,7 @@ export const ORG: Organization = {
   referral_code: "demo1234",
   referred_by_org_id: null,
   partner_since: null,
+  affiliate_id: null,
   created_at: daysAgo(40),
 };
 
