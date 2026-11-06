@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { reportError } from "@/lib/sentry";
 import { NextResponse } from "next/server";
+import type { Json } from "@/types/database";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { sweepStaleSessions } from "@/lib/calls/sweep";
@@ -15,6 +16,9 @@ import { emailConfigured, sendMail } from "@/lib/email/send";
 import { templates } from "@/lib/email/templates";
 import { unsubscribeUrl } from "@/lib/demo/boss";
 import { formatDate } from "@/lib/utils";
+import { randomBytes } from "node:crypto";
+import { PARTNER } from "@/content/founding-partners";
+import { buildPartnerReport, reportSummary } from "@/lib/partners/program";
 
 export const maxDuration = 300;
 
@@ -66,9 +70,9 @@ export async function GET(request: Request) {
 
   const db = createAdminClient();
   const now = Date.now();
-  const results = { quick: 0, stalled: 0, three_days: 0, ended: 0, chased: 0, demo_followups: 0, digests: 0, swept: { failed: 0, finalized: 0 }, demos_retried: 0, demos_swept: 0 };
+  const results = { quick: 0, stalled: 0, three_days: 0, ended: 0, chased: 0, demo_followups: 0, digests: 0, swept: { failed: 0, finalized: 0 }, demos_retried: 0, demos_swept: 0, partners_released: 0, partner_reports: 0 };
 
-  const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at, stripe_subscription_id").eq("plan", "trial").is("stripe_subscription_id", null).gt("trial_ends_at", new Date(now - 30 * DAY).toISOString()).limit(1000);
+  const { data: trials } = await db.from("organizations").select("id, created_at, trial_ends_at, stripe_subscription_id, partner_since").eq("plan", "trial").is("stripe_subscription_id", null).gt("trial_ends_at", new Date(now - 30 * DAY).toISOString()).limit(1000);
   for (const org of trials ?? []) {
     const ageDays = (now - new Date(org.created_at).getTime()) / DAY;
     const daysLeft = Math.ceil((new Date(org.trial_ends_at).getTime() - now) / DAY);
@@ -116,12 +120,44 @@ export async function GET(request: Request) {
     if (daysSinceEnd >= 2 && !org.stripe_subscription_id) {
       const { data: sent } = await db.from("email_log").select("kind").eq("org_id", org.id).in("kind", ["chase_1", "chase_feedback", "chase_breakup"]);
       const done = new Set((sent ?? []).map((r) => r.kind));
-      const step = !done.has("chase_1") ? "chase_1" : !done.has("chase_feedback") && daysSinceEnd >= 6 ? "chase_feedback" : !done.has("chase_breakup") && daysSinceEnd >= 12 ? "chase_breakup" : null;
+      // Founding partners already hold the founding price, and discounts never stack, so they skip the 20% break-up.
+      const step = !done.has("chase_1") ? "chase_1" : !done.has("chase_feedback") && daysSinceEnd >= 6 ? "chase_feedback" : !done.has("chase_breakup") && daysSinceEnd >= 12 && !org.partner_since ? "chase_breakup" : null;
       if (step) {
         const opts = step === "chase_1" ? { calls: (await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", org.id).not("started_at", "is", null)).count ?? 0 } : step === "chase_breakup" ? { until: formatDate(comebackUntil(new Date(now))) } : {};
         const r = await sendLifecycle(org.id, step, opts).catch((err) => (reportError(err, { where: `cron_${step}`, orgId: org.id }), { sent: false }));
         if (r.sent) results.chased += 1;
       }
+    }
+  }
+
+  // Founding partners. A pilot nobody dials in the release window gives its spot back; a pilot that reaches day 30
+  // gets its report, built from its own calls, and a link for the manager to check it and approve what is published.
+  // Each step is claimed on the row before the email goes, so overlapping runs cannot send twice.
+  const { data: pilots } = await db.from("partner_applications").select("id, name, email, company, access_link_id, decided_at").eq("status", "approved").not("access_link_id", "is", null).limit(50);
+  for (const app of pilots ?? []) {
+    const { data: link } = await db.from("access_links").select("claimed_at, org_id").eq("id", app.access_link_id!).maybeSingle();
+    if (!link) continue;
+    const firstName = app.name.trim().split(/\s+/)[0] ?? "there";
+    const opened = link.claimed_at ? new Date(link.claimed_at).getTime() : null;
+    const since = opened ?? new Date(app.decided_at ?? now).getTime();
+    const made = link.org_id ? (await db.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", link.org_id).not("started_at", "is", null)).count ?? 0 : 0;
+
+    if (made === 0 && now - since >= PARTNER.releaseAfterDays * DAY) {
+      const { data: released } = await db.from("partner_applications").update({ status: "released", released_at: new Date(now).toISOString() }).eq("id", app.id).eq("status", "approved").select("id").maybeSingle();
+      if (!released) continue;
+      results.partners_released += 1;
+      if (emailConfigured()) await sendMail({ to: app.email, ...templates.partnerReleased({ firstName, company: app.company, days: PARTNER.releaseAfterDays }) }).catch((err) => reportError(err, { where: "cron_partner_released", extra: { application: app.id } }));
+      continue;
+    }
+
+    if (opened && link.org_id && now - opened >= PARTNER.pilotDays * DAY) {
+      const report = await buildPartnerReport(db, link.org_id, link.claimed_at!, now).catch((err) => (reportError(err, { where: "cron_partner_report", extra: { application: app.id } }), null));
+      if (!report) continue;
+      const token = randomBytes(24).toString("hex");
+      const { data: done } = await db.from("partner_applications").update({ status: "completed", report: report as unknown as Json, report_token: token, report_sent_at: new Date(now).toISOString() }).eq("id", app.id).eq("status", "approved").select("id").maybeSingle();
+      if (!done) continue;
+      results.partner_reports += 1;
+      if (emailConfigured()) await sendMail({ to: app.email, ...templates.partnerReport({ firstName, company: app.company, summary: reportSummary(report), link: absoluteUrl(`/partner-report/${token}`) }) }).catch((err) => reportError(err, { where: "cron_partner_report_email", extra: { application: app.id } }));
     }
   }
 

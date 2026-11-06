@@ -73,7 +73,7 @@ export default async function UpgradePage({ searchParams }: PageProps<"/upgrade"
           <form action={openBillingPortal}><Button type="submit">Manage billing</Button></form>
         </div>
       ) : (
-        <PlanGrid orgName={viewer.org.name} canBuy={isManager} checkoutAction={startCheckout} defaultSeats={Math.max(1, memberCount)} billingReady={stripeConfigured()} intervals={["month", "quarter", "year"]} currency={currency} founding={await foundingOffer()} />
+        <PlanGrid orgName={viewer.org.name} canBuy={isManager} checkoutAction={startCheckout} defaultSeats={Math.max(1, memberCount)} billingReady={stripeConfigured()} intervals={["month", "quarter", "year"]} currency={currency} founding={await foundingOffer(viewer.org)} />
       )}
       {!subscribed && isManager && (
         <div className="bg-card flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-6">

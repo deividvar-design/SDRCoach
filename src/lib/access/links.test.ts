@@ -5,8 +5,9 @@ vi.mock("@/lib/funnel", () => ({ logFunnel: vi.fn(async () => true) }));
 
 // A minimal stand-in for the service-role client: records what the claim writes.
 const writes: { table: string; op: string; payload: unknown; filter?: unknown }[] = [];
-const state: { link: Record<string, unknown> | null; createUser: { data: { user: { id: string } | null }; error: { message: string } | null }; rpc: { data: string | null; error: { message: string } | null } } = {
+const state: { link: Record<string, unknown> | null; partner: Record<string, unknown> | null; createUser: { data: { user: { id: string } | null }; error: { message: string } | null }; rpc: { data: string | null; error: { message: string } | null } } = {
   link: null,
+  partner: null,
   createUser: { data: { user: { id: "user-1" } }, error: null },
   rpc: { data: "org-1", error: null },
 };
@@ -14,8 +15,8 @@ function table(name: string) {
   const q: Record<string, unknown> = {};
   const chain = () => q;
   Object.assign(q, {
-    select: chain, eq: (col: string, v: unknown) => { q.filter = { col, v }; return q; },
-    maybeSingle: async () => ({ data: name === "access_links" && !q.inserted ? state.link : name === "targets" && q.inserted ? { id: "target-1" } : null }),
+    select: chain, eq: (col: string, v: unknown) => { q.filter = { col, v }; return q; }, in: chain,
+    maybeSingle: async () => ({ data: name === "access_links" && !q.inserted ? state.link : name === "targets" && q.inserted ? { id: "target-1" } : name === "partner_applications" ? state.partner : null }),
     update: (payload: unknown) => { writes.push({ table: name, op: "update", payload }); return q; },
     insert: (payload: unknown) => { writes.push({ table: name, op: "insert", payload }); q.inserted = true; return q; },
     then: (resolve: (v: unknown) => void) => resolve({ error: null }),
@@ -50,7 +51,7 @@ describe("linkStatus", () => {
 });
 
 describe("claimAccessLink", () => {
-  beforeEach(() => { writes.length = 0; state.link = openLink(); state.createUser = { data: { user: { id: "user-1" } }, error: null }; state.rpc = { data: "org-1", error: null }; });
+  beforeEach(() => { writes.length = 0; state.link = openLink(); state.partner = null; state.createUser = { data: { user: { id: "user-1" } }, error: null }; state.rpc = { data: "org-1", error: null }; });
 
   it("creates the user, the workspace with the link's allowance, the prospects, and marks the link claimed", async () => {
     const r = await claimAccessLink(TOKEN, { password: "hunter22hunter", fullName: "Sam" });
@@ -94,5 +95,26 @@ describe("claimAccessLink", () => {
     const r = await claimAccessLink(TOKEN, { password: "hunter22hunter" });
     expect(r).toMatchObject({ code: "exists" });
     expect(writes.filter((w) => w.table === "rpc" || w.table === "organizations")).toHaveLength(0);
+  });
+  it("marks a founding partner's workspace and seats every pilot rep plus the manager", async () => {
+    state.partner = { id: "pa-1", sdr_count: 4, status: "approved" };
+    const r = await claimAccessLink(TOKEN, { password: "hunter22hunter" });
+    expect(r).toMatchObject({ ok: true, orgId: "org-1" });
+    const orgUpdates = writes.filter((w) => w.table === "organizations" && w.op === "update").map((w) => w.payload as Record<string, unknown>);
+    const partnerUpdate = orgUpdates.find((u) => "seat_limit" in u)!;
+    expect(partnerUpdate.seat_limit).toBe(5);
+    expect(typeof partnerUpdate.partner_since).toBe("string");
+  });
+
+  it("gives a released partner the seats but not the founding price", async () => {
+    state.partner = { id: "pa-1", sdr_count: 3, status: "released" };
+    await claimAccessLink(TOKEN, { password: "hunter22hunter" });
+    const partnerUpdate = writes.filter((w) => w.table === "organizations" && w.op === "update").map((w) => w.payload as Record<string, unknown>).find((u) => "seat_limit" in u)!;
+    expect(partnerUpdate).toEqual({ seat_limit: 4 });
+  });
+
+  it("leaves an ordinary link's workspace alone", async () => {
+    await claimAccessLink(TOKEN, { password: "hunter22hunter" });
+    expect(writes.filter((w) => w.table === "organizations" && w.op === "update").some((w) => "seat_limit" in (w.payload as object))).toBe(false);
   });
 });

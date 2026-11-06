@@ -96,6 +96,7 @@ export default async function KarenResultPage() {
               <div>
                 <div className="font-medium">Your team's reps face these same objections.</div>
                 <div className="text-muted-foreground text-sm">Build their prospects from your own calls — 10 free calls, no card.</div>
+                <div className="text-muted-foreground mt-1 text-sm">Running 3+ SDRs? <CtaLink ctaId="report_founding_partner" href="/founding-partners" className="text-foreground underline underline-offset-4">Apply for a founding-partner pilot</CtaLink>, set up for you.</div>
                 {cameFrom && (
                   <div className="text-muted-foreground mt-2 text-sm">
                     You came from: &lsquo;{cameFrom.phrasings[0] ?? cameFrom.label}&rsquo;. <CtaLink ctaId="report_objection_page" href={`/objections/${cameFrom.slug}`} className="text-foreground underline underline-offset-4">Read how to handle it →</CtaLink>

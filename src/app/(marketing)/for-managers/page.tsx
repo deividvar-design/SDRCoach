@@ -3,6 +3,7 @@ import { FeatureRow } from "@/components/marketing/feature-row";
 import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/marketing/sections";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { CtaLink } from "@/components/analytics/cta-link";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
 import { TestimonialCard } from "@/components/marketing/testimonial";
 import { SALESFORGE } from "@/content/testimonials";
@@ -39,6 +40,7 @@ export default function ForManagersPage() {
             <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>
             <Button size="lg" variant="outline" asChild><Link href="/pricing">See pricing</Link></Button>
           </div>
+          <p className="text-muted-foreground mt-4 text-sm">Running 3+ SDRs? <CtaLink ctaId="managers_founding_partner" href="/founding-partners" className="text-foreground underline underline-offset-4">Apply for a founding-partner pilot</CtaLink>, set up for you from your website.</p>
         </div>
       </Section>
 

@@ -293,4 +293,51 @@ export const templates = {
     ].filter(Boolean);
     return { subject: `Last week on the floor: ${d.calls} ${d.calls === 1 ? "call" : "calls"}, ${d.booked} booked`, html: layout("Last week on the floor.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
   },
+
+  partnerApplied(p: { firstName: string; company: string }): Rendered {
+    const lines = [`Hi ${p.firstName},`, `Thanks for applying to the ${SITE.name} founding-partner program for ${p.company}.`, "We read every application and reply within two working days. If it's a fit, the next email has your workspace link, already set up from your website, so your reps can dial the same day.", "Nothing to do until then."];
+    return { subject: `We got your founding-partner application`, html: layout("Application received.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("")), text: textOf(lines) };
+  },
+
+  partnerAdminAlert(p: { name: string; email: string; role: string | null; company: string; website: string | null; sdrCount: number; startBy: string; kickoff: string | null; notes: string | null; spotsLeft: number }): Rendered {
+    const cta = { label: "Review applications", href: absoluteUrl("/admin/partners") };
+    const lines = [
+      `${p.name}${p.role ? `, ${p.role}` : ""} at ${p.company} (${p.email}) applied.`,
+      `${p.sdrCount} SDRs, wants to start by ${p.startBy}.${p.website ? ` Website: ${p.website}.` : ""}`,
+      p.kickoff ? `Asked for a kickoff call: ${p.kickoff}` : "No kickoff call requested.",
+      p.notes ? `Their note: ${p.notes}` : "",
+      `${p.spotsLeft} of the founding spots are still open.`,
+    ].filter(Boolean);
+    return { subject: `Founding-partner application: ${p.company}, ${p.sdrCount} SDRs`, html: layout("New partner application.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  partnerApproved(p: { firstName: string; company: string; calls: number; reps: number; days: number; link: string; startWithinDays: number; callsPerRepPerWeek: number; weeks: number }): Rendered {
+    const cta = { label: "Open your workspace", href: p.link };
+    const lines = [
+      `Hi ${p.firstName},`,
+      `${p.company} is in. Welcome to the founding-partner program.`,
+      `Your workspace is ready: ${p.calls} scored calls over ${p.days} days, enough for ${p.reps} reps at forty calls each. Open the link, choose a password, and invite your reps from the Team page. Your first prospect is already built from your website.`,
+      `The deal, as on the page: start within ${p.startWithinDays} days, and each rep makes ${p.callsPerRepPerWeek} calls a week for ${p.weeks} weeks. At day 30 you get a report of how the team's scores moved, and you approve anything before it is published.`,
+      "Reply to this email any time. It reaches a person.",
+    ];
+    return { subject: `${p.company} is a ${SITE.name} founding partner`, html: layout("You're a founding partner.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  partnerDeclined(p: { firstName: string; company: string }): Rendered {
+    const cta = { label: "Start the free trial", href: absoluteUrl("/signup") };
+    const lines = [`Hi ${p.firstName},`, `Thanks for applying with ${p.company}. The founding-partner pilots are for teams of three or more SDRs who can start within two weeks, and this one is not a fit right now.`, `The regular trial is open to you: ${TRIAL.calls} scored calls over ${TRIAL.days} days, no card.`];
+    return { subject: "About your founding-partner application", html: layout("Not this round.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  partnerReleased(p: { firstName: string; company: string; days: number }): Rendered {
+    const cta = { label: "Make the first call", href: absoluteUrl("/practice") };
+    const lines = [`Hi ${p.firstName},`, `${p.company}'s founding-partner spot has been held for ${p.days} days and no practice call has been made, so we have passed it to the next team on the list.`, "Your workspace link and its calls stay valid until the pilot ends. If the timing was just wrong, reply and tell us when you can start."];
+    return { subject: "Your founding-partner spot", html: layout("We passed your spot on.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  partnerReport(p: { firstName: string; company: string; summary: string[]; link: string }): Rendered {
+    const cta = { label: "Review and approve", href: p.link };
+    const lines = [`Hi ${p.firstName},`, `${p.company}'s 30-day pilot is done. Here is what your team's calls show:`, ...p.summary, "Open the link to check the numbers, answer five short questions, and approve what we can publish. Nothing goes out without your approval."];
+    return { subject: `${p.company}'s 30-day pilot report`, html: layout("Your pilot, in numbers.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
 };

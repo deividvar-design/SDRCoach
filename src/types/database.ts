@@ -88,6 +88,53 @@ export type Organization = {
   /** Short code behind the workspace's referral link. */
   referral_code: string | null;
   referred_by_org_id: string | null;
+  /** Set when a founding partner's access link was claimed: checkout offers the founding price after the public window. */
+  partner_since: string | null;
+  created_at: string;
+};
+
+export type PartnerStatus = "pending" | "approved" | "rejected" | "released" | "completed";
+
+/** The day-30 proof report, computed from the partner's own scored calls. */
+export type PartnerReport = {
+  calls: number;
+  reps: number;
+  callsPerRep: number;
+  firstWeekAvg: number | null;
+  lastWeekAvg: number | null;
+  objectionFirst: number | null;
+  objectionLast: number | null;
+  firstWeekCalls: number;
+  lastWeekCalls: number;
+  computedAt: string;
+};
+
+/** A team's application to the founding-partner program, and how its pilot went. */
+export type PartnerApplication = {
+  id: string;
+  name: string;
+  email: string;
+  role: string | null;
+  company: string;
+  website: string | null;
+  sdr_count: number;
+  start_by: string;
+  kickoff_wanted: boolean;
+  kickoff_times: string | null;
+  notes: string | null;
+  status: PartnerStatus;
+  access_link_id: string | null;
+  decided_at: string | null;
+  decided_by: string | null;
+  released_at: string | null;
+  report: Json | null;
+  report_token: string | null;
+  report_sent_at: string | null;
+  /** The manager's answers to the day-30 check-in questions. */
+  checkin: Json | null;
+  quote: string | null;
+  quote_approved_at: string | null;
+  ip: string | null;
   created_at: string;
 };
 
@@ -383,7 +430,7 @@ export type Database = {
     Tables: {
       organizations: Table<
         Organization,
-        Insert<Organization, "id" | "plan" | "seat_limit" | "bonus_calls" | "referral_code" | "referred_by_org_id" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
+        Insert<Organization, "id" | "plan" | "seat_limit" | "bonus_calls" | "referral_code" | "referred_by_org_id" | "partner_since" | "company_description" | "product_description" | "ideal_customer_profile" | "reps_see_team" | "trial_call_limit" | "trial_ends_at" | "trial_domain" | "stripe_customer_id" | "stripe_subscription_id" | "stripe_price_id" | "billing_interval" | "billing_currency" | "subscription_status" | "current_period_end" | "cancel_at_period_end" | "created_at">
       >;
       billing_events: Table<BillingEvent, Insert<BillingEvent, "received_at">>;
       reward_claims: Table<RewardClaim, Insert<RewardClaim, "id" | "user_id" | "url" | "status" | "calls" | "days" | "note" | "ref_org_id" | "ref_user_id" | "decided_at" | "decided_by" | "created_at">>;
@@ -419,6 +466,7 @@ export type Database = {
           { foreignKeyName: "memberships_manager_id_fkey"; columns: ["manager_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ]
       >;
+      partner_applications: Table<PartnerApplication, Insert<PartnerApplication, "id" | "role" | "website" | "kickoff_wanted" | "kickoff_times" | "notes" | "status" | "access_link_id" | "decided_at" | "decided_by" | "released_at" | "report" | "report_token" | "report_sent_at" | "checkin" | "quote" | "quote_approved_at" | "ip" | "created_at">>;
       access_links: Table<AccessLink, Insert<AccessLink, "id" | "token" | "calls" | "days" | "note" | "expires_at" | "claimed_at" | "revoked_at" | "org_id" | "user_id" | "website" | "draft" | "draft_error" | "created_at">>;
       invites: Table<
         Invite,

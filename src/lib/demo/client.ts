@@ -4,7 +4,7 @@
  * order, limit, range, single/maybeSingle, count head, insert/update/upsert/delete, rpc, auth, storage).
  * Purely for screenshots and UI work without a database. Not a test double for RLS.
  */
-import { DEMO_USER, INVITES, KNOWLEDGE, MEMBERSHIPS, ORG, PROFILES, SCORES, SESSIONS, TARGETS, TRANSCRIPTS, USAGE } from "./fixtures";
+import { DEMO_USER, INVITES, KNOWLEDGE, MEMBERSHIPS, ORG, PARTNER_APPLICATIONS, PROFILES, SCORES, SESSIONS, TARGETS, TRANSCRIPTS, USAGE } from "./fixtures";
 
 type Row = Record<string, unknown>;
 
@@ -19,6 +19,7 @@ const TABLES: Record<string, Row[]> = {
   call_scores: SCORES as unknown as Row[],
   knowledge_sources: KNOWLEDGE as unknown as Row[],
   usage_events: USAGE as unknown as Row[],
+  partner_applications: PARTNER_APPLICATIONS as unknown as Row[],
   admin_actions: [],
   email_log: [],
   billing_events: [],

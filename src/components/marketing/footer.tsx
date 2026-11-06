@@ -4,7 +4,7 @@ import { SITE } from "@/lib/site";
 import { CookieSettingsLink } from "@/components/analytics/cookie-banner";
 
 const COLS = [
-  { title: "Product", links: [["/for-managers", "For managers"], ["/for-enablement", "For enablement"], ["/pricing", "Pricing"], ["/signup", "Start free trial"]] },
+  { title: "Product", links: [["/for-managers", "For managers"], ["/for-enablement", "For enablement"], ["/pricing", "Pricing"], ["/founding-partners", "Founding partners"], ["/signup", "Start free trial"]] },
   { title: "Resources", links: [["/blog", "Blog"], ["/objections", "Objection library"], ["/karen", "Fight Karen"], ["/refer", "Refer a team"], ["/research", "Research"], ["/trust", "Trust & security"]] },
   { title: "Legal", links: [["/company", "Company"], ["/privacy", "Privacy"], ["/terms", "Terms"], ["/cookies", "Cookies"]] },
 ] as const;

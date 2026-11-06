@@ -8,6 +8,7 @@ import { isPast } from "@/lib/utils";
 import { VOICE_IDS } from "@/lib/domain/voices";
 import type { AccessLink, Json } from "@/types/database";
 import type { WorkspaceDraft } from "@/lib/onboarding/draft";
+import { pilotSeats } from "@/content/founding-partners";
 
 export const ACCESS_LINK_DAYS = 30;
 
@@ -94,6 +95,10 @@ export async function claimAccessLink(token: string, p: { password: string; full
     }
   }
   await db.from("access_links").update({ claimed_at: new Date().toISOString(), org_id: orgId, user_id: userId }).eq("id", link.id);
+  // A founding partner's link: a seat for every pilot rep, and, while the spot is still theirs, the founding price
+  // at checkout. A team whose spot was released for not starting keeps the seats but not the price.
+  const { data: partner } = await db.from("partner_applications").select("id, sdr_count, status").eq("access_link_id", link.id).in("status", ["approved", "released"]).maybeSingle();
+  if (partner) await db.from("organizations").update({ seat_limit: pilotSeats(partner.sdr_count), ...(partner.status === "approved" ? { partner_since: new Date().toISOString() } : {}) }).eq("id", orgId);
   await logFunnel("signup_completed", { email, subject: userId, dedupeKey: `signup_completed:${userId}`, meta: { provider: "access_link", link: link.id, enriched: Boolean(draft) } });
   return { ok: true, email, orgId, targetId };
 }

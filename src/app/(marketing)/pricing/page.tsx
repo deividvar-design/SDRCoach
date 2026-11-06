@@ -1,3 +1,4 @@
+import { CtaLink } from "@/components/analytics/cta-link";
 import { pageMetadata } from "@/lib/seo";
 import { AnchorStrip } from "@/components/pricing/anchor-strip";
 import { PricingCalculator } from "@/components/pricing/calculator";
@@ -59,6 +60,7 @@ export default async function PricingPage() {
         <PlanGrid marketing currency={currency} founding={founding} />
         <p className="text-muted-foreground mt-6 text-center text-sm">Less than one burned conversation per week.</p>
         <Guarantee className="mx-auto mt-8 max-w-3xl" />
+        <p className="text-muted-foreground mx-auto mt-6 max-w-3xl text-center text-sm">Running a team of 3+ SDRs? <CtaLink ctaId="pricing_founding_partner" href="/founding-partners" className="text-foreground underline underline-offset-4">Apply for a founding-partner pilot</CtaLink>: 30 days, set up from your website, no card.</p>
       </div>
 
       <AnchorStrip price={starterPrice} currency={currency} />

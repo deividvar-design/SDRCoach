@@ -39,7 +39,7 @@ export function PlanGrid({
   /** Currency to show first, decided server-side from the visitor's country or their earlier choice. */
   currency?: Currency;
   /** Founding pricing for Starter and Team until the deadline; null hides it. Decided server-side. */
-  founding?: { until: string; untilLabel: string; price: Record<"starter" | "team", Record<Currency, PriceTable>> } | null;
+  founding?: { until: string; untilLabel: string; price: Record<"starter" | "team", Record<Currency, PriceTable>>; partner?: boolean } | null;
 }) {
   const [interval, setInterval] = useState<BillingInterval>("year");
   const [currency, setCurrencyState] = useState<Currency>(initialCurrency);
@@ -120,7 +120,7 @@ export function PlanGrid({
                 {p.callsPerSeat ? `${p.callsPerSeat} calls per seat per month, pooled across the team` : "Volume pricing, custom call allowance"}
                 {p.minSeats > 1 ? `, from ${p.minSeats} seats` : ", from a single seat"}
               </div>
-              {isFounding && founding && <p className="text-signal-ink mt-2 text-[13px] font-medium">{formatMoney(price ?? 0, currency)} a seat, kept for as long as you stay subscribed. Founding pricing until {founding.untilLabel}.</p>}
+              {isFounding && founding && <p className="text-signal-ink mt-2 text-[13px] font-medium">{founding.partner ? `${formatMoney(price ?? 0, currency)} a seat: your founding-partner price.` : `${formatMoney(price ?? 0, currency)} a seat, kept for as long as you stay subscribed. Founding pricing until ${founding.untilLabel}.`}</p>}
               <ul className="mt-6 flex-1 space-y-2.5 text-[15px]">
                 {p.features.map((f) => (
                   <li key={f} className="flex gap-2">
