@@ -14,7 +14,7 @@ import { foundingOffer } from "@/lib/billing/founding";
 import { FOUNDING, PLANS } from "@/lib/billing/plans";
 
 export const metadata = pageMetadata({
-  title: "Pricing: per-seat plans, ten free calls first",
+  title: "Pricing: per-seat plans, five free calls first",
   description: "Per-seat plans with a monthly call allowance, in dollars or euros, and a 30-day money-back guarantee on the first payment. Free trial: 10 calls, no card.",
   path: "/pricing",
   card: ["page", "pricing"],
@@ -80,7 +80,7 @@ export default async function PricingPage() {
           </dl>
         </section>
       </div>
-      <CtaBand title="Start with ten free calls." body="Every plan begins as a trial. Upgrade from inside the app when the team is ready." secondary={{ href: "/karen", label: "Not ready? Try one call against Karen" }} link={{ href: `mailto:${SALES_EMAIL}?subject=${encodeURIComponent("Extended trial of 100 Dials")}`, label: "Talk to us about an extended trial", ctaId: "pricing_extended_trial" }} />
+      <CtaBand title="Start with five free calls." body="Every plan begins as a trial. Upgrade from inside the app when the team is ready." secondary={{ href: "/karen", label: "Not ready? Try one call against Karen" }} link={{ href: `mailto:${SALES_EMAIL}?subject=${encodeURIComponent("Extended trial of 100 Dials")}`, label: "Talk to us about an extended trial", ctaId: "pricing_extended_trial" }} />
     </>
   );
 }

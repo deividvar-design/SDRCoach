@@ -51,7 +51,20 @@ export async function hasMx(domain: string, lookup: (d: string) => Promise<{ exc
   }
 }
 
-/** Lists first, then DNS. Enforced in the signup action and again before a workspace is created. */
+/**
+ * The open trial's rule: any real address can start one. A personal address is fine and owns no company domain, so
+ * it never blocks a colleague; a temporary or undeliverable one is turned away. The domain comes back only for a
+ * work address, for the one-trial-per-company rule.
+ */
+export async function validateTrialEmail(email: string, lookup?: (d: string) => Promise<{ exchange: string }[]>): Promise<{ ok: true; domain: string | null } | { ok: false; reason: EmailReason; message: string }> {
+  const listed = classifyEmailDomain(email);
+  if (!listed.ok) return listed.reason === "free" ? { ok: true, domain: null } : listed;
+  if (process.env.SDRCOACH_DEMO === "1" || process.env.SKIP_MX_CHECK === "1") return listed;
+  if (!(await hasMx(listed.domain, lookup))) return { ok: false, reason: "no_mx", message: MESSAGES.no_mx };
+  return listed;
+}
+
+/** Lists first, then DNS. Used where an address must be a work one: the manager email and invited reps' rewards. */
 export async function validateBusinessEmail(email: string, lookup?: (d: string) => Promise<{ exchange: string }[]>): Promise<BusinessEmailResult> {
   const listed = classifyEmailDomain(email);
   if (!listed.ok) return listed;

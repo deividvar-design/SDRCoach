@@ -6,7 +6,7 @@ import { logFunnel } from "@/lib/funnel";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { validateBusinessEmail } from "@/lib/email/business";
+import { validateTrialEmail } from "@/lib/email/business";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { after } from "next/server";
 import { PRACTICE_PERSONAS } from "@/content/practice-personas";
@@ -61,10 +61,10 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
   } = await supabase.auth.getUser();
   if (!user?.email) redirect("/login");
 
-  // Self-serve workspaces (trials) are for business addresses only. Invited users never reach this page.
-  // Founders are exempt so they can test with any address; their workspace holds no trial domain.
+  // Any real address can start a trial. A work address carries the one-trial-per-company rule; a personal one owns
+  // no domain. Founders are exempt from the rule so they can test with any address.
   const admin = isAdminEmail(user.email);
-  const check = admin ? ({ ok: true, domain: null } as const) : await validateBusinessEmail(user.email);
+  const check = admin ? ({ ok: true, domain: null } as const) : await validateTrialEmail(user.email);
   if (!check.ok) return { error: check.message };
 
   const base = slugify(parsed.data.name) || "team";

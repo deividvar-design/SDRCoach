@@ -38,7 +38,7 @@ export default async function KarenResultPage() {
   const viaGoogle = Boolean(user?.email && demo.email && user.email.toLowerCase() === demo.email);
   // The objection card that sent them here. Karen did not necessarily raise it; the line only reflects the page they came from.
   const cameFrom = demo.objection ? getObjectionPage(demo.objection) : null;
-  const forward = `mailto:?subject=${encodeURIComponent("Cold call practice for the team")}&body=${encodeURIComponent(`I just tried a cold call against an AI prospect on 100 Dials${demo.share_slug ? ` (my scorecard: ${absoluteUrl(`/karen/score/${demo.share_slug}`)})` : ""}. It does this for a whole SDR team, on prospects built from our own accounts. Ten free calls to try it: ${absoluteUrl("/signup")}`)}`;
+  const forward = `mailto:?subject=${encodeURIComponent("Cold call practice for the team")}&body=${encodeURIComponent(`I just tried a cold call against an AI prospect on 100 Dials${demo.share_slug ? ` (my scorecard: ${absoluteUrl(`/karen/score/${demo.share_slug}`)})` : ""}. It does this for a whole SDR team, on prospects built from our own accounts. Five free calls to try it: ${absoluteUrl("/signup")}`)}`;
 
   return (
     <Section className="pt-14 md:pt-20">
@@ -57,7 +57,7 @@ export default async function KarenResultPage() {
             <div className="bg-card mt-8 flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="font-medium">While the coach works: this, for your whole team.</div>
-                <div className="text-muted-foreground text-sm">Prospects built from your own target accounts, three levels, every call scored like this one. Ten free calls, no card. Opens in a new tab; your scorecard stays here.</div>
+                <div className="text-muted-foreground text-sm">Prospects built from your own target accounts, three levels, every call scored like this one. Five free calls, no card. Opens in a new tab; your scorecard stays here.</div>
               </div>
               <Button variant="signal" className="shrink-0" asChild>
                 <CtaLink ctaId="result_pending_trial" href={signup} target="_blank" rel="noopener">Start the team trial</CtaLink>
@@ -95,7 +95,7 @@ export default async function KarenResultPage() {
             <div className="bg-card mt-6 flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="font-medium">Your team's reps face these same objections.</div>
-                <div className="text-muted-foreground text-sm">Build their prospects from your own calls — 10 free calls, no card.</div>
+                <div className="text-muted-foreground text-sm">Build their prospects from your own calls — 5 free calls, no card.</div>
                 <div className="text-muted-foreground mt-1 text-sm">Running 3+ SDRs? <CtaLink ctaId="report_founding_partner" href="/founding-partners" className="text-foreground underline underline-offset-4">Apply for a founding-partner pilot</CtaLink>, set up for you.</div>
                 {cameFrom && (
                   <div className="text-muted-foreground mt-2 text-sm">
@@ -147,11 +147,11 @@ export default async function KarenResultPage() {
                   <div className="stage text-paper mt-10 flex flex-col gap-5 rounded-2xl p-6 sm:flex-row sm:items-center sm:justify-between md:p-7">
                     <div className="space-y-1.5">
                       <div className="font-display text-3xl leading-tight">Your team should see this.</div>
-                      <div className="text-paper/75 text-sm">100 Dials does this for a whole SDR team, on prospects built from your own accounts. The note to your manager is written; it links your scorecard and the ten-call trial.</div>
+                      <div className="text-paper/75 text-sm">100 Dials does this for a whole SDR team, on prospects built from your own accounts. The note to your manager is written; it links your scorecard and the five-call trial.</div>
                     </div>
                     <div className="flex shrink-0 flex-col gap-2">
                       <Button size="lg" variant="signal" asChild><a href={forward}>Forward to my manager</a></Button>
-                      <Button size="lg" variant="outline" className="text-paper border-white/30 bg-transparent hover:bg-white/10 hover:text-paper" asChild><Link href={viaGoogle ? "/onboarding" : "/signup"}>Start a trial with my work email</Link></Button>
+                      <Button size="lg" variant="outline" className="text-paper border-white/30 bg-transparent hover:bg-white/10 hover:text-paper" asChild><Link href={viaGoogle ? "/onboarding" : "/signup"}>Start my trial</Link></Button>
                     </div>
                   </div>
                 ) : (
@@ -159,9 +159,9 @@ export default async function KarenResultPage() {
                     <div className="space-y-1.5">
                       {viaGoogle && demo.email && <div className="dial text-paper/60 text-xs">SIGNED IN WITH GOOGLE · {demo.email.toUpperCase()}</div>}
                       <div className="font-display text-3xl leading-tight">{viaGoogle ? `Your trial for ${demo.domain} is one click away.` : "Karen is one of the easy ones."}</div>
-                      <div className="text-paper/75 text-sm">Prospects built from your own accounts, three levels, every call scored like this. Ten free calls, no card. Invite your reps when you're ready.</div>
+                      <div className="text-paper/75 text-sm">Prospects built from your own accounts, three levels, every call scored like this. Five free calls, no card. Invite your reps when you're ready.</div>
                     </div>
-                    <Button size="lg" variant="signal" className="shrink-0" asChild><Link href={viaGoogle ? "/onboarding" : signup}>Start my 10 free calls</Link></Button>
+                    <Button size="lg" variant="signal" className="shrink-0" asChild><Link href={viaGoogle ? "/onboarding" : signup}>Start my 5 free calls</Link></Button>
                   </div>
                 )}
               </>

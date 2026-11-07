@@ -173,7 +173,7 @@ export default function ResearchPage() {
           </p>
         </div>
       </Section>
-      <CtaBand title="Rehearse, get feedback, repeat." body="Ten free calls, no card. Every one comes back scored on the six skills." secondary={{ href: "/karen", label: "Call Karen first" }} />
+      <CtaBand title="Rehearse, get feedback, repeat." body="Five free calls, no card. Every one comes back scored on the six skills." secondary={{ href: "/karen", label: "Call Karen first" }} />
     </>
   );
 }

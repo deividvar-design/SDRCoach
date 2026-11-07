@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata = pageMetadata({
   title: "AI cold call simulator for new SDRs",
-  description: "New reps dial realistic AI prospects built from your own targets and get scored on six skills before they touch your pipeline. Free trial, work email only.",
+  description: "New reps dial realistic AI prospects built from your own targets and get scored on six skills before they touch your pipeline. Free trial, any email.",
   path: "/",
 });
 
@@ -77,7 +77,7 @@ export default async function HomePage() {
           <div className="enter mt-8 flex flex-wrap items-center gap-4" style={{ "--enter-delay": "140ms" } as React.CSSProperties}>
             <Button size="xl" variant="signal" asChild><Link href="/karen">Pick up</Link></Button>
             <Button size="xl" variant="outline" asChild><Link href="/signup">Start free trial</Link></Button>
-            <p className="text-muted-foreground w-full md:w-auto">{TRIAL.calls} free calls, {TRIAL.days} days, no card, work email only.</p>
+            <p className="text-muted-foreground w-full md:w-auto">{TRIAL.calls} free calls, {TRIAL.days} days, no card, any email.</p>
           </div>
         </div>
         <div className="enter mt-10" style={{ "--enter-delay": "240ms" } as React.CSSProperties}>

@@ -67,7 +67,7 @@ export default function ForEnablementPage() {
           body={<><p>Trend lines per rep. Weakest dimension highlighted. Levels recommended on evidence, three calls averaging seven or better, never locked. A team heatmap and an objection league table on the coaching view. CSV export per rep for the QBR instead of anecdotes.</p></>}
           image="/screens/rep.png"
           alt="Per-rep view with trend chart and dimension averages"
-          cta={<Button size="lg" asChild><CtaLink ctaId="enablement_measurement_trial" href="/signup?from=/for-enablement">Start the 10-call trial</CtaLink></Button>}
+          cta={<Button size="lg" asChild><CtaLink ctaId="enablement_measurement_trial" href="/signup?from=/for-enablement">Start the 5-call trial</CtaLink></Button>}
         />
       </Section>
 
@@ -107,7 +107,7 @@ export default function ForEnablementPage() {
       <ProofSection />
       <CtaBand
         title="Ground a prospect in your calls this afternoon."
-        body="Ten free calls. Upload transcripts during the trial. Work email only."
+        body="Five free calls. Upload transcripts during the trial. Any email."
         primary={{ href: "/karen?from=/for-enablement", label: "Call Karen — 3 min, no signup", ctaId: "enablement_bottom_karen" }}
         secondary={null}
         link={{ href: "/signup", label: "Start free trial", ctaId: "enablement_bottom_trial" }}

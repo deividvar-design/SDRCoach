@@ -4,6 +4,7 @@ import { requireViewer } from "@/lib/auth";
 import { canManage } from "@/lib/domain/roles";
 import { LEVEL_LIST } from "@/lib/domain/levels";
 import { loadAllowance } from "@/lib/billing/allowance";
+import { OutOfCalls } from "@/components/trial/out-of-calls";
 import { dateFormatter } from "@/lib/tz";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/shell/page-header";
@@ -34,6 +35,7 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
   const isManager = canManage(viewer.membership.role);
   const [allowance, fmtDate] = await Promise.all([loadAllowance(viewer.org, { userId: viewer.userId, isManager: true }), dateFormatter()]);
   const exhausted = allowance?.kind === "paid" && allowance.left <= 0;
+  const trialOut = allowance?.kind === "trial" && (allowance.left <= 0 || (allowance.daysLeft ?? 1) <= 0);
 
   return (
     <div className="space-y-8">
@@ -55,6 +57,7 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
           )}
         </div>
       )}
+      {trialOut && <OutOfCalls viewer={viewer} />}
       {exhausted && allowance && (
         <div className="border-signal/40 bg-signal/5 flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -73,7 +76,8 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
       )}
       <PracticeSetup
         targets={targets}
-        blocked={exhausted}
+        blocked={exhausted || trialOut}
+        blockedLabel={trialOut ? "No trial calls left" : "No calls left this month"}
         levels={LEVEL_LIST}
         initialTargetId={typeof target === "string" ? target : targets[0]!.id}
         initialDifficulty={difficulty === "inbound" || difficulty === "cold" ? difficulty : "warm"}

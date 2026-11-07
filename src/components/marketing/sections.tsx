@@ -61,7 +61,7 @@ interface BandLink {
   ctaId?: string;
 }
 
-const TRIAL_NOTE = `${TRIAL.calls} calls, ${TRIAL.days} days, work email only`;
+const TRIAL_NOTE = `${TRIAL.calls} calls, ${TRIAL.days} days, any email`;
 
 /** A band link: reported when it has a cta id, a plain link otherwise. Takes the button's classes when used as its child. */
 function Anchor({ to, children, ...rest }: { to: BandLink; children: React.ReactNode; className?: string }) {
@@ -73,8 +73,8 @@ function Anchor({ to, children, ...rest }: { to: BandLink; children: React.React
  * free Karen call on content pages), keep or drop the outline button, and add a quieter text link under them.
  */
 export function CtaBand({
-  title = "Ten free calls. Then decide.",
-  body = "Work email, no card. Your first prospect picks up in under two minutes.",
+  title = "Five free calls. Then decide.",
+  body = "Any email, no card. Your first prospect picks up in under two minutes.",
   primary = { href: "/signup", label: "Start free trial" },
   secondary = { href: "/pricing", label: "See pricing" },
   link = null,

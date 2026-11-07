@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { TRIAL } from "@/lib/billing/plans";
 import { useActionState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { requestWorkEmailLink, signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
+import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 import { GoogleOneTap } from "@/components/auth/google-one-tap";
 
 export interface PlanIntent {
@@ -28,7 +29,6 @@ export function AuthForm({ mode, next, invite, email, notice, intent }: { mode: 
     } catch {}
   }, [intent]);
 
-  if (state.personalEmail) return <PersonalEmailNext email={state.personalEmail} />;
 
   return (
     <div className="space-y-6">
@@ -36,7 +36,7 @@ export function AuthForm({ mode, next, invite, email, notice, intent }: { mode: 
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">{mode === "login" ? "Welcome back" : "Create your account"}</h1>
         <p className="text-muted-foreground text-sm">
-          {mode === "login" ? "Sign in to keep training." : invite ? "You've been invited to join a team." : "Start your team's free trial: 10 calls, 14 days, no card."}
+          {mode === "login" ? "Sign in to keep training." : invite ? "You've been invited to join a team." : `Start your free trial: ${TRIAL.calls} calls, ${TRIAL.days} days, no card.`}
         </p>
       </div>
 
@@ -73,7 +73,7 @@ export function AuthForm({ mode, next, invite, email, notice, intent }: { mode: 
         {invite && <input type="hidden" name="invite" value={invite} />}
         {intent && <input type="hidden" name="plan_intent" value={`${intent.plan}:${intent.billing}`} />}
         <div className="space-y-2">
-          <Label htmlFor="email">Work email</Label>
+          <Label htmlFor="email">Email</Label>
           <Input id="email" name="email" type="email" autoComplete="email" required defaultValue={email} placeholder={mode === "signup" && !invite ? "you@company.com" : undefined} />
         </div>
         <div className="space-y-2">
@@ -111,35 +111,6 @@ export function AuthForm({ mode, next, invite, email, notice, intent }: { mode: 
   );
 }
 
-/** A personal address cannot start a trial, but it can call Karen now, or have the link sent to a work inbox. */
-function PersonalEmailNext({ email }: { email: string }) {
-  const [state, action, pending] = useActionState<AuthState, FormData>(requestWorkEmailLink, {});
-  return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">That one's a personal address.</h1>
-        <p className="text-muted-foreground text-sm">The trial creates a workspace for your company, so it has to start from a work email. Two ways on from here.</p>
-      </div>
-      <div className="bg-card space-y-2 rounded-2xl border p-5">
-        <div className="font-medium">Try Karen now</div>
-        <p className="text-muted-foreground text-sm">One free three-minute cold call against our rudest AI prospect, scored, with any email. No account.</p>
-        <Button variant="signal" className="w-full" asChild><Link href={`/karen?email=${encodeURIComponent(email)}`}>Call Karen</Link></Button>
-      </div>
-      <form action={action} className="bg-card space-y-3 rounded-2xl border p-5">
-        <div className="font-medium">Email me a link to continue from my work inbox</div>
-        <div className="space-y-2">
-          <Label htmlFor="work_email">Work email</Label>
-          <Input id="work_email" name="work_email" type="email" autoComplete="email" placeholder="you@company.com" required />
-        </div>
-        {state.error && <p className="text-destructive text-sm">{state.error}</p>}
-        {state.message ? <p className="text-success text-sm">{state.message}</p> : (
-          <Button type="submit" variant="outline" className="w-full" disabled={pending}>{pending ? "Sending…" : "Send the link"}</Button>
-        )}
-      </form>
-      <p className="text-muted-foreground text-center text-sm"><Link href="/signup" className="underline underline-offset-4">Use a different email</Link></p>
-    </div>
-  );
-}
 
 export function GoogleMark() {
   return (

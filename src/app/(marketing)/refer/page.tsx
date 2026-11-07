@@ -89,7 +89,7 @@ export default function ReferPage() {
         </dl>
       </Section>
 
-      <CtaBand title="Ten free calls. Then decide." body="Work email, no card. Your referral link is waiting on the Rewards page the moment the workspace exists." secondary={{ href: "/pricing", label: "See pricing" }} />
+      <CtaBand title="Five free calls. Then decide." body="Any email, no card. Your referral link is waiting on the Rewards page the moment the workspace exists." secondary={{ href: "/pricing", label: "See pricing" }} />
     </>
   );
 }

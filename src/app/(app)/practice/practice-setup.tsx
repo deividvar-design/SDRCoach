@@ -30,6 +30,7 @@ export function PracticeSetup({
   initialTargetId,
   initialDifficulty,
   blocked = false,
+  blockedLabel = "No calls left this month",
 }: {
   targets: TargetOption[];
   levels: LevelSpec[];
@@ -37,6 +38,7 @@ export function PracticeSetup({
   initialDifficulty: Difficulty;
   /** The workspace has no included calls left this month. */
   blocked?: boolean;
+  blockedLabel?: string;
 }) {
   const [targetId, setTargetId] = useState(initialTargetId);
   const [difficulty, setDifficulty] = useState<Difficulty>(initialDifficulty);
@@ -108,7 +110,7 @@ export function PracticeSetup({
           <input type="hidden" name="target" value={targetId} />
           <input type="hidden" name="difficulty" value={effective} />
           <Button type="submit" size="lg" className="w-full" disabled={blocked}>
-            <Phone /> {blocked ? "No calls left this month" : "Dial"}
+            <Phone /> {blocked ? blockedLabel : "Dial"}
           </Button>
         </form>
         <p className="text-muted-foreground text-center text-xs">Headset recommended.</p>

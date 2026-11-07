@@ -34,7 +34,11 @@ export function MarketingFooter() {
       </div>
       <div className="text-muted-foreground mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-6 pb-8 text-xs">
         <span>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</span>
-        <span className="flex gap-4">
+        <span className="flex items-center gap-4">
+          <a href="https://1000tools.best/projects/100-dials?utm_source=badge" target="_blank" rel="noopener noreferrer">
+            {/* eslint-disable-next-line @next/next/no-img-element -- a third-party badge served from their host */}
+            <img src="https://1000tools.best/images/badges/featured-on-light.svg" alt="Featured on 1000 Tools" width={160} height={44} loading="lazy" className="h-11 w-auto" />
+          </a>
           <a href={`mailto:${SITE.company.email}`} className="hover:underline">{SITE.company.email}</a>
         </span>
       </div>

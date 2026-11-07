@@ -24,7 +24,7 @@ export default function PrivacyPage() {
 
       <h2>4. Account data</h2>
       <ul>
-        <li><strong>Identity:</strong> name, work email address, password hash, workspace membership and role. Legal basis: performance of a contract.</li>
+        <li><strong>Identity:</strong> name, email address, password hash, workspace membership and role. Legal basis: performance of a contract.</li>
         <li><strong>Billing:</strong> plan, seats, invoices. Payment card details are handled by our payment provider and never touch our servers.</li>
         <li><strong>Product usage:</strong> calls made, scores, streaks, and events such as sign-ins. Used to provide the service and, in aggregate, to improve it. Legal basis: contract and legitimate interest.</li>
         <li><strong>Transactional email:</strong> invites, security notices, trial status. These are not marketing and cannot be opted out of while you have an account.</li>

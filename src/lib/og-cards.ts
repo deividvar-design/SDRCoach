@@ -6,8 +6,8 @@ export interface OgCardSpec {
 }
 
 export const PAGE_CARDS: Record<string, OgCardSpec> = {
-  default: { title: "Karen's on the line. You have three minutes.", kicker: "SDR ramp, on the phone", footer: "10 free calls, work email only" },
-  pricing: { title: "Ten free calls. Then decide.", kicker: "Pricing" },
+  default: { title: "Karen's on the line. You have three minutes.", kicker: "SDR ramp, on the phone", footer: "5 free calls, any email" },
+  pricing: { title: "Five free calls. Then decide.", kicker: "Pricing" },
   "for-managers": { title: "Stop ramping reps on your real pipeline.", kicker: "For sales managers" },
   "for-enablement": { title: "Your call library is a training ground.", kicker: "For sales enablement" },
   blog: { title: "Cold calling, with the data attached.", kicker: "Blog" },

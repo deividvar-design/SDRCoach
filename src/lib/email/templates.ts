@@ -201,7 +201,7 @@ export const templates = {
         ? `You got ${p.overall.toFixed(1)} against Karen and she gave you a next step. Almost nobody does. The question is whether your reps can.`
         : `You scored ${p.overall.toFixed(1)} against Karen. She is built so that most people land between four and six, so that is about where it should be on a first go.`,
       "The people who score highest against her do two things: they keep every turn under fifteen words, and they ask one specific question about her world before they say anything about their own. Both are habits, and habits come from reps.",
-      `A free trial gives your team ${TRIAL.calls} calls over ${TRIAL.days} days against prospects built from your own targets, at three levels, with Karen and two other boss fights thrown in. Work email, no card.`,
+      `A free trial gives your team ${TRIAL.calls} calls over ${TRIAL.days} days against prospects built from your own targets, at three levels, with Karen and two other boss fights thrown in. Any email, no card.`,
     ];
     const foot = `<p style="margin:12px 0 0;font-size:12px;color:#8a857a">This is the last email about your call. <a href="${p.unsubscribeUrl}" style="color:#8a857a">No more from us</a>.</p>`;
     return { subject: won ? "You beat Karen. Can your team?" : `${p.overall.toFixed(1)} against Karen. Here's how to climb`, html: layout("Round two.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("") + foot, cta), text: textOf([...lines, "", `No more emails: ${p.unsubscribeUrl}`], cta) };
@@ -237,11 +237,11 @@ export const templates = {
       `<p style="margin:0 0 6px;font-weight:600">What worked</p>${p.strengths.map((x) => `<p style="margin:0 0 6px">${esc(x)}</p>`).join("")}`,
       `<p style="margin:12px 0 6px;font-weight:600">What to fix first</p>${p.improvements.map((x) => `<p style="margin:0 0 6px">${esc(x)}</p>`).join("")}`,
       `<p style="margin:16px 0 0;color:#3b3833">${esc(p.coachSummary)}</p>`,
-      `<p style="margin:20px 0 0;font-weight:600">Your team's reps face these same objections.</p><p style="margin:4px 0 0">Build their prospects from your own calls — 10 free calls, no card.</p>`,
+      `<p style="margin:20px 0 0;font-weight:600">Your team's reps face these same objections.</p><p style="margin:4px 0 0">Build their prospects from your own calls — 5 free calls, no card.</p>`,
       p.cameFrom ? `<p style="margin:12px 0 0;font-size:14px">You came from: ‘${esc(p.cameFrom.text)}’. <a href="${p.cameFrom.url}" style="color:#1c1b19">Read how to handle it →</a></p>` : "",
       p.shareUrl ? `<p style="margin:16px 0 0;font-size:14px">Your scorecard has a public page: <a href="${p.shareUrl}" style="color:#1c1b19">${esc(p.shareUrl)}</a>. Post it, or put yourself on the leaderboard from the results page.</p>` : "",
       `<p style="margin:16px 0 0;font-size:13px;color:#8a857a">Karen is one of the prospects in ${esc(SITE.name)}. Reps dial prospects built from their own targets, at three levels, and every call is scored like this one. Ten calls are free.</p>`,
-      p.personalEmail ? `<p style="margin:12px 0 0;font-size:13px;color:#3b3833">The trial needs a work email, so the workspace belongs to your company and your team can join it. Sign up with yours and the ten free calls are waiting.</p>` : "",
+      p.personalEmail ? `<p style="margin:12px 0 0;font-size:13px;color:#3b3833">Any address starts the trial. A work address makes the workspace your company's, so your team can join it. Sign up with yours and the five free calls are waiting.</p>` : "",
       `<p style="margin:12px 0 0;font-size:12px;color:#8a857a">We'll send one follow-up in a couple of days. <a href="${p.unsubscribeUrl}" style="color:#8a857a">Don't</a>.</p>`,
     ].join("");
     const text = [
@@ -258,11 +258,11 @@ export const templates = {
       "",
       p.coachSummary,
       "",
-      "Your team's reps face these same objections. Build their prospects from your own calls — 10 free calls, no card.",
+      "Your team's reps face these same objections. Build their prospects from your own calls — 5 free calls, no card.",
       ...(p.cameFrom ? [`You came from: ‘${p.cameFrom.text}’. Read how to handle it: ${p.cameFrom.url}`] : []),
       "",
       ...(p.shareUrl ? [`Your public scorecard: ${p.shareUrl}`, ""] : []),
-      ...(p.personalEmail ? ["The trial needs a work email, so the workspace belongs to your company and your team can join it.", ""] : []),
+      ...(p.personalEmail ? ["Any address starts the trial. A work address makes the workspace your company's, so your team can join it.", ""] : []),
       `No follow-up: ${p.unsubscribeUrl}`,
     ];
     return { subject: `Your call with Karen: ${p.overall.toFixed(1)} / 10`, html: layout("Here's how it went.", html, cta), text: textOf(text, cta) };
@@ -370,5 +370,31 @@ export const templates = {
       p.payable ? `Payment goes out within ${p.withinDays} days to the details you gave us. If they have changed, reply to this email before then.` : `Balances under $${p.minimum} carry over, so this one rolls into the next quarter.`,
     ];
     return { subject: `Affiliate statement, ${p.period}`, html: layout("Your statement.", body.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("")), text: textOf(body) };
+  },
+
+  extensionRequested(p: { name: string; email: string; orgName: string; workEmail: boolean; callsMade: number; answers: [string, string][]; spots: string }): Rendered {
+    const cta = { label: "Review the request", href: absoluteUrl("/admin/extensions") };
+    const lines = [`${p.name} (${p.email}${p.workEmail ? "" : ", personal address"}) at ${p.orgName} asked for more trial calls after ${p.callsMade} ${p.callsMade === 1 ? "call" : "calls"}.`, ...p.answers.map(([q, a]) => `${q} ${a}`), p.spots];
+    return { subject: `Trial extension request: ${p.orgName}`, html: layout("More calls, please.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  extensionApproved(p: { firstName: string; orgName: string; calls: number; days: number }): Rendered {
+    const cta = { label: "Make a call", href: absoluteUrl("/practice") };
+    const lines = [`Hi ${p.firstName},`, `Done: ${p.calls} more calls and ${p.days} more days on ${p.orgName}'s trial. They are live now.`, "Spend one on the prospect that gave you the most trouble. That is where the score moves."];
+    return { subject: `${p.calls} more calls on your trial`, html: layout("More calls, as asked.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  extensionDeclined(p: { firstName: string; note: string | null }): Rendered {
+    const cta = { label: "See plans", href: absoluteUrl("/upgrade") };
+    const lines = [`Hi ${p.firstName},`, "Thanks for asking about more trial calls. We can't add them this time.", ...(p.note ? [p.note] : []), "The Rewards page has a few ways to earn calls today, and a plan starts the team dialling again in a minute."];
+    return { subject: "About your trial extension", html: layout("Not this time.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+  },
+
+  /** Sent in the rep's name, once, to the manager they chose. The body is the exact text the rep approved. */
+  managerIntro(p: { subject: string; lines: string[]; repName: string; repEmail: string; link: string; optOut: string }): Rendered {
+    const cta = { label: "Start the free trial", href: p.link };
+    const footer = `Sent on behalf of ${p.repName} (${p.repEmail}); replies go to them. One email, no follow-ups.`;
+    const html = layout("Your rep has been practising.", `${p.lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("")}<p style="margin:20px 0 0;font-size:12px;color:#8a857a">${esc(footer)} <a href="${p.optOut}" style="color:#8a857a">Don't email me again</a>.</p>`, cta);
+    return { subject: p.subject, html, text: textOf([...p.lines, "", footer, `Don't email me again: ${p.optOut}`], cta) };
   },
 };

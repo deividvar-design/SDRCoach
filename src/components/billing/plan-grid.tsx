@@ -168,7 +168,7 @@ export function PlanGrid({
 
       {marketing && (
         <p className="text-muted-foreground text-center text-sm">
-          Every plan starts with a free trial: {TRIAL.calls} calls, {TRIAL.days} days, no card. Work email required. Annual plans can be paid by invoice: email {SALES_EMAIL}. Prices exclude VAT.
+          Every plan starts with a free trial: {TRIAL.calls} calls, {TRIAL.days} days, no card. Annual plans can be paid by invoice: email {SALES_EMAIL}. Prices exclude VAT.
         </p>
       )}
     </div>

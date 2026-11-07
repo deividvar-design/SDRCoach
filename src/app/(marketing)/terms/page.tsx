@@ -15,7 +15,7 @@ export default function TermsPage() {
       <h2>2. Accounts and workspaces</h2>
       <ul>
         <li>You must provide accurate information and keep credentials confidential. You are responsible for activity under your account.</li>
-        <li>Self-serve workspaces require a business email address. One trial workspace per company domain.</li>
+        <li>A trial workspace can be started with any real email address. A workspace started from a work address is the one trial for that company domain; colleagues join it by invitation.</li>
         <li>The person who creates a workspace (“owner”) can invite members, assign roles, and is the customer of record.</li>
       </ul>
 

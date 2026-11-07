@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScoreReveal } from "@/components/report/score-reveal";
 import { ScorePoller } from "@/components/report/score-poller";
+import { OutOfCalls } from "@/components/trial/out-of-calls";
 import { DimensionBars } from "@/components/report/dimension-bars";
 import { ReviewPrompt } from "@/components/report/review-prompt";
 import { Comments } from "@/components/report/comments";
@@ -73,6 +74,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
   return (
     <div className="space-y-8">
       <ScorePoller active={collecting || reviewing} sessionId={session.id} doneMessage={reviewing ? "Your review is ready" : null} />
+      {isOwn && score && <OutOfCalls viewer={viewer} lastCall />}
       <PageHeader
         eyebrow={`${fmtDate(session.created_at)}, ${formatDuration(session.duration_seconds)}, L${level.level} ${level.name}${moodById(session.mood) ? `, ${moodById(session.mood)!.label.toLowerCase()}` : ""}${session.gatekeeper ? ", via gatekeeper" : ""}${session.boss ? ", boss fight (not counted in stats)" : ""}${!isOwn && session.profiles?.full_name ? `, ${session.profiles.full_name}` : ""}`}
         title={session.targets ? `${session.targets.name}, ${session.targets.company}` : "Call"}

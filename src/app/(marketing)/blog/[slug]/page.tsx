@@ -97,7 +97,7 @@ export default async function BlogPost({ params }: PageProps<"/blog/[slug]">) {
         </section>
       )}
 
-      <CtaBand title="Practise it before it counts." body="Ten free calls against a prospect that pushes back. Work email only." />
+      <CtaBand title="Practise it before it counts." body="Five free calls against a prospect that pushes back. Any email." />
     </>
   );
 }

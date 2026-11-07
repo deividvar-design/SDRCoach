@@ -76,7 +76,7 @@ export default function ObjectionIndex() {
         body="An AI prospect raises these on every ramp call and the coach tags how you handled each one. Ten calls are free."
         primary={{ href: "/karen?from=/objections", label: "Call Karen — 3 min, no signup", ctaId: "objections_bottom_karen" }}
         secondary={null}
-        link={{ href: "/signup", label: "Start the 10-call team trial", ctaId: "objections_bottom_trial" }}
+        link={{ href: "/signup", label: "Start the 5-call team trial", ctaId: "objections_bottom_trial" }}
       />
     </>
   );

@@ -105,7 +105,7 @@ export default async function ObjectionPage({ params }: PageProps<"/objections/[
         </section>
       )}
 
-      <CtaBand title="Practise it before it counts." body="An AI prospect that raises this objection, and a coach that tells you how you handled it. Ten free calls, work email only." />
+      <CtaBand title="Practise it before it counts." body="An AI prospect that raises this objection, and a coach that tells you how you handled it. Five free calls, any email." />
     </>
   );
 }

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { track } from "@vercel/analytics/server";
 import { createClient } from "@/lib/supabase/server";
-import { validateBusinessEmail } from "@/lib/email/business";
+import { validateBusinessEmail, validateTrialEmail } from "@/lib/email/business";
 import { safeNext } from "@/lib/safe-next";
 import { isAdminEmail } from "@/lib/auth";
 import { appUrl } from "@/lib/site";
@@ -19,8 +19,6 @@ import { templates } from "@/lib/email/templates";
 export interface AuthState {
   error?: string;
   message?: string;
-  /** A personal address was entered: the form shows the two ways on instead of an error. */
-  personalEmail?: string;
 }
 
 const credentials = z.object({
@@ -61,15 +59,13 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
 
   const supabase = await createClient();
 
-  // Trials are for business addresses. Invited teammates are vouched for by their manager,
-  // but only when the invite token is real.
+  // Any real address can start a trial; temporary and undeliverable ones are turned away. Invited teammates are
+  // vouched for by their manager, but only when the invite token is real.
   const invited = invite ? await inviteExists(invite) : false;
   if (!invited && !isAdminEmail(parsed.data.email)) {
-    const check = await validateBusinessEmail(parsed.data.email);
+    const check = await validateTrialEmail(parsed.data.email);
     if (!check.ok) {
       await logFunnel("signup_rejected", { email: parsed.data.email, reason: check.reason });
-      // A personal address is not a dead end: the form offers Karen now, or the link to a work inbox.
-      if (check.reason === "free") return { personalEmail: parsed.data.email.trim().toLowerCase() };
       return { error: check.message };
     }
   }

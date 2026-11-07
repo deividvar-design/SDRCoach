@@ -95,6 +95,39 @@ export type Organization = {
   created_at: string;
 };
 
+/** A trial workspace asking for more calls, reviewed by an admin. */
+export type TrialExtensionRequest = {
+  id: string;
+  org_id: string;
+  user_id: string;
+  use_case: "ramping" | "testing" | "personal" | "other";
+  people: number;
+  decider: "me" | "manager" | "other";
+  timeline: "month" | "quarter" | "none";
+  need: string | null;
+  status: "pending" | "approved" | "declined";
+  calls: number | null;
+  days: number | null;
+  note: string | null;
+  decided_at: string | null;
+  decided_by: string | null;
+  created_at: string;
+};
+
+/** An introduction a rep sent their manager from the out-of-calls screen, delivered by us in the rep's name. */
+export type ManagerIntro = {
+  id: string;
+  org_id: string;
+  user_id: string;
+  manager_name: string;
+  manager_email: string;
+  note: string | null;
+  sent_at: string | null;
+  opened_at: string | null;
+  opted_out_at: string | null;
+  created_at: string;
+};
+
 /** When an admin last opened an admin section. */
 export type AdminSeen = { admin_email: string; section: string; seen_at: string };
 
@@ -510,6 +543,8 @@ export type Database = {
         ]
       >;
       admin_seen: Table<AdminSeen, Insert<AdminSeen, "seen_at">>;
+      trial_extension_requests: Table<TrialExtensionRequest, Insert<TrialExtensionRequest, "id" | "need" | "status" | "calls" | "days" | "note" | "decided_at" | "decided_by" | "created_at">>;
+      manager_intros: Table<ManagerIntro, Insert<ManagerIntro, "id" | "note" | "sent_at" | "opened_at" | "opted_out_at" | "created_at">>;
       affiliates: Table<Affiliate, Insert<Affiliate, "id" | "channel" | "status" | "terms_accepted_at" | "ip" | "created_at">>;
       payments: Table<Payment, Insert<Payment, "refunded_cents" | "created_at">>;
       affiliate_payouts: Table<AffiliatePayout, Insert<AffiliatePayout, "id" | "note" | "paid_at" | "created_at">>;

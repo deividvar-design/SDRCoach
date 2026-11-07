@@ -8,6 +8,7 @@ export const ADMIN_SECTIONS = [
   { key: "leads", href: "/admin/leads", label: "Karen leads" },
   { key: "usage", href: "/admin/usage", label: "Usage" },
   { key: "rewards", href: "/admin/rewards", label: "Rewards" },
+  { key: "extensions", href: "/admin/extensions", label: "Extensions" },
   { key: "access", href: "/admin/access", label: "Access links" },
   { key: "partners", href: "/admin/partners", label: "Partners" },
   { key: "affiliates", href: "/admin/affiliates", label: "Affiliates" },
@@ -28,10 +29,11 @@ export const adminBadges = cache(async (db: Db, adminEmail: string): Promise<Rec
   const since = (s: AdminSection) => seen.get(s) ?? EPOCH;
   const count = async (q: PromiseLike<{ count: number | null }>) => (await q).count ?? 0;
 
-  const [signups, leads, rewards, access, partnersPending, partnersCheckins, affiliates] = await Promise.all([
+  const [signups, leads, rewards, extensions, access, partnersPending, partnersCheckins, affiliates] = await Promise.all([
     count(db.from("profiles").select("id", { count: "exact", head: true }).gt("created_at", since("signups"))),
     count(db.from("demo_calls").select("id", { count: "exact", head: true }).eq("status", "scored").gt("created_at", since("leads"))),
     count(db.from("reward_claims").select("id", { count: "exact", head: true }).eq("status", "pending")),
+    count(db.from("trial_extension_requests").select("id", { count: "exact", head: true }).eq("status", "pending")),
     count(db.from("access_links").select("id", { count: "exact", head: true }).gt("claimed_at", since("access"))),
     count(db.from("partner_applications").select("id", { count: "exact", head: true }).eq("status", "pending")),
     count(db.from("partner_applications").select("id", { count: "exact", head: true }).gt("quote_approved_at", since("partners"))),
@@ -42,6 +44,7 @@ export const adminBadges = cache(async (db: Db, adminEmail: string): Promise<Rec
     leads: { action: 0, fresh: leads },
     usage: { action: 0, fresh: 0 },
     rewards: { action: rewards, fresh: 0 },
+    extensions: { action: extensions, fresh: 0 },
     access: { action: 0, fresh: access },
     // A manager who approved a quote is waiting for the testimonial to be made from it.
     partners: { action: partnersPending + partnersCheckins, fresh: 0 },
