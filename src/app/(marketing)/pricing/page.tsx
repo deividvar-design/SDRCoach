@@ -26,7 +26,7 @@ const FAQ = [
   { q: "What happens after the trial?", a: "Dialling pauses and everything you built stays: targets, transcripts, scores. Pick a plan from inside the app and the team is calling again in a minute. There is no card on the trial, so nothing is ever charged by surprise." },
   { q: "Do you offer annual billing?", a: `Yes. Annual is 20% off and quarterly 10% off, per seat. Annual plans can be paid by invoice: email ${SALES_EMAIL} with the plan and seat count and we send a Stripe invoice with 30-day payment terms.` },
   { q: "Can we get custom personas?", a: "Yes, on every plan. Upload transcripts from Gong, Chorus, Apollo or your dialler and prospects start sounding like your market within minutes; Starter holds 30 sources, Team 100. Team also includes a personalised setup: we build your first prospects from your target accounts before your reps dial." },
-  { q: "What is founding pricing?", a: `Until ${FOUNDING.untilLabel}, Starter is $${FOUNDING.price.starter.usd.month} and Team $${FOUNDING.price.team.usd.month} a seat a month, and a team that subscribes keeps that price for as long as it stays subscribed. Founding pricing does not combine with other discounts.` },
+  { q: "What is founding pricing?", a: `Until ${FOUNDING.untilLabel}, Starter is $${FOUNDING.price.starter.usd.month} and Team $${FOUNDING.price.team.usd.month} a seat a month on monthly billing, or $${FOUNDING.price.starter.usd.year} and $${FOUNDING.price.team.usd.year} a seat a month billed annually. The plan cards show the annual price unless you switch the toggle to monthly. A team that subscribes keeps its founding price for as long as it stays subscribed. Founding pricing does not combine with other discounts.` },
   { q: "Is there a money-back guarantee?", a: "Yes. If a paid plan isn't working for your team, email us within 30 days of your first payment and we refund it in full, no questions. It covers the first payment on a new subscription." },
   { q: "Which currency will we be charged in?", a: "Euros or US dollars, your choice at checkout. European companies see euro prices by default. Prices exclude VAT; EU companies with a VAT number are reverse-charged." },
   { q: "Is our data used to train models?", a: "No. Your transcripts and recordings are used only to ground your own team's prospects and grading." },
@@ -38,6 +38,8 @@ export default async function PricingPage() {
   const team = PLANS.find((p) => p.id === "team")!;
   const starterPrice = founding ? founding.price.starter[currency].month : starter.prices![currency].month;
   const teamPrice = founding ? founding.price.team[currency].month : team.prices![currency].month;
+  const starterAnnual = founding ? founding.price.starter[currency].year : starter.prices![currency].year;
+  const teamAnnual = founding ? founding.price.team[currency].year : team.prices![currency].year;
   return (
     <>
       <JsonLd data={faqLd(FAQ)} />
@@ -49,7 +51,7 @@ export default async function PricingPage() {
           </p>
           {founding && (
             <p className="bg-signal/10 text-signal-ink mx-auto mt-6 inline-block rounded-full px-4 py-1.5 text-sm font-medium">
-              Founding pricing until {founding.untilLabel}: Starter {formatMoney(starterPrice, currency)}, Team {formatMoney(teamPrice, currency)} a seat, kept for as long as you stay subscribed.
+              Founding pricing until {founding.untilLabel}: Starter {formatMoney(starterPrice, currency)} and Team {formatMoney(teamPrice, currency)} a seat a month, or {formatMoney(starterAnnual, currency)} and {formatMoney(teamAnnual, currency)} billed annually. Kept for as long as you stay subscribed.
             </p>
           )}
         </section>

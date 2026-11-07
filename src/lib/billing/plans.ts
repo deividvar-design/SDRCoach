@@ -89,10 +89,10 @@ export const SALES_EMAIL = process.env.NEXT_PUBLIC_SALES_EMAIL ?? "hello@100dial
 
 export type BillingInterval = "month" | "quarter" | "year";
 
-export const INTERVALS: Record<BillingInterval, { label: string; months: number; billed: string; saving: string | null }> = {
-  month: { label: "Monthly", months: 1, billed: "Billed monthly", saving: null },
-  quarter: { label: "Quarterly", months: 3, billed: "Billed every 3 months", saving: "save 10%" },
-  year: { label: "Annual", months: 12, billed: "Billed yearly", saving: "save 20%" },
+export const INTERVALS: Record<BillingInterval, { label: string; months: number; billed: string; saving: string | null; founding: string }> = {
+  month: { label: "Monthly", months: 1, billed: "Billed monthly", saving: null, founding: "" },
+  quarter: { label: "Quarterly", months: 3, billed: "Billed every 3 months", saving: "save 10%", founding: " on quarterly billing" },
+  year: { label: "Annual", months: 12, billed: "Billed yearly", saving: "save 20%", founding: " on annual billing" },
 };
 
 export function pricePerSeat(plan: Plan, interval: BillingInterval, currency: Currency) {
