@@ -43,7 +43,7 @@ export default async function OnboardingPage() {
 
   return (
     <main className="flex min-h-dvh items-center justify-center p-6">
-      <AdsConversion kind="signup" id={user.id} email={user.email} />
+      <AdsConversion kind="signup" id={user.id} email={user.email} value={15} currency="EUR" />
       <div className="w-full max-w-md space-y-8">
         <Logo />
         <OnboardingForm />

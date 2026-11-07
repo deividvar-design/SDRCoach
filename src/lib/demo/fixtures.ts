@@ -49,7 +49,8 @@ export const PROFILES: Profile[] = [
   { id: "u-tomas", full_name: "Tomas Brandt", avatar_url: null, email: null, recording_ack_at: daysAgo(12), phone: null, signup_reason: null, signup_goal: null, hero_variant: null, gclid: null, gbraid: null, wbraid: null, plan_intent: null, created_at: daysAgo(12) },
 ];
 
-export const MEMBERSHIPS: Membership[] = [
+// DEMO_FRESH_USER=1 leaves the demo user without a workspace, so /onboarding renders instead of redirecting.
+export const MEMBERSHIPS: Membership[] = process.env.DEMO_FRESH_USER === "1" ? [] : [
   { id: "m-1", org_id: ORG.id, user_id: "u-deividas", role: "owner", manager_id: null, created_at: daysAgo(40) },
   { id: "m-2", org_id: ORG.id, user_id: "u-maya", role: "rep", manager_id: "u-deividas", created_at: daysAgo(30) },
   { id: "m-3", org_id: ORG.id, user_id: "u-luka", role: "rep", manager_id: "u-deividas", created_at: daysAgo(28) },
