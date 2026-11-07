@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { markSeen } from "@/lib/admin/badges";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { OUTCOME_TEXT } from "@/lib/domain/session-status";
 import { daysAgoIso, formatDate } from "@/lib/utils";
@@ -27,7 +28,8 @@ const PENDING: DemoCall["status"][] = ["created", "dialing", "live", "ended", "s
 
 /** Everyone who called Karen: the demo's lead list, with where each one came from. */
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await markSeen(createAdminClient(), admin.email, "leads");
   const state = parseList(await searchParams, FILTERS.map((f) => f.key));
   const db = createAdminClient();
 

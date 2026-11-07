@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { markSeen } from "@/lib/admin/badges";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { REWARD_BY_KIND, rewardLine, type RewardKind } from "@/lib/rewards/config";
 import { formatDate } from "@/lib/utils";
@@ -23,7 +24,8 @@ const FILTERS = [
 
 /** Every reward claim. Pending ones first: a pasted post link waits here for a click. */
 export default async function AdminRewardsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await markSeen(createAdminClient(), admin.email, "rewards");
   const state = parseList(await searchParams, FILTERS.map((f) => f.key));
   const db = createAdminClient();
   let query = db.from("reward_claims").select("*", { count: "exact" }).order("status", { ascending: false }).order("created_at", { ascending: false });

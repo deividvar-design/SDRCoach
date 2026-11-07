@@ -11,18 +11,26 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DailyBars } from "@/components/admin/daily-bars";
 import { ListToolbar, Pager } from "@/components/admin/list-controls";
 import { parseList, slicePage, type SearchParams } from "@/lib/admin/list";
+import { adminBadges, totalAction } from "@/lib/admin/badges";
+import { AdminNav } from "@/components/admin/admin-nav";
 
-export const metadata = { title: "Admin" };
 export const dynamic = "force-dynamic";
+
+/** "(3) Admin" in the tab while three decisions wait. */
+export async function generateMetadata() {
+  const admin = await requireAdmin();
+  const n = totalAction(await adminBadges(createAdminClient(), admin.email));
+  return { title: n ? `(${n}) Admin` : "Admin" };
+}
 
 const PLAN_VARIANT: Record<string, "secondary" | "success" | "destructive" | "outline"> = { trial: "secondary", starter: "success", team: "success", enterprise: "success", canceled: "destructive" };
 
 const WORKSPACE_FILTERS = [{ key: "plan", label: "Plan", options: ["trial", "starter", "team", "enterprise", "canceled"].map((p) => ({ value: p, label: p })) }];
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const list = parseList(await searchParams, ["plan"]);
-  const [{ rows: allRows, totals, tokens, daily }, feedback, { count: pendingRewards }] = await Promise.all([loadOverview(), loadFeedback(), createAdminClient().from("reward_claims").select("id", { count: "exact", head: true }).eq("status", "pending")]);
+  const [{ rows: allRows, totals, tokens, daily }, feedback, badges] = await Promise.all([loadOverview(), loadFeedback(), adminBadges(createAdminClient(), admin.email)]);
   const q = list.q.toLowerCase();
   const matching = allRows.filter((r) => (!list.filters.plan || r.org.plan === list.filters.plan) && (!q || [r.org.name, r.org.trial_domain, r.ownerEmail].some((v) => v?.toLowerCase().includes(q))));
   const { rows, total } = slicePage(matching, list);
@@ -30,7 +38,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Internal" title="Admin" description="Every workspace, what it uses and what it costs. Actions here are logged." actions={<span className="flex gap-4"><Link href="/admin/signups" className="text-sm underline underline-offset-4">Signups</Link><Link href="/admin/leads" className="text-sm underline underline-offset-4">Karen leads</Link><Link href="/admin/usage" className="text-sm underline underline-offset-4">Usage</Link><Link href="/admin/rewards" className="text-sm underline underline-offset-4">Rewards{pendingRewards ? ` (${pendingRewards})` : ""}</Link><Link href="/admin/access" className="text-sm underline underline-offset-4">Access links</Link><Link href="/admin/partners" className="text-sm underline underline-offset-4">Partners</Link><Link href="/admin/affiliates" className="text-sm underline underline-offset-4">Affiliates</Link></span>} />
+      <PageHeader eyebrow="Internal" title="Admin" description="Every workspace, what it uses and what it costs. Actions here are logged." actions={<AdminNav badges={badges} />} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label="Workspaces" value={totals.orgs} hint={`${totals.trials} trial, ${totals.paid} paid, ${totals.canceled} canceled`} />

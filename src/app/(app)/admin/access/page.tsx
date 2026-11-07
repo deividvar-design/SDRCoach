@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { markSeen } from "@/lib/admin/badges";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TRIAL } from "@/lib/billing/plans";
 import { accessUrl, linkStatus, type LinkStatus } from "@/lib/access/links";
@@ -23,7 +24,8 @@ const STATUS_VARIANT: Record<LinkStatus, "secondary" | "success" | "outline" | "
 
 /** Hand-issued access: one link per lead, with the calls you promised them. Opening it creates the account and workspace. */
 export default async function AdminAccessPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await markSeen(createAdminClient(), admin.email, "access");
   const state = parseList(await searchParams, ["status"]);
   const db = createAdminClient();
   let query = db.from("access_links").select("*").order("created_at", { ascending: false }).limit(500);

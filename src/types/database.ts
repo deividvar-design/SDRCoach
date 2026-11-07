@@ -95,6 +95,9 @@ export type Organization = {
   created_at: string;
 };
 
+/** When an admin last opened an admin section. */
+export type AdminSeen = { admin_email: string; section: string; seen_at: string };
+
 /** Someone outside the product who shares a referral link for a share of what referred teams pay. */
 export type Affiliate = {
   id: string;
@@ -506,6 +509,7 @@ export type Database = {
           { foreignKeyName: "memberships_manager_id_fkey"; columns: ["manager_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ]
       >;
+      admin_seen: Table<AdminSeen, Insert<AdminSeen, "seen_at">>;
       affiliates: Table<Affiliate, Insert<Affiliate, "id" | "channel" | "status" | "terms_accepted_at" | "ip" | "created_at">>;
       payments: Table<Payment, Insert<Payment, "refunded_cents" | "created_at">>;
       affiliate_payouts: Table<AffiliatePayout, Insert<AffiliatePayout, "id" | "note" | "paid_at" | "created_at">>;

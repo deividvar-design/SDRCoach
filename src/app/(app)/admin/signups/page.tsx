@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { markSeen } from "@/lib/admin/badges";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { fetchAll } from "@/lib/supabase/paginate";
 import { reasonLabel, SIGNUP_REASONS } from "@/lib/marketing/signup-intent";
@@ -27,7 +28,8 @@ const PROVIDER_LABEL: Record<string, string> = { google: "Google sign-in", email
 
 /** Everyone who created an account: where they came from, what they said they came for, and whether they dialed. */
 export default async function SignupsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await markSeen(createAdminClient(), admin.email, "signups");
   const state = parseList(await searchParams, FILTERS.map((f) => f.key));
   const db = createAdminClient();
 

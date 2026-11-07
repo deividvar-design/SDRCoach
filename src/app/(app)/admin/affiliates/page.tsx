@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { markSeen } from "@/lib/admin/badges";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { affiliateLink, affiliateStatement } from "@/lib/affiliates/program";
 import { money, previousQuarter, quarterOf } from "@/lib/affiliates/statements";
@@ -20,7 +21,8 @@ const VARIANT = { active: "success", paused: "outline", closed: "destructive" } 
  * quarter, which is what the first-Monday email covers; the balance is as of now.
  */
 export default async function AdminAffiliatesPage() {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await markSeen(createAdminClient(), admin.email, "affiliates");
   const db = createAdminClient();
   const now = new Date();
   const last = previousQuarter(now);

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { markSeen } from "@/lib/admin/badges";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { loadUsage } from "@/lib/admin/usage";
 import { formatUsd } from "@/lib/usage/pricing";
 import { OUTCOME_TEXT } from "@/lib/domain/session-status";
@@ -20,7 +22,8 @@ const length = (s: number) => (s ? `${Math.floor(s / 60)}m ${Math.round(s % 60)}
 
 /** Voice minutes and scoring tokens, by day, by workspace and by kind of call. Karen calls included. */
 export default async function AdminUsagePage({ searchParams }: { searchParams: Promise<{ days?: string }> }) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await markSeen(createAdminClient(), admin.email, "usage");
   const { days: raw } = await searchParams;
   const days = RANGES.includes(Number(raw)) ? Number(raw) : 30;
   const u = await loadUsage(days);

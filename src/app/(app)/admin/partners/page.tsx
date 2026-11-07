@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { markSeen } from "@/lib/admin/badges";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { partnerReport, spotsLeft } from "@/lib/partners/program";
 import { PARTNER, pilotCalls } from "@/content/founding-partners";
@@ -24,7 +25,8 @@ const VARIANT: Record<PartnerStatus, "secondary" | "success" | "outline" | "dest
 
 /** Applications to the founding-partner program, and how each approved pilot is going. */
 export default async function AdminPartnersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await markSeen(createAdminClient(), admin.email, "partners");
   const state = parseList(await searchParams, ["status"]);
   const db = createAdminClient();
   let query = db.from("partner_applications").select("*").order("created_at", { ascending: false }).limit(500);
