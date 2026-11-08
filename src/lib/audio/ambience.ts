@@ -306,9 +306,10 @@ function murmur(ctx: AudioContext, out: AudioNode, gain: number, stops: (() => v
 }
 
 /** Overall level per place: a café and a station are louder than an office, always well under the voice. */
-// Set from measured output in Chrome: about 12 to 18 dB under a voice at -18 dBFS, like a real phone line.
-// Office and home near -34 dBFS RMS, car, street, cafe and station near -30. The first levels sat near -50: inaudible.
-const LEVEL: Record<Exclude<Ambience, "quiet">, number> = { office: 0.27, open_office: 0.29, car: 0.2, street: 0.43, home: 0.36, cafe: 0.4, station: 0.28 };
+// Set from measured output in Chrome, then halved on request after live calls (-6 dB): office and home near
+// -40 dBFS RMS, car, street, cafe and station near -36, so 18 to 22 dB under a voice at -18. The first levels sat
+// near -50 and were inaudible.
+const LEVEL: Record<Exclude<Ambience, "quiet">, number> = { office: 0.135, open_office: 0.145, car: 0.1, street: 0.215, home: 0.18, cafe: 0.2, station: 0.14 };
 
 export function startAmbience(kind: Ambience): AmbienceHandle | null {
   if (kind === "quiet" || typeof AudioContext === "undefined") return null;
