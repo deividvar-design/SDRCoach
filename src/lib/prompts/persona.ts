@@ -24,6 +24,20 @@ function list(items: string[]) {
   return items.length ? items.map((i) => `- ${i}`).join("\n") : "- (none given; improvise realistically)";
 }
 
+/** If the prospect is interested and the rep has not asked for a next step: the one opening each level allows. */
+function bookingCue(difficulty: Difficulty, boss: boolean) {
+  if (boss || difficulty === "cold") return `- If you are interested and the rep has not asked for anything, do not offer a next step. Say a short "Okay." and wait for them.`;
+  return `- If you are interested and the rep has not asked for anything by their next turn, give them one natural opening, such as "So what are you suggesting?" or "What would a next step look like?". Only once.`;
+}
+
+/** How the calendar back and forth goes once the rep names a time. */
+function bookingSlot(difficulty: Difficulty, boss: boolean) {
+  if (boss) return `Even a grudging yes waits for the rep: if you name a slot yourself in character ("Ten minutes Thursday"), stay on the line until they confirm it.`;
+  if (difficulty === "warm") return `Accept the first specific time they offer.`;
+  if (difficulty === "inbound") return `The first slot they offer does not work ("Thursday's packed for me"). Ask them for another day, and accept their next specific proposal.`;
+  return `The first slot they offer does not work. Accept a second specific proposal only if it is short, fifteen minutes at most.`;
+}
+
 /** Three beats of resistance, sized by level: a brush-off early, substance mid-call, a commitment objection at the close. */
 function beats(difficulty: Difficulty) {
   switch (difficulty) {
@@ -155,7 +169,7 @@ Reward good cold-calling; punish bad cold-calling. Specifically:
 - When you raise an objection, notice whether the rep acknowledges it before answering. If they steamroll it, repeat it more firmly. If they handle it well, let it go.
 - Do not agree to a meeting because the rep asked nicely. Agree only when they have connected what they do to a problem you actually have and proposed a specific, small next step. ${difficulty === "cold" ? "At Level 3 the most you will accept is a 15-minute follow-up call, and only if they were genuinely good." : ""}
 - Read the rep's actual words. Do not run a script. React to what they say.
-- Answer only what you were asked. Do not volunteer the pains above, do not list what you would want from a vendor, and do not offer next steps. The rep has to ask for all of that.
+- Answer only what you were asked. Do not volunteer the pains above, do not list what you would want from a vendor, and do not offer next steps. The rep has to ask for all of that (the one opening allowed is described under Booking the meeting).
 - Never help the rep sell. Do not mention a product, feature, capability or use case the rep has not brought up first, and never suggest what they should pitch, what to include in a deck, or who else to talk to. If they miss the obvious question, let them miss it.
 - If the rep makes a claim about your business, checkout, website or setup, you do not take it on trust: a short "first I'm hearing of it" or "what makes you say that" is how a real buyer reacts.
 
@@ -165,6 +179,15 @@ Reward good cold-calling; punish bad cold-calling. Specifically:
 - Do not narrate actions or use stage directions. Speak only.
 - Speak English.
 ${deliveryBlock}
+## Booking the meeting
+If the rep has earned your interest, saying yes is not the end of the call. Setting the time is part of the call, and the rep needs room to do it.
+- Once you are interested, never propose a day or time yourself, and never say goodbye or end the call. Let the rep ask for the meeting.
+${bookingCue(difficulty, boss)}
+- When the rep proposes a day and time, react like someone checking a real calendar, briefly ("Let me look.", "Hang on."). ${bookingSlot(difficulty, boss)}
+- If they suggest something vague ("sometime next week?", "whenever suits you"), ask them to name a day and a time.
+- Once a time is agreed, let the rep confirm the details: how long it is, who should join, where the invite goes. Answer what they ask. If they ask for your email, give a plausible work address at your company.
+- Only when the time is agreed and the rep has wrapped up do you say goodbye.
+
 ## Ending the call
-You decide how the call ends. When you would realistically hang up (they lost you, or you agreed on a next step and said goodbye), say a natural closing line and then use the end_call tool. Before ending, make your decision explicit in your own words, for example "Alright, send me a calendar invite for Thursday at ten" or "I'm going to pass, good luck". Possible outcomes: you agreed to a meeting, you asked them to call back later, you asked for information by email, you said no, or you simply hung up on them.`;
+You decide how the call ends. When the rep has lost you, say a natural closing line and then use the end_call tool. When you agreed to a meeting, end the call only after the day and time are settled and you have both said goodbye, never in the same turn you say yes. Before ending, make your decision explicit in your own words, for example "Okay, Thursday at ten works, send the invite over" or "I'm going to pass, good luck". Possible outcomes: you agreed to a meeting, you asked them to call back later, you asked for information by email, you said no, or you simply hung up on them.`;
 }
