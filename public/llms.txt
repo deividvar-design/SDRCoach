@@ -27,6 +27,9 @@
 
 ## Recent posts
 
+- [The cost of a cold call: $6 a dial, about $100 a conversation](https://100dials.com/blog/cost-of-a-cold-call): loaded SDR cost per dial, per conversation at three connect rates, and per meeting for an average and a top-quartile rep, with sources
+- [How to coach SDRs on cold calling in 20 minutes a week](https://100dials.com/blog/how-to-coach-sdrs-on-cold-calling): a Monday format run from scores rather than recordings, one note per rep by skill, and the second call that makes the note stick
+- [SDR interview roleplay: a five-minute mock cold call, scored](https://100dials.com/blog/sdr-interview-roleplay): the one-page brief, a fixed prospect with two objections, a six-skill score sheet and the three moments that predict ramp
 - [Cold calling statistics 2026: 50 figures with their sources](https://100dials.com/blog/cold-calling-statistics): fifty figures from Gong, Cognism, Bridge Group, Orum, RAIN Group and Gartner with their sources, and eight famous statistics that have none
 - [Hyperbound vs Second Nature vs 100 Dials: price, fit, grounding](https://100dials.com/blog/hyperbound-vs-second-nature-vs-100-dials): what each is built for, how each is priced, and who should pick which, checked October 2026
 - [AI sales roleplay software pricing: who publishes a price](https://100dials.com/blog/ai-sales-roleplay-software-pricing): seven vendors in one table, what the quote-only tiers are called, and how to compare a seat price with a quote
