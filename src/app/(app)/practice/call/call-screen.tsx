@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ConversationProvider, useConversation } from "@elevenlabs/react";
@@ -10,6 +11,7 @@ import type { LevelSpec } from "@/lib/domain/levels";
 import type { Difficulty } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Rays } from "@/components/shell/brand-panel";
+import { Logo } from "@/components/logo";
 import { track } from "@/components/analytics/provider";
 import { startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
 import type { Ambience } from "@/lib/domain/moods";
@@ -106,7 +108,6 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
     micRef.current?.getTracks().forEach((t) => t.stop());
     micRef.current = null;
   };
-  const transcriptRef = useRef<HTMLDivElement>(null);
 
   const endOnServer = useCallback(async () => {
     if (endedRef.current || !sessionIdRef.current) return;
@@ -200,11 +201,6 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
 
-  // Keep transcript scrolled
-  useEffect(() => {
-    transcriptRef.current?.scrollTo({ top: transcriptRef.current.scrollHeight, behavior: "smooth" });
-  }, [turns]);
-
   // Hang up if the tab closes mid-call
   useEffect(() => {
     const onHide = () => {
@@ -282,14 +278,110 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
     conversation.endSession();
   }
 
+  // The call takes the whole window; the page behind it does not scroll.
+  useEffect(() => {
+    if (stage !== "dialing" && stage !== "live" && stage !== "ending") return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [stage]);
+
   const prospectSpeaking = stage === "live" && conversation.isSpeaking;
   const audioOk = useWebAudioSupported();
+  // Captions help on the warm-up and inbound levels; on the hard ones the rep works from the voice alone.
+  const captions = target.kind !== "boss" && (difficulty === "warm" || difficulty === "inbound");
+  const inCall = stage === "dialing" || stage === "live" || stage === "ending";
+  const firstName = target.name.split(" ")[0];
+  const lastTurn = turns[turns.length - 1];
+  const levelLabel = target.kind === "boss" ? "Boss fight" : `L${level.level} ${level.name}`;
+
+  if (inCall) {
+    // Rendered on <body>: the page transition wrapper would otherwise hold a fixed layer inside the content column.
+    return createPortal(
+      // translate="no": browser page translation rewrites the DOM under React, and this screen updates every second.
+      <div translate="no" role="dialog" aria-modal="true" aria-label={`Call with ${target.name}`} className="brand-panel inset-0 z-[60] flex flex-col overflow-y-auto" style={{ position: "fixed" }}>
+        <Rays className="-right-[2%] -left-[2%]" height={520} />
+        <header className="flex items-center justify-between gap-4 px-5 py-5 md:px-10">
+          <Logo inverse />
+          <span className="inline-flex items-center gap-2.5 rounded-full bg-white/10 px-3.5 py-1.5 text-[13px] font-semibold">
+            <span aria-hidden className="live-pulse size-2 rounded-full bg-[#ffb162]" />
+            {stage === "dialing" ? "Ringing" : stage === "ending" ? "Call ended" : "On a call · recording"}
+          </span>
+        </header>
+
+        <main className="flex flex-1 flex-col items-center px-5 pt-6 pb-16 text-center md:pt-10">
+          <div className="relative grid place-items-center">
+            {(stage === "dialing" || prospectSpeaking) && (
+              <>
+                <span className={cn("absolute size-24 rounded-full bg-[#ffb162]/30", stage === "dialing" ? "dial-ring" : "ring-speaking")} />
+                {stage === "dialing" && <span className="dial-ring absolute size-24 rounded-full bg-[#ffb162]/20 [animation-delay:0.8s]" />}
+              </>
+            )}
+            <span aria-hidden className={cn("relative grid size-24 place-items-center rounded-full border-4 border-white/20 bg-[#a35139] bg-[radial-gradient(80%_80%_at_30%_25%,#ffb162_0%,#a35139_75%)] text-2xl font-semibold text-[#1b2632] transition-transform", prospectSpeaking && "scale-105")}>
+              {initials(target.name)}
+            </span>
+          </div>
+          <h1 className="mt-[18px] text-[30px] font-semibold tracking-[-0.02em]">{target.name}</h1>
+          <p className="mt-1.5 text-[15px] text-[#b9c0cb]">{target.title}, {target.company} · {levelLabel}</p>
+          <p className="mt-3.5 text-[40px] leading-none font-medium tracking-[-0.02em] text-[#ffb162] tabular-nums" aria-live="off">
+            {stage === "dialing" ? "0:00" : formatDuration(elapsed)}
+          </p>
+          {stage === "live" && MAX_CALL_SECONDS - elapsed <= 60 && <p className="mt-2 text-[13px] text-[#b9c0cb]">{formatDuration(Math.max(0, MAX_CALL_SECONDS - elapsed))} left</p>}
+
+          <VoiceWave speaking={prospectSpeaking} mic={stage === "live" && !conversation.isMuted ? micLevel : 0} />
+
+          {captions && stage === "live" && (
+            <div className="mt-7 min-h-[96px] max-w-[680px]" aria-live="polite">
+              {lastTurn ? (
+                <>
+                  <p className="text-[22px] leading-snug font-medium md:text-[26px]">“{lastTurn.text}”</p>
+                  <p className="mt-2.5 text-[13px] text-[#b9c0cb]">{lastTurn.role === "rep" ? "You" : lastTurn.speaker === "gatekeeper" ? gatekeeperName ?? "Gatekeeper" : firstName} · live caption</p>
+                </>
+              ) : (
+                <p className="text-[15px] text-[#b9c0cb]">Captions appear here as you both speak.</p>
+              )}
+            </div>
+          )}
+
+          <p className="mt-6 min-h-5 text-sm text-[#b9c0cb]">
+            {stage === "dialing" && "Ringing…"}
+            {stage === "live" && (prospectSpeaking ? `${firstName} is speaking` : "Listening to you")}
+            {stage === "ending" && "Call ended. Your coach is reviewing it…"}
+          </p>
+
+          {stage === "live" && silentMic && !conversation.isMuted && (
+            <p className="mt-3 max-w-sm text-sm text-balance text-[#ffc9b8]" role="status">
+              The prospect can't hear you. Check the mic icon in your browser's address bar for which microphone is in use, and that your headset isn't muted.
+            </p>
+          )}
+
+          <div className="mt-8 flex flex-wrap justify-center gap-3.5">
+            {stage === "live" ? (
+              <>
+                <button type="button" onClick={() => conversation.setMuted(!conversation.isMuted)} aria-label={conversation.isMuted ? "Unmute microphone" : "Mute microphone"} aria-pressed={conversation.isMuted} className="grid size-16 cursor-pointer place-items-center rounded-full bg-white/12 text-[#f4f1ea] outline-none transition-colors hover:bg-white/20 focus-visible:ring-[3px] focus-visible:ring-[#ffb162]/60">
+                  {conversation.isMuted ? <MicOff className="size-6" /> : <Mic className="size-6" />}
+                </button>
+                <button type="button" onClick={hangUp} className="inline-flex h-16 cursor-pointer items-center gap-2.5 rounded-full bg-[#a35139] px-7 text-[17px] font-semibold text-[#fbf6ee] outline-none transition-[filter] hover:brightness-110 focus-visible:ring-[3px] focus-visible:ring-[#ffb162]/60">
+                  <PhoneOff className="size-5" /> End call
+                </button>
+              </>
+            ) : (
+              <span className="inline-flex h-12 items-center rounded-full border border-white/30 px-6 text-sm font-medium text-[#f4f1ea]/80">{stage === "dialing" ? "Connecting…" : "Wrapping up…"}</span>
+            )}
+          </div>
+        </main>
+      </div>,
+      document.body,
+    );
+  }
 
   return (
     // translate="no": browser page translation rewrites the DOM under React, and this screen updates every second.
     <div className="mx-auto max-w-5xl" translate="no">
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        {/* Stage */}
+        {/* Before the call: who picks up, and the dial button */}
         <section className="brand-panel relative flex min-h-[560px] flex-col items-center justify-center rounded-3xl px-8 pt-20 pb-8 text-center">
           <Rays className="-right-[2%] -left-[2%]" height={300} />
           <div className="absolute top-5 left-5 flex flex-wrap items-center gap-2 text-xs font-semibold">
@@ -297,49 +389,15 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
             {target.kind === "practice" && <span className="rounded-full bg-white/10 px-3 py-1">Practice persona</span>}
             {target.kind === "boss" && <span className="rounded-full bg-[#a35139] px-3 py-1">Boss fight</span>}
           </div>
-          {stage === "live" && (
-            <span className="absolute top-5 right-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">
-              <span aria-hidden className="live-pulse size-2 rounded-full bg-[#ffb162]" />
-              On a call · recording
-            </span>
-          )}
 
-          <div className="relative mb-6 grid place-items-center">
-            {(stage === "dialing" || prospectSpeaking) && (
-              <>
-                <span className={cn("absolute size-28 rounded-full bg-[#ffb162]/30", stage === "dialing" ? "dial-ring" : "ring-speaking")} />
-                {stage === "dialing" && <span className="dial-ring absolute size-28 rounded-full bg-[#ffb162]/20 [animation-delay:0.8s]" />}
-              </>
-            )}
-            <div className={cn("relative grid size-28 place-items-center rounded-full border-4 border-white/20 bg-[#a35139] bg-[radial-gradient(80%_80%_at_30%_25%,#ffb162_0%,#a35139_75%)] text-3xl font-semibold text-[#1b2632] transition-transform", prospectSpeaking && "scale-105")}>
-              {initials(target.name)}
-            </div>
-          </div>
-
+          <span aria-hidden className="mb-6 grid size-28 place-items-center rounded-full border-4 border-white/20 bg-[#a35139] bg-[radial-gradient(80%_80%_at_30%_25%,#ffb162_0%,#a35139_75%)] text-3xl font-semibold text-[#1b2632]">
+            {initials(target.name)}
+          </span>
           <h1 className="text-[30px] font-semibold tracking-[-0.02em]">{target.name}</h1>
-          <p className="mt-1.5 text-[15px] text-[#b9c0cb]">
-            {target.title}, {target.company}
-          </p>
-          {(stage === "live" || stage === "ending") && (
-            <div className="mt-4 inline-flex items-center gap-2 text-sm tabular-nums" aria-live="off">
-              {stage === "live" ? (
-                <>
-                  <span className="live-pulse size-2 rounded-full bg-[#ffb162]" />
-                  <span className="font-semibold text-[#ffb162]">LIVE</span>
-                </>
-              ) : (
-                <span className="text-[#b9c0cb]">Ended</span>
-              )}
-              <span className="text-[28px] font-medium tracking-[-0.02em] text-[#ffb162]">{formatDuration(elapsed)}</span>
-              {stage === "live" && MAX_CALL_SECONDS - elapsed <= 60 && <span className="text-[#b9c0cb]">· {formatDuration(Math.max(0, MAX_CALL_SECONDS - elapsed))} left</span>}
-            </div>
-          )}
+          <p className="mt-1.5 text-[15px] text-[#b9c0cb]">{target.title}, {target.company}</p>
 
-          <p className="mt-6 h-5 text-sm text-[#b9c0cb]">
+          <p className="mt-6 min-h-5 text-sm text-[#b9c0cb]">
             {stage === "idle" && (!voiceConfigured ? "Voice service is not configured yet." : !audioOk ? "This browser cannot play the call." : "Ready when you are.")}
-            {stage === "dialing" && "Ringing…"}
-            {stage === "live" && (prospectSpeaking ? `${target.name.split(" ")[0]} is speaking` : "Listening to you")}
-            {stage === "ending" && "Call ended. Your coach is reviewing it…"}
             {stage === "error" && (
               <span className="text-[#ffc9b8]">
                 {error}
@@ -354,39 +412,14 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
           </p>
 
           <div className="mt-8 flex items-center gap-3">
-            {stage === "idle" || stage === "error" ? (
-              <>
-                <Button size="lg" variant="signal" onClick={dial} disabled={!voiceConfigured || !audioOk}>
-                  <Mic /> {stage === "error" ? "Try again" : "Dial"}
-                </Button>
-                <Button size="lg" variant="ghost" className="text-[#f4f1ea] hover:bg-white/10 hover:text-[#f4f1ea]" asChild>
-                  <Link href="/practice">Back</Link>
-                </Button>
-              </>
-            ) : stage === "live" ? (
-              <>
-                <Button size="icon-lg" variant="ghost" className="size-16 bg-white/12 text-[#f4f1ea] hover:bg-white/20 hover:text-[#f4f1ea]" onClick={() => conversation.setMuted(!conversation.isMuted)} aria-label={conversation.isMuted ? "Unmute" : "Mute"}>
-                  {conversation.isMuted ? <MicOff /> : <Mic />}
-                </Button>
-                <MicMeter level={micLevel} muted={conversation.isMuted} />
-                <Button variant="destructive" className="h-16 gap-2.5 bg-[#a35139] px-7 text-[17px] font-semibold text-[#fbf6ee] hover:bg-[#a35139]/90" onClick={hangUp}>
-                  <PhoneOff className="size-5" /> End call
-                </Button>
-              </>
-            ) : (
-              <Button size="lg" variant="outline" className="border-white/30 bg-transparent text-[#f4f1ea]" disabled>
-                {stage === "dialing" ? "Connecting…" : "Wrapping up…"}
-              </Button>
-            )}
+            <Button size="lg" variant="signal" onClick={dial} disabled={!voiceConfigured || !audioOk}>
+              <Mic /> {stage === "error" ? "Try again" : "Dial"}
+            </Button>
+            <Button size="lg" variant="ghost" className="text-[#f4f1ea] hover:bg-white/10 hover:text-[#f4f1ea]" asChild>
+              <Link href="/practice">Back</Link>
+            </Button>
           </div>
-          {stage === "idle" && !audioOk && <p className="mt-6 text-[#ffc9b8] max-w-sm text-sm text-balance">{NO_WEB_AUDIO_MESSAGE} No call has been used.</p>}
-
-          {stage === "live" && silentMic && !conversation.isMuted && (
-            <p className="mt-6 max-w-sm text-sm text-balance text-[#ffc9b8]" role="status">
-              The prospect can't hear you. Check the mic icon in your browser's address bar for which microphone is in use, and that your headset isn't muted.
-            </p>
-          )}
-
+          {stage === "idle" && !audioOk && <p className="mt-6 max-w-sm text-sm text-balance text-[#ffc9b8]">{NO_WEB_AUDIO_MESSAGE} No call has been used.</p>}
           {stage === "idle" && (
             <p className="mt-8 mb-16 max-w-sm text-[13px] text-balance text-[#b9c0cb]">
               Headset on. The prospect picks up as soon as it connects. They decide how the call ends, so treat it like a real dial.
@@ -394,9 +427,8 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
           )}
         </section>
 
-        {/* Sidebar: research + live transcript */}
         <aside className="flex flex-col gap-4">
-          <div className="bg-card rounded-2xl border p-5">
+          <div className="bg-card rounded-[18px] border p-5">
             <div className="mb-2 text-[15px] font-semibold">Your research</div>
             <p className="text-sm">
               {target.name} is {target.title} at {target.company}
@@ -405,21 +437,11 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
             {target.persona_notes && <p className="text-muted-foreground mt-2 text-sm">{target.persona_notes}</p>}
             <p className="text-muted-foreground mt-3 text-xs">{level.description}</p>
           </div>
-
-          <div className="bg-card flex min-h-[260px] flex-1 flex-col rounded-2xl border">
-            <div className="border-b px-5 py-3.5 text-[15px] font-semibold">Live transcript</div>
-            <div ref={transcriptRef} className="max-h-[420px] flex-1 space-y-3 overflow-y-auto p-5">
-              {turns.length === 0 ? (
-                <p className="text-muted-foreground text-sm">Words appear here as you both speak.</p>
-              ) : (
-                turns.map((t, i) => (
-                  <div key={i} className={cn("text-sm", t.role === "rep" ? "text-foreground" : "text-muted-foreground")} data-speaker={t.speaker}>
-                    <span className="mr-2 text-[11px]">{t.role === "rep" ? "You" : t.speaker === "gatekeeper" ? gatekeeperName ?? "Gatekeeper" : target.name.split(" ")[0]}</span>
-                    {t.text}
-                  </div>
-                ))
-              )}
-            </div>
+          <div className="bg-card rounded-[18px] border p-5 text-sm">
+            <div className="mb-1 text-[15px] font-semibold">Captions</div>
+            <p className="text-muted-foreground">
+              {captions ? "On. What you both say shows on screen as you talk." : "Off on this level. Just you and the voice, like a real call."}
+            </p>
           </div>
         </aside>
       </div>
@@ -427,13 +449,24 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
   );
 }
 
-/** Eight bars that follow the rep's input level, so "is it hearing me" has a visible answer. */
-function MicMeter({ level, muted }: { level: number; muted: boolean }) {
-  const lit = muted ? 0 : Math.min(8, Math.round(Math.sqrt(Math.min(1, level * 4)) * 8));
+/**
+ * The voice on the call: amber bars move while the prospect talks, the grey ones follow the rep's microphone, so
+ * "is it hearing me" has a visible answer. Still under reduced motion.
+ */
+function VoiceWave({ speaking, mic }: { speaking: boolean; mic: number }) {
+  const HEIGHTS = [6, 42, 44, 18, 13, 7, 17, 6, 36, 50, 26, 27, 45, 29, 7, 8, 17, 16, 23, 50, 42, 8, 40, 37, 13, 8, 16, 24, 8, 42, 52, 23, 27, 39];
+  const lit = Math.min(1, Math.sqrt(Math.min(1, mic * 4)));
   return (
-    <div className="flex h-11 items-end gap-0.5" aria-label={muted ? "Microphone muted" : `Microphone level ${Math.round((lit / 8) * 100)}%`} title="Your mic">
-      {Array.from({ length: 8 }, (_, i) => (
-        <span key={i} className={cn("w-1 rounded-sm transition-colors duration-100", i < lit ? "bg-[#ffb162]" : "bg-white/20")} style={{ height: `${8 + i * 3}px` }} />
+    <div aria-hidden className="mt-6 flex h-14 w-[min(560px,90%)] items-center gap-1">
+      {HEIGHTS.map((h, i) => (
+        <span
+          key={i}
+          className={cn("flex-1 rounded-sm bg-[#ffb162] transition-transform duration-300", speaking && "hp-vo")}
+          style={{ height: h, transform: speaking ? undefined : "scaleY(0.18)", animationDuration: `${0.7 + (i % 5) * 0.15}s`, animationDelay: `${-((i * 0.13) % 1).toFixed(2)}s` }}
+        />
+      ))}
+      {[21, 7, 13, 27, 18, 28, 53, 40, 10, 35, 28, 9, 9, 26].map((h, i) => (
+        <span key={`m${i}`} className="flex-1 rounded-sm bg-white/30 transition-transform duration-100" style={{ height: h, transform: `scaleY(${0.15 + lit * 0.85 * (0.6 + ((i * 7) % 5) / 10)})` }} />
       ))}
     </div>
   );
