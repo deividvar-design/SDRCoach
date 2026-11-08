@@ -20,8 +20,12 @@ if (existsSync(".env.local")) {
 
 const token = process.env.SUPABASE_ACCESS_TOKEN;
 const ref = process.env.SUPABASE_PROJECT_REF ?? process.env.NEXT_PUBLIC_SUPABASE_URL?.match(/^https:\/\/([a-z0-9]+)\.supabase\.co/)?.[1];
-if (!token || !ref) {
-  console.error("Set SUPABASE_ACCESS_TOKEN (a personal access token) and run from the repo root so .env.local gives the project.");
+if (!token) {
+  console.error("Missing SUPABASE_ACCESS_TOKEN. Put it on the same line: SUPABASE_ACCESS_TOKEN=sbp_... pnpm supabase:emails");
+  process.exit(1);
+}
+if (!ref) {
+  console.error("Could not tell which project. Add SUPABASE_PROJECT_REF=<project id> to the same line (the id is in the dashboard URL).");
   process.exit(1);
 }
 
