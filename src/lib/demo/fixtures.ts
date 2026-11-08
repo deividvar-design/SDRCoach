@@ -42,7 +42,7 @@ export const ORG: Organization = {
 };
 
 export const PROFILES: Profile[] = [
-  { id: "u-deividas", full_name: "Deividas Varnas", avatar_url: null, email: null, recording_ack_at: daysAgo(40), phone: null, signup_reason: null, signup_goal: null, hero_variant: null, gclid: null, gbraid: null, wbraid: null, plan_intent: null, created_at: daysAgo(40) },
+  { id: "u-sam", full_name: "Sam Carter", avatar_url: null, email: null, recording_ack_at: daysAgo(40), phone: null, signup_reason: null, signup_goal: null, hero_variant: null, gclid: null, gbraid: null, wbraid: null, plan_intent: null, created_at: daysAgo(40) },
   { id: "u-maya", full_name: "Maya Chen", avatar_url: null, email: null, recording_ack_at: daysAgo(30), phone: null, signup_reason: null, signup_goal: null, hero_variant: null, gclid: null, gbraid: null, wbraid: null, plan_intent: null, created_at: daysAgo(30) },
   { id: "u-luka", full_name: "Luka Petrov", avatar_url: null, email: null, recording_ack_at: daysAgo(28), phone: null, signup_reason: null, signup_goal: null, hero_variant: null, gclid: null, gbraid: null, wbraid: null, plan_intent: null, created_at: daysAgo(28) },
   { id: "u-sara", full_name: "Sara Okafor", avatar_url: null, email: null, recording_ack_at: daysAgo(20), phone: null, signup_reason: null, signup_goal: null, hero_variant: null, gclid: null, gbraid: null, wbraid: null, plan_intent: null, created_at: daysAgo(20) },
@@ -51,19 +51,19 @@ export const PROFILES: Profile[] = [
 
 // DEMO_FRESH_USER=1 leaves the demo user without a workspace, so /onboarding renders instead of redirecting.
 export const MEMBERSHIPS: Membership[] = process.env.DEMO_FRESH_USER === "1" ? [] : [
-  { id: "m-1", org_id: ORG.id, user_id: "u-deividas", role: "owner", manager_id: null, created_at: daysAgo(40) },
-  { id: "m-2", org_id: ORG.id, user_id: "u-maya", role: "rep", manager_id: "u-deividas", created_at: daysAgo(30) },
-  { id: "m-3", org_id: ORG.id, user_id: "u-luka", role: "rep", manager_id: "u-deividas", created_at: daysAgo(28) },
+  { id: "m-1", org_id: ORG.id, user_id: "u-sam", role: "owner", manager_id: null, created_at: daysAgo(40) },
+  { id: "m-2", org_id: ORG.id, user_id: "u-maya", role: "rep", manager_id: "u-sam", created_at: daysAgo(30) },
+  { id: "m-3", org_id: ORG.id, user_id: "u-luka", role: "rep", manager_id: "u-sam", created_at: daysAgo(28) },
   { id: "m-4", org_id: ORG.id, user_id: "u-sara", role: "manager", manager_id: null, created_at: daysAgo(20) },
   { id: "m-5", org_id: ORG.id, user_id: "u-tomas", role: "rep", manager_id: "u-sara", created_at: daysAgo(12) },
 ];
 
 export const INVITES: Invite[] = [
-  { id: "i-1", org_id: ORG.id, email: "jonas@brightline.io", role: "rep", token: "demo-token", invited_by: "u-deividas", expires_at: daysAgo(-5), accepted_at: null, created_at: daysAgo(1) },
+  { id: "i-1", org_id: ORG.id, email: "jonas@brightline.io", role: "rep", token: "demo-token", invited_by: "u-sam", expires_at: daysAgo(-5), accepted_at: null, created_at: daysAgo(1) },
 ];
 
 const t = (id: string, kind: Target["kind"], name: string, title: string, company: string, industry: string, size: string, notes: string, pains: string[], objections: string[], d: number): Target => ({
-  id, org_id: ORG.id, created_by: "u-deividas", name, title, company, industry, company_size: size, persona_notes: notes, pain_points: pains, objections, voice_id: null, is_archived: false, kind, created_at: daysAgo(d), updated_at: daysAgo(d),
+  id, org_id: ORG.id, created_by: "u-sam", name, title, company, industry, company_size: size, persona_notes: notes, pain_points: pains, objections, voice_id: null, is_archived: false, kind, created_at: daysAgo(d), updated_at: daysAgo(d),
 });
 
 export const TARGETS: Target[] = [
@@ -83,26 +83,26 @@ interface SessionSpec {
 }
 
 const SPECS: SessionSpec[] = [
-  { id: "s-1", user: "u-deividas", target: "tg-real-1", difficulty: "cold", outcome: "meeting_booked", score: 8.2, day: 0, hour: 9, duration: 412 },
+  { id: "s-1", user: "u-sam", target: "tg-real-1", difficulty: "cold", outcome: "meeting_booked", score: 8.2, day: 0, hour: 9, duration: 412 },
   { id: "s-2", user: "u-maya", target: "ops-vp-logistics", difficulty: "inbound", outcome: "callback", score: 6.8, day: 0, hour: 8, duration: 301 },
   { id: "s-3", user: "u-luka", target: "tg-real-2", difficulty: "cold", outcome: "rejected", score: 4.9, day: 0, hour: 11, duration: 148 },
-  { id: "s-4", user: "u-deividas", target: "cto-fintech", difficulty: "inbound", outcome: "meeting_booked", score: 7.6, day: 1, hour: 15, duration: 388 },
+  { id: "s-4", user: "u-sam", target: "cto-fintech", difficulty: "inbound", outcome: "meeting_booked", score: 7.6, day: 1, hour: 15, duration: 388 },
   { id: "s-5", user: "u-tomas", target: "founder-saas", difficulty: "warm", outcome: "meeting_booked", score: 7.1, day: 1, hour: 10, duration: 260 },
   { id: "s-6", user: "u-maya", target: "tg-real-3", difficulty: "cold", outcome: "info_sent", score: 6.2, day: 1, hour: 9, duration: 233 },
-  { id: "s-7", user: "u-deividas", target: "ops-vp-logistics", difficulty: "cold", outcome: "hung_up", score: 5.4, day: 2, hour: 14, duration: 96 },
+  { id: "s-7", user: "u-sam", target: "ops-vp-logistics", difficulty: "cold", outcome: "hung_up", score: 5.4, day: 2, hour: 14, duration: 96 },
   { id: "s-8", user: "u-luka", target: "hr-director-healthcare", difficulty: "warm", outcome: "meeting_booked", score: 7.4, day: 2, hour: 10, duration: 344 },
   { id: "s-9", user: "u-sara", target: "tg-real-1", difficulty: "inbound", outcome: "meeting_booked", score: 8.6, day: 2, hour: 16, duration: 371 },
-  { id: "s-10", user: "u-deividas", target: "tg-real-2", difficulty: "inbound", outcome: "callback", score: 7.0, day: 3, hour: 9, duration: 290 },
+  { id: "s-10", user: "u-sam", target: "tg-real-2", difficulty: "inbound", outcome: "callback", score: 7.0, day: 3, hour: 9, duration: 290 },
   { id: "s-11", user: "u-tomas", target: "marketing-director-retail", difficulty: "warm", outcome: "info_sent", score: 5.8, day: 3, hour: 13, duration: 402 },
   { id: "s-12", user: "u-maya", target: "founder-saas", difficulty: "warm", outcome: "meeting_booked", score: 7.9, day: 4, hour: 9, duration: 255 },
-  { id: "s-13", user: "u-deividas", target: "procurement-manufacturing", difficulty: "inbound", outcome: "rejected", score: 6.1, day: 4, hour: 11, duration: 210 },
+  { id: "s-13", user: "u-sam", target: "procurement-manufacturing", difficulty: "inbound", outcome: "rejected", score: 6.1, day: 4, hour: 11, duration: 210 },
   { id: "s-14", user: "u-luka", target: "tg-real-2", difficulty: "cold", outcome: "hung_up", score: 4.2, day: 5, hour: 10, duration: 71 },
-  { id: "s-15", user: "u-deividas", target: "cto-fintech", difficulty: "warm", outcome: "meeting_booked", score: 8.0, day: 6, hour: 9, duration: 320 },
+  { id: "s-15", user: "u-sam", target: "cto-fintech", difficulty: "warm", outcome: "meeting_booked", score: 8.0, day: 6, hour: 9, duration: 320 },
   { id: "s-16", user: "u-maya", target: "ops-vp-logistics", difficulty: "inbound", outcome: "callback", score: 6.5, day: 7, hour: 15, duration: 276 },
   { id: "s-17", user: "u-tomas", target: "founder-saas", difficulty: "warm", outcome: "rejected", score: 5.1, day: 8, hour: 10, duration: 190 },
-  { id: "s-18", user: "u-deividas", target: "founder-saas", difficulty: "warm", outcome: "meeting_booked", score: 7.7, day: 9, hour: 9, duration: 298 },
+  { id: "s-18", user: "u-sam", target: "founder-saas", difficulty: "warm", outcome: "meeting_booked", score: 7.7, day: 9, hour: 9, duration: 298 },
   { id: "s-19", user: "u-luka", target: "hr-director-healthcare", difficulty: "warm", outcome: "info_sent", score: 6.0, day: 10, hour: 14, duration: 330 },
-  { id: "s-20", user: "u-deividas", target: "ops-vp-logistics", difficulty: "warm", outcome: "meeting_booked", score: 6.9, day: 12, hour: 9, duration: 265 },
+  { id: "s-20", user: "u-sam", target: "ops-vp-logistics", difficulty: "warm", outcome: "meeting_booked", score: 6.9, day: 12, hour: 9, duration: 265 },
 ];
 
 export const SESSIONS: CallSession[] = SPECS.map((s) => ({
@@ -208,7 +208,7 @@ export const SCORES: CallScore[] = SPECS.map((s) => {
 
 const turns: TranscriptTurn[] = [
   { role: "prospect", text: "Lindqvist.", t_start_ms: 0 },
-  { role: "rep", text: "Rebecca, it's Deividas from Brightline. I know you weren't expecting this call. The reason I'm calling is your fleet grew past four hundred trucks last year and most VPs we talk to at that size are fighting fuel spend they can't see. Fair to take thirty seconds?", t_start_ms: 4000 },
+  { role: "rep", text: "Rebecca, it's Sam from Brightline. I know you weren't expecting this call. The reason I'm calling is your fleet grew past four hundred trucks last year and most VPs we talk to at that size are fighting fuel spend they can't see. Fair to take thirty seconds?", t_start_ms: 4000 },
   { role: "prospect", text: "Thirty seconds. Go.", t_start_ms: 21000 },
   { role: "rep", text: "When you look at fuel cost per mile across the fleet right now, how much of that do you think is idle time?", t_start_ms: 24000 },
   { role: "prospect", text: "Honestly, no idea. That's the problem. Fuel is up fourteen percent and I can't tell the board which depots are the issue.", t_start_ms: 33000 },
@@ -234,12 +234,12 @@ export const TRANSCRIPTS: CallTranscript[] = SESSIONS.map((s) => ({
 
 
 export const KNOWLEDGE: KnowledgeSource[] = [
-  { id: "k-1", org_id: ORG.id, uploaded_by: "u-deividas", name: "gong-export-q3-fleet-calls.csv", kind: "call_transcript", storage_path: "org-1/k-1.csv", raw_text: "…", status: "ready", summary: "142 connected cold calls into logistics VPs and fleet managers from Q3. Teaches how prospects push back on 'we already have Samsara' and which reason-for-call lines earned thirty seconds.", extracted: null, error: null, created_at: daysAgo(6) },
+  { id: "k-1", org_id: ORG.id, uploaded_by: "u-sam", name: "gong-export-q3-fleet-calls.csv", kind: "call_transcript", storage_path: "org-1/k-1.csv", raw_text: "…", status: "ready", summary: "142 connected cold calls into logistics VPs and fleet managers from Q3. Teaches how prospects push back on 'we already have Samsara' and which reason-for-call lines earned thirty seconds.", extracted: null, error: null, created_at: daysAgo(6) },
   { id: "k-2", org_id: ORG.id, uploaded_by: "u-sara", name: "Brightline cold call script v4", kind: "script", storage_path: null, raw_text: "…", status: "ready", summary: "The current opener, three reason-for-call variants by segment, and the fifteen-minute close.", extracted: null, error: null, created_at: daysAgo(4) },
-  { id: "k-3", org_id: ORG.id, uploaded_by: "u-deividas", name: "objections-master-sheet.csv", kind: "objection_sheet", storage_path: "org-1/k-3.csv", raw_text: "…", status: "processing", summary: null, extracted: null, error: null, created_at: daysAgo(0, 8) },
+  { id: "k-3", org_id: ORG.id, uploaded_by: "u-sam", name: "objections-master-sheet.csv", kind: "objection_sheet", storage_path: "org-1/k-3.csv", raw_text: "…", status: "processing", summary: null, extracted: null, error: null, created_at: daysAgo(0, 8) },
 ];
 
-export const DEMO_USER = { id: "u-deividas", email: "deividas@brightline.io", email_confirmed_at: daysAgo(40) };
+export const DEMO_USER = { id: "u-sam", email: "sam@brightline.io", email_confirmed_at: daysAgo(40) };
 
 export const USAGE: UsageEvent[] = SESSIONS.flatMap((s, i) => [
   { id: `ue-v-${i}`, org_id: ORG.id, session_id: s.id, demo_id: null, provider: "elevenlabs" as const, kind: "voice" as const, model: null, input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_write_tokens: 0, seconds: s.duration_seconds ?? 0, cost_usd: Math.round(((s.duration_seconds ?? 0) / 60) * 0.1 * 100000) / 100000, created_at: s.created_at },
