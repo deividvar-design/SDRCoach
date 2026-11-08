@@ -311,3 +311,26 @@ html[data-consent="pending"] [data-consent-banner] {
 html[data-fpbar="off"] [data-fp-bar] {
   display: none;
 }
+
+/* The homepage's own palette: navy stage, peach accent, warm cream, and the light columns behind its dark bands. */
+.homepage {
+  --hp-navy: #1d2532;
+  --hp-deep: #121821;
+  --hp-peach: #f5a65b;
+  --hp-cream: #ece7dd;
+  --hp-card: #f6f3ec;
+  --hp-ink: #1d2532;
+  --hp-rust: #b4532a;
+  font-family: var(--font-hp), var(--font-geist-sans), system-ui, sans-serif;
+}
+.homepage .hp-bar {
+  filter: blur(22px);
+  animation: hp-drift 14s ease-in-out infinite alternate;
+}
+@keyframes hp-drift {
+  from { opacity: 0.55; transform: translateY(4%) scaleY(0.96); }
+  to { opacity: 1; transform: translateY(0) scaleY(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .homepage .hp-bar { animation: none; }
+}
