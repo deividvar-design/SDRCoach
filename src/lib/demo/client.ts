@@ -209,6 +209,7 @@ export function createDemoClient() {
     rpc: async () => ({ data: ORG.id, error: null }),
     auth: {
       getUser: async () => ({ data: { user: DEMO_USER }, error: null }),
+      getClaims: async () => ({ data: { claims: { sub: DEMO_USER.id, email: DEMO_USER.email } }, error: null }),
       admin: {
         getUserById: async (id: string) => {
           const p = PROFILES.find((x) => x.id === id);

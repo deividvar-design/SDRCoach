@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { CONSENT_EVENT, effectiveConsent, type Consent } from "./consent";
 import { POSTHOG_UI_HOST } from "@/lib/analytics-region";
+import { afterLoadIdle } from "@/lib/after-load-idle";
 
 type PostHog = typeof import("posthog-js").default;
 
@@ -19,18 +20,27 @@ let identity: { id: string; props: Record<string, unknown> } | null = null;
 function startAnalytics() {
   if (started || !KEY) return;
   started = true;
-  loading ??= import("posthog-js").then(({ default: posthog }) => {
-    posthog.init(KEY, {
-      api_host: "/ingest",
-      ui_host: POSTHOG_UI_HOST,
-      capture_pageview: false,
-      capture_pageleave: true,
-      persistence: "localStorage+cookie",
-      person_profiles: "identified_only",
+  // After load and idle: the library is large and nothing it does is needed for the page to work. Events queue on
+  // `loading` meanwhile, so none are lost.
+  loading ??= afterLoadIdle()
+    .then(() => import("posthog-js"))
+    .then(({ default: posthog }) => {
+      if (!started) {
+        // Consent was withdrawn while it loaded: start from scratch if it is given again.
+        loading = null;
+        return;
+      }
+      posthog.init(KEY, {
+        api_host: "/ingest",
+        ui_host: POSTHOG_UI_HOST,
+        capture_pageview: false,
+        capture_pageleave: true,
+        persistence: "localStorage+cookie",
+        person_profiles: "identified_only",
+      });
+      ph = posthog;
+      if (identity) posthog.identify(identity.id, identity.props);
     });
-    ph = posthog;
-    if (identity) posthog.identify(identity.id, identity.props);
-  });
 }
 
 function stopAnalytics() {
@@ -41,7 +51,8 @@ function stopAnalytics() {
   // Drop analytics cookies so a rejected choice takes effect on this load.
   for (const c of document.cookie.split(";")) {
     const name = c.split("=")[0]?.trim() ?? "";
-    if (name.startsWith("ph_")) document.cookie = `${name}=; Max-Age=0; path=/; domain=${location.hostname}`;
+    if (name.startsWith("ph_"))
+      document.cookie = `${name}=; Max-Age=0; path=/; domain=${location.hostname}`;
   }
 }
 
@@ -84,7 +95,10 @@ export function identify(userId: string, props?: Record<string, unknown>) {
 }
 
 /** Who this browser belongs to. Remembered until analytics starts, so consent given later still ties the session to them. */
-export function setIdentity(userId: string, props: Record<string, unknown> = {}) {
+export function setIdentity(
+  userId: string,
+  props: Record<string, unknown> = {},
+) {
   identity = { id: userId, props };
   if (started) loading?.then(() => ph?.identify(userId, props));
 }

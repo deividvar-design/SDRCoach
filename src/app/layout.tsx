@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { Host_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { Toaster } from "@/components/ui/sonner";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { PauseOffscreenLight } from "@/components/pause-offscreen-light";
 import { ThemeScript } from "@/components/theme/theme-script";
@@ -53,7 +52,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={null}><NavigationProgress /></Suspense>
         <PauseOffscreenLight />
         {children}
-        <Toaster position="bottom-right" />
         <Suspense fallback={null}>
           <AnalyticsProvider />
         </Suspense>

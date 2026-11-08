@@ -11,6 +11,8 @@ import { stripeConfigured } from "@/lib/billing/stripe";
 import { viewerCurrency } from "@/lib/billing/currency-server";
 import { SALES_EMAIL } from "@/lib/billing/plans";
 import { track } from "@vercel/analytics/server";
+import { after } from "next/server";
+import { headers } from "next/headers";
 import { currentOffer } from "@/lib/billing/offers";
 import { foundingOffer } from "@/lib/billing/founding";
 import { dateFormatter } from "@/lib/tz";
@@ -37,7 +39,10 @@ export default async function UpgradePage({ searchParams }: PageProps<"/upgrade"
   const isManager = canManage(viewer.membership.role);
   const subscribed = Boolean(viewer.org.stripe_subscription_id) && viewer.org.plan !== "canceled";
   const [offer, fmtDate] = await Promise.all([subscribed ? null : currentOffer(viewer.org), dateFormatter()]);
-  await track("upgrade_view", { plan: viewer.org.plan, manager: isManager, calls_left: trial.onTrial ? trial.callsLeft : -1 }).catch(() => {});
+  // Sent after the page has gone out: the analytics request should not hold the page up.
+  const requestHeaders = await headers();
+  const props = { plan: viewer.org.plan, manager: isManager, calls_left: trial.onTrial ? trial.callsLeft : -1 };
+  after(() => track("upgrade_view", props, { headers: requestHeaders }).catch(() => {}));
 
   return (
     <div className="space-y-8">

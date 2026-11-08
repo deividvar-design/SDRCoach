@@ -17,8 +17,21 @@ export function PauseOffscreenLight() {
       },
       { rootMargin: "100px" },
     );
-    document.querySelectorAll("[data-light]").forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    const watched = new WeakSet<Element>();
+    const scan = () =>
+      document.querySelectorAll("[data-light]").forEach((el) => {
+        if (watched.has(el)) return;
+        watched.add(el);
+        io.observe(el);
+      });
+    scan();
+    // App pages stream in behind a loading skeleton, so their panels arrive after the URL changes.
+    const mo = new MutationObserver(scan);
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      mo.disconnect();
+      io.disconnect();
+    };
   }, [pathname]);
   return null;
 }

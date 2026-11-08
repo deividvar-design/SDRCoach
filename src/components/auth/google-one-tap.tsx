@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { safeNext } from "@/lib/safe-next";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { recordOneTap } from "@/app/(auth)/actions";
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -58,10 +57,12 @@ let current: { mode: Mode; next: string; router: ReturnType<typeof useRouter> } 
 
 function ensureSetup(mode: Mode) {
   setup ??= (async () => {
+    // The Supabase browser library is loaded here, once the page is idle, instead of with the page.
+    await afterIdle();
+    const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     const { data } = await supabase.auth.getSession();
     if (data.session) return null;
-    await afterIdle();
     const [{ raw, hashed }] = await Promise.all([makeNonce(), loadScript()]);
     const id = (window as GoogleWindow).google?.accounts?.id;
     if (!id) return null;

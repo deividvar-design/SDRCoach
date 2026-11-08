@@ -38,6 +38,9 @@ const nextConfig: NextConfig = {
     ];
   },
   skipTrailingSlashRedirect: true,
+  // Sentry's debug logging and tracing are off (tracesSampleRate 0), but Turbopack keeps their code unless these
+  // flags are defined. Booleans, not strings: a string "false" would be truthy.
+  compiler: { define: { __SENTRY_DEBUG__: false, __SENTRY_TRACING__: false } },
   async redirects() {
     // Feed readers guess these paths; the one feed lives under /blog.
     return [

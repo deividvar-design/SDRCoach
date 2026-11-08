@@ -24,7 +24,11 @@ type Db = ReturnType<typeof createAdminClient>;
 const EPOCH = "1970-01-01T00:00:00Z";
 
 /** Counts for every section, for one admin. Each "fresh" count is relative to that admin's own last visit. */
-export const adminBadges = cache(async (db: Db, adminEmail: string): Promise<Record<AdminSection, Badge>> => {
+/** Keyed on the email alone so the page title and the page body share one set of counts per request. */
+export const adminBadges = (_db: Db, adminEmail: string) => badgesFor(adminEmail);
+
+const badgesFor = cache(async (adminEmail: string): Promise<Record<AdminSection, Badge>> => {
+  const db = createAdminClient();
   const { data: seenRows } = await db.from("admin_seen").select("section, seen_at").eq("admin_email", adminEmail);
   const seen = new Map((seenRows ?? []).map((r) => [r.section, r.seen_at]));
   const since = (s: AdminSection) => seen.get(s) ?? EPOCH;

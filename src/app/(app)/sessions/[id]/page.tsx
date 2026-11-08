@@ -37,21 +37,17 @@ const OUTCOME_LABEL: Record<CallOutcome, { label: string; variant: "success" | "
 
 export default async function SessionPage({ params, searchParams }: PageProps<"/sessions/[id]">) {
   const [{ id }, { fresh }] = await Promise.all([params, searchParams]);
-  const viewer = await requireViewer();
-  const fmtDate = await dateFormatter();
   const supabase = await createClient();
-  const { data: session } = await supabase
-    .from("call_sessions")
-    .select("*, targets(id, name, title, company), profiles(full_name)")
-    .eq("id", id)
-    .maybeSingle();
-  if (!session) notFound();
-
-  const [{ data: score }, { data: transcript }, { data: commentRows }] = await Promise.all([
+  // Everything is keyed by the id in the URL and guarded by RLS, so it all loads at once.
+  const [viewer, fmtDate, { data: session }, { data: score }, { data: transcript }, { data: commentRows }] = await Promise.all([
+    requireViewer(),
+    dateFormatter(),
+    supabase.from("call_sessions").select("*, targets(id, name, title, company), profiles(full_name)").eq("id", id).maybeSingle(),
     supabase.from("call_scores").select("*").eq("session_id", id).maybeSingle(),
-    supabase.from("call_transcripts").select("*").eq("session_id", id).maybeSingle(),
+    supabase.from("call_transcripts").select("turns").eq("session_id", id).maybeSingle(),
     supabase.from("call_comments").select("id, body, created_at, author_id, profiles!call_comments_author_id_fkey(full_name)").eq("session_id", id).order("created_at"),
   ]);
+  if (!session) notFound();
   const comments = (commentRows ?? []).map((c) => ({ id: c.id, body: c.body, created_at: c.created_at, author_id: c.author_id, author: c.profiles?.full_name ?? "Teammate" }));
   const commentDates = Object.fromEntries(comments.map((c) => [c.id, fmtDate(c.created_at)]));
 
@@ -74,7 +70,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
 
   return (
     <div className="space-y-8">
-      <ScorePoller active={collecting || reviewing} sessionId={session.id} doneMessage={reviewing ? "Your review is ready" : null} />
+      <ScorePoller active={collecting || reviewing} sessionId={session.id} state={[session.status, reviewRequested ? "review" : "", transcript ? "transcript" : "", score ? "score" : ""].join(":")} doneMessage={reviewing ? "Your review is ready" : null} />
       {isOwn && score && <OutOfCalls viewer={viewer} lastCall />}
       <PageHeader
         eyebrow={`${fmtDate(session.created_at)}, ${formatDuration(session.duration_seconds)}, L${level.level} ${level.name}${moodById(session.mood) ? `, ${moodById(session.mood)!.label.toLowerCase()}` : ""}${session.gatekeeper ? ", via gatekeeper" : ""}${session.boss ? ", boss fight (not counted in stats)" : ""}${!isOwn && session.profiles?.full_name ? `, ${session.profiles.full_name}` : ""}`}

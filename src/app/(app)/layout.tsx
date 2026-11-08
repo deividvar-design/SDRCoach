@@ -18,6 +18,7 @@ import { currentOffer } from "@/lib/billing/offers";
 import { DialsLeft } from "@/components/billing/dials-left";
 import { dateFormatter } from "@/lib/tz";
 import { createClient } from "@/lib/supabase/server";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata = { robots: { index: false, follow: false } };
 
@@ -69,6 +70,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <SidebarNav isManager={isManager} variant="bar" />
         </div>
       </div>
+      {/* Toasts are only ever raised from app screens, so the public site never loads the library. */}
+      <Toaster position="bottom-right" />
     </div>
   );
 }

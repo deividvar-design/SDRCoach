@@ -2,7 +2,8 @@ import "server-only";
 import type { Organization } from "@/types/database";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PLANS } from "./plans";
-import { countTrialCalls } from "./usage";
+import { cache } from "react";
+import { trialCallCount } from "./usage";
 import { trialStatus } from "./trial";
 
 export interface Allowance {
@@ -56,10 +57,15 @@ function calendarMonth(now = Date.now()) {
 export async function loadAllowance(org: Org, viewer?: { userId: string; isManager: boolean }): Promise<Allowance | null> {
   // Everyone sees the pool the call route enforces; the viewer argument is kept so call sites need not change.
   void viewer;
+  return allowanceFor(org);
+}
+
+// Once per request: the layout and the page both show it. Keyed on the org object, which requireViewer caches.
+const allowanceFor = cache(async (org: Org): Promise<Allowance | null> => {
   const db = createAdminClient();
 
   if (org.plan === "trial") {
-    const t = trialStatus(org, await countTrialCalls(db, org.id));
+    const t = trialStatus(org, await trialCallCount(org.id));
     return { scope: "team", kind: "trial", used: t.callsUsed, included: org.trial_call_limit, bonus: 0, left: t.callsLeft, over: 0, resetsAt: org.trial_ends_at, daysLeft: t.onTrial ? t.daysLeft : 0 };
   }
   // A canceled workspace is gated elsewhere; trial numbers would be nonsense for it.
@@ -87,4 +93,4 @@ export async function loadAllowance(org: Org, viewer?: { userId: string; isManag
     resetsAt: window.end.toISOString(),
     daysLeft: Math.max(0, Math.ceil((window.end.getTime() - Date.now()) / 86_400_000)),
   };
-}
+});

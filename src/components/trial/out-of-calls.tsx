@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Viewer } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { countTrialCalls } from "@/lib/billing/usage";
+import { trialCallCount } from "@/lib/billing/usage";
 import { trialStatus } from "@/lib/billing/trial";
 import { repStats } from "@/lib/trial/stats";
 import { absoluteUrl } from "@/lib/site";
@@ -26,7 +26,7 @@ function extensionState(request: { status: string; created_at: string; decided_a
 export async function OutOfCalls({ viewer, lastCall = false }: { viewer: Viewer; lastCall?: boolean }) {
   if (viewer.org.plan !== "trial") return null;
   const db = createAdminClient();
-  const trial = trialStatus(viewer.org, await countTrialCalls(db, viewer.org.id));
+  const trial = trialStatus(viewer.org, await trialCallCount(viewer.org.id));
   if (!trial.exhausted) return null;
 
   const fmtDate = await dateFormatter();

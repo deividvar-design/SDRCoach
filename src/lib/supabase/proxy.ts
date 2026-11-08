@@ -43,10 +43,10 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Do not add logic between createServerClient and getUser: it can cause random logouts.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Do not add logic between createServerClient and getClaims: it can cause random logouts. getClaims refreshes an
+  // expired session like getUser did, but checks the token locally instead of calling the Auth server each time.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ? data.claims : null;
 
   if (!user && isAppPath(pathname)) {
     const url = request.nextUrl.clone();

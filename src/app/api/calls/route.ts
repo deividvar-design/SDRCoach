@@ -28,23 +28,24 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Bad request" }, { status: 400 });
 
   const supabase = await createClient();
-  const { data: target } = await supabase.from("targets").select("*").eq("id", parsed.data.targetId).eq("org_id", viewer.org.id).maybeSingle();
+  // Repair this rep's own abandoned sessions before the concurrency check so a failed dial never locks them out.
+  // Status repairs are instant; transcript fetches and scoring run after the response. The target loads meanwhile.
+  const [{ data: target }, swept] = await Promise.all([
+    supabase.from("targets").select("*").eq("id", parsed.data.targetId).eq("org_id", viewer.org.id).maybeSingle(),
+    process.env.SDRCOACH_DEMO !== "1" ? sweepStaleSessions(createAdminClient(), { userId: viewer.userId, deferFinalize: true }).catch(() => null) : null,
+  ]);
   if (!target) return NextResponse.json({ error: "Target not found" }, { status: 404 });
 
-  // Repair this rep's own abandoned sessions before the concurrency check so a failed dial never locks them out.
-  // Status repairs are instant; transcript fetches and scoring run after the response.
-  if (process.env.SDRCOACH_DEMO !== "1") {
-    const swept = await sweepStaleSessions(createAdminClient(), { userId: viewer.userId, deferFinalize: true }).catch(() => null);
-    if (swept?.pending.length) {
-      after(async () => {
-        for (const id of swept.pending) await finalizeCall(id).catch((err) => reportError(err, { where: "deferred_finalize", sessionId: id }));
-      });
-    }
+  if (swept?.pending.length) {
+    after(async () => {
+      for (const id of swept.pending) await finalizeCall(id).catch((err) => reportError(err, { where: "deferred_finalize", sessionId: id }));
+    });
   }
 
   // Guardrails: one live call per rep, and a daily cap per org so a runaway client cannot burn the voice budget.
   const staleCutoff = new Date(Date.now() - 20 * 60_000).toISOString();
-  const [{ count: liveCount }, { count: todayCount }] = await Promise.all([
+  // The guardrail counts, the trial state and the paid allowance load together; they are checked in order below.
+  const [{ count: liveCount }, { count: todayCount }, trial, paidAllowance] = await Promise.all([
     supabase
       .from("call_sessions")
       .select("id", { count: "exact", head: true })
@@ -56,10 +57,11 @@ export async function POST(request: Request) {
       .select("id", { count: "exact", head: true })
       .eq("org_id", viewer.org.id)
       .gt("created_at", new Date(Date.now() - 24 * 3_600_000).toISOString()),
+    loadTrialStatus(viewer.org),
+    viewer.org.plan === "trial" ? null : loadAllowance(viewer.org, { userId: viewer.userId, isManager: true }),
   ]);
   if ((liveCount ?? 0) > 0) return NextResponse.json({ error: "You already have a call in progress. Hang up before dialing again." }, { status: 409 });
 
-  const trial = await loadTrialStatus(viewer.org);
   if (trial.exhausted) {
     return NextResponse.json(
       { error: trial.reason === "calls" ? "Your team has used all its trial calls." : trial.reason === "subscription" ? "Your team's subscription has ended." : "Your team's trial has ended.", code: "trial_exhausted" },
@@ -68,7 +70,7 @@ export async function POST(request: Request) {
   }
   // Paid plans: the included calls are a hard stop. No overage; dialing resumes when the month resets or seats are added.
   if (!trial.onTrial) {
-    const allowance = await loadAllowance(viewer.org, { userId: viewer.userId, isManager: true });
+    const allowance = paidAllowance;
     if (allowance && allowance.left <= 0) {
       const fmt = await dateFormatter();
       return NextResponse.json(

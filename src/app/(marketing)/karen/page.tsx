@@ -10,7 +10,7 @@ import { CallKarenSubmit } from "@/components/marketing/call-karen-button";
 import { callKaren } from "./actions";
 import { DEMO_ERRORS } from "@/lib/demo/start";
 import { signInWithGoogle } from "@/app/(auth)/actions";
-import { GoogleMark } from "@/app/(auth)/auth-form";
+import { GoogleMark } from "@/components/auth/google-mark";
 import { getObjectionPage } from "@/lib/objections";
 import { cleanObjection, cleanSourcePath } from "@/lib/demo/source";
 import { RememberKarenSource } from "./remember-source";

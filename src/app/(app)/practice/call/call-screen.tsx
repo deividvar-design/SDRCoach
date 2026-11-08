@@ -59,7 +59,6 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
   const [trialBlocked, setTrialBlocked] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [turns, setTurns] = useState<LiveTurn[]>([]);
-  const [micLevel, setMicLevel] = useState(0);
   const [silentMic, setSilentMic] = useState(false);
   const [gatekeeperName, setGatekeeperName] = useState<string | null>(null);
   // The prospect ended the call (their end_call tool), as opposed to the rep or the line.
@@ -175,13 +174,12 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
     const id = setInterval(() => {
       const v = conversation.isMuted ? 0 : conversation.getInputVolume();
       peak = Math.max(peak, v);
-      setMicLevel(v);
+      // Only a change re-renders the screen; the meter itself updates inside MicMeter.
       if (!conversation.isMuted && Date.now() - start > 8000) setSilentMic(peak < 0.03);
     }, 120);
     return () => {
       clearInterval(id);
       // Reset on the way out of the live stage, not on the way in.
-      setMicLevel(0);
       setSilentMic(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -355,7 +353,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
                 <Button size="icon-lg" variant="ghost" className="size-16 bg-white/12 text-[#f4f1ea] hover:bg-white/20 hover:text-[#f4f1ea]" onClick={() => conversation.setMuted(!conversation.isMuted)} aria-label={conversation.isMuted ? "Unmute" : "Mute"}>
                   {conversation.isMuted ? <MicOff /> : <Mic />}
                 </Button>
-                <MicMeter level={micLevel} muted={conversation.isMuted} />
+                <MicMeter read={() => (conversation.isMuted ? 0 : conversation.getInputVolume())} muted={conversation.isMuted} />
                 <Button variant="destructive" className="h-16 gap-2.5 bg-[#a35139] px-7 text-[17px] font-semibold text-[#fbf6ee] hover:bg-[#a35139]/90" onClick={hangUp}>
                   <PhoneOff className="size-5" /> End call
                 </Button>
@@ -421,8 +419,20 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
   );
 }
 
-/** Eight bars that follow the rep's input level, so "is it hearing me" has a visible answer. */
-function MicMeter({ level, muted }: { level: number; muted: boolean }) {
+/**
+ * Eight bars that follow the rep's input level, so "is it hearing me" has a visible answer. It reads the level
+ * itself, so its eight updates a second re-render these bars and not the whole call screen.
+ */
+function MicMeter({ read, muted }: { read: () => number; muted: boolean }) {
+  const [level, setLevel] = useState(0);
+  const readRef = useRef(read);
+  useEffect(() => {
+    readRef.current = read;
+  });
+  useEffect(() => {
+    const id = setInterval(() => setLevel(readRef.current()), 120);
+    return () => clearInterval(id);
+  }, []);
   const lit = muted ? 0 : Math.min(8, Math.round(Math.sqrt(Math.min(1, level * 4)) * 8));
   return (
     <div className="flex h-11 items-end gap-0.5" aria-label={muted ? "Microphone muted" : `Microphone level ${Math.round((lit / 8) * 100)}%`} title="Your mic">

@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Organization } from "@/types/database";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -15,8 +16,11 @@ export async function countTrialCalls(db: Db, orgId: string) {
   return count ?? 0;
 }
 
+/** The same count, asked once per request: the layout, the page and the out-of-calls screen all want it. */
+export const trialCallCount = cache((orgId: string) => countTrialCalls(createAdminClient(), orgId));
+
 /** Trial status for an org. usage_events is server-only, so this always reads with the service role. */
 export async function loadTrialStatus(org: Pick<Organization, "id" | "plan" | "trial_call_limit" | "trial_ends_at">) {
   if (org.plan !== "trial" && org.plan !== "canceled") return trialStatus(org, 0);
-  return trialStatus(org, await countTrialCalls(createAdminClient(), org.id));
+  return trialStatus(org, await trialCallCount(org.id));
 }

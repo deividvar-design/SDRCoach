@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { CONSENT_EVENT, effectiveConsent, type Consent } from "./consent";
+import { afterLoadIdle } from "@/lib/after-load-idle";
 
 /**
  * Ad pixels and visitor identification, loaded once and only after marketing consent. Each tag is off until its id
@@ -76,7 +77,8 @@ export function MarketingTags() {
     if (!Object.values(IDS).some(Boolean) && !GOOGLE_ADS) return;
     const apply = (c: Consent | null) => {
       if (!c?.marketing) return;
-      loadTags();
+      // The pixels wait for the page to finish loading and go quiet, like the Google tag does.
+      void afterLoadIdle().then(loadTags);
       if (GOOGLE_ADS) grantGoogleConsent();
     };
     apply(effectiveConsent());

@@ -34,25 +34,23 @@ export async function sweepStaleSessions(
 
   const results: SweepResult = { failed: 0, finalized: 0, pending: [] };
 
-  const { data: created } = await scope(db.from("call_sessions").select("id").eq("status", "created").lt("created_at", iso(15 * MIN)));
-  if (created?.length) {
-    await db.from("call_sessions").update({ status: "failed", error: "The call never connected" }).in("id", created.map((r) => r.id));
-    results.failed += created.length;
-  }
-
-  const [{ data: stuckLive }, { data: stuckScoring }] = await Promise.all([
+  // Every lookup at once: each picks rows in a different state, and the repairs below only move those rows on.
+  const [{ data: created }, { data: stuckLive }, { data: stuckScoring }, { data: ended }, { data: unscored }] = await Promise.all([
+    scope(db.from("call_sessions").select("id").eq("status", "created").lt("created_at", iso(15 * MIN))),
     scope(db.from("call_sessions").select("id").eq("status", "live").lt("started_at", iso(20 * MIN))),
     scope(db.from("call_sessions").select("id").eq("status", "scoring").lt("scoring_started_at", iso(10 * MIN))),
-  ]);
-  const moved = [...(stuckLive ?? []), ...(stuckScoring ?? [])].map((r) => r.id);
-  // Stuck live calls get an ended_at now; a stuck scoring claim keeps its original hang-up time.
-  if (stuckLive?.length) await db.from("call_sessions").update({ status: "ended", ended_at: new Date(now).toISOString() }).in("id", stuckLive.map((r) => r.id));
-  if (stuckScoring?.length) await db.from("call_sessions").update({ status: "ended" }).in("id", stuckScoring.map((r) => r.id));
-
-  const [{ data: ended }, { data: unscored }] = await Promise.all([
     scope(db.from("call_sessions").select("id").eq("status", "ended").lt("ended_at", iso(5 * MIN)).lt("finalize_attempts", 5).limit(limit)),
     scope(db.from("call_sessions").select("id").eq("status", "collected").not("review_requested_at", "is", null).lt("review_requested_at", iso(2 * MIN)).lt("finalize_attempts", 5).limit(limit)),
   ]);
+  const moved = [...(stuckLive ?? []), ...(stuckScoring ?? [])].map((r) => r.id);
+  await Promise.all([
+    created?.length ? db.from("call_sessions").update({ status: "failed", error: "The call never connected" }).in("id", created.map((r) => r.id)) : null,
+    // Stuck live calls get an ended_at now; a stuck scoring claim keeps its original hang-up time.
+    stuckLive?.length ? db.from("call_sessions").update({ status: "ended", ended_at: new Date(now).toISOString() }).in("id", stuckLive.map((r) => r.id)) : null,
+    stuckScoring?.length ? db.from("call_sessions").update({ status: "ended" }).in("id", stuckScoring.map((r) => r.id)) : null,
+  ]);
+  results.failed += created?.length ?? 0;
+
   const ids = [...new Set([...moved, ...(ended ?? []).map((r) => r.id), ...(unscored ?? []).map((r) => r.id)])].slice(0, limit);
 
   if (opts.deferFinalize) {

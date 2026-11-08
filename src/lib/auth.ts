@@ -15,10 +15,12 @@ export interface Viewer {
 /** Signed-in user plus their active org, or redirect to the right place. Cached per request. */
 export const requireViewer = cache(async (): Promise<Viewer> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  // getClaims verifies the session token locally against Supabase's published keys (cached), instead of a round trip
+  // to the Auth server on every page. requireAdmin still asks the server, for the confirmed-email check.
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims?.sub) redirect("/login");
+  const user = { id: claims.sub, email: typeof claims.email === "string" ? claims.email : undefined };
 
   const [{ data: profile }, { data: memberships }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),

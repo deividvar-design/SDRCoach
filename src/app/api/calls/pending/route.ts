@@ -15,7 +15,7 @@ export async function GET() {
 
   const { data: rows } = await supabase
     .from("call_sessions")
-    .select("id, status, ended_at, targets(name, company)")
+    .select("id, status, ended_at, targets(name, company), call_scores(overall)")
     .eq("user_id", viewer.userId)
     .not("review_requested_at", "is", null)
     .in("status", ["ended", "scoring", "scored"])
@@ -24,9 +24,6 @@ export async function GET() {
     .limit(10);
 
   const sessions = rows ?? [];
-  const scoredIds = sessions.filter((s) => s.status === "scored").map((s) => s.id);
-  const { data: scores } = scoredIds.length ? await supabase.from("call_scores").select("session_id, overall").in("session_id", scoredIds) : { data: [] };
-  const overallBy = new Map((scores ?? []).map((s) => [s.session_id, s.overall]));
 
   return NextResponse.json({
     pending: sessions.filter((s) => s.status !== "scored").map((s) => s.id),
@@ -34,7 +31,7 @@ export async function GET() {
       .filter((s) => s.status === "scored")
       .map((s) => ({
         id: s.id,
-        overall: overallBy.get(s.id) ?? null,
+        overall: s.call_scores?.overall ?? null,
         prospect: s.targets ? `${s.targets.name}, ${s.targets.company}` : "your call",
       })),
   });
