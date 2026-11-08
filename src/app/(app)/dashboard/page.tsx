@@ -102,7 +102,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   return (
     <div className="space-y-[18px]">
       <StatusToast message={welcome === "1" ? "Your workspace is ready. Make the first call whenever you like." : null} />
-      <BrandPanel className="flex flex-wrap items-end justify-between gap-5 px-6 py-7 md:px-8">
+      <BrandPanel className="flex flex-wrap items-center justify-between gap-5 px-6 py-7 md:px-8">
         <div>
           <p className="text-sm text-[#b9c0cb]">{new Date().toLocaleDateString("en-GB", { weekday: "long", month: "long", day: "numeric", timeZone: tz || "UTC" })}</p>
           <h1 className="mt-1.5 text-[34px] leading-tight font-semibold tracking-[-0.025em]">{streak >= 2 ? `Day ${streak}, ${firstName}.` : `Hey ${firstName}.`}</h1>
