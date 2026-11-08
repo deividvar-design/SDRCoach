@@ -152,3 +152,49 @@ export async function loadFeedback(limit = 30): Promise<(Feedback & { orgName: s
   const { data } = await db.from("feedback").select("*, organizations(name)").order("created_at", { ascending: false }).limit(limit);
   return (data ?? []).map(({ organizations, ...row }) => ({ ...(row as Feedback), orgName: (organizations as { name: string } | null)?.name ?? null }));
 }
+
+export interface WeekNumber {
+  thisWeek: number;
+  lastWeek: number;
+}
+export interface WeeklySummary {
+  karenCalls: WeekNumber;
+  karenEmails: WeekNumber;
+  signups: WeekNumber;
+  unconfirmed: WeekNumber;
+  workspaces: WeekNumber;
+  practiceCalls: WeekNumber;
+  booked: WeekNumber;
+  paying: number;
+}
+
+/** The handful of numbers worth a look every week, each next to the seven days before. */
+export async function loadWeekly(): Promise<WeeklySummary> {
+  const db = createAdminClient();
+  const [a, b, c] = [iso(0), iso(7 * DAY), iso(14 * DAY)];
+  const count = async (q: PromiseLike<{ count: number | null }>) => (await q).count ?? 0;
+  const pair = async (make: (from: string, to: string) => PromiseLike<{ count: number | null }>): Promise<WeekNumber> => {
+    const [thisWeek, lastWeek] = await Promise.all([count(make(b, a)), count(make(c, b))]);
+    return { thisWeek, lastWeek };
+  };
+  const head = { count: "exact" as const, head: true };
+
+  // Sign-ups that never confirmed their address: only the auth admin API knows. One page covers this scale.
+  const unconfirmed = db.auth.admin.listUsers({ page: 1, perPage: 1000 }).then(({ data }) => {
+    const users = data?.users ?? [];
+    const inWindow = (from: string, to: string) => users.filter((u) => u.created_at >= from && u.created_at < to && !u.email_confirmed_at && u.app_metadata?.provider === "email").length;
+    return { thisWeek: inWindow(b, a), lastWeek: inWindow(c, b) };
+  });
+
+  const [karenCalls, karenEmails, signups, unconfirmedPair, workspaces, practiceCalls, booked, paying] = await Promise.all([
+    pair((from, to) => db.from("demo_calls").select("id", head).eq("status", "scored").gte("created_at", from).lt("created_at", to)),
+    pair((from, to) => db.from("demo_calls").select("id", head).eq("status", "scored").not("email", "is", null).gte("created_at", from).lt("created_at", to)),
+    pair((from, to) => db.from("profiles").select("id", head).gte("created_at", from).lt("created_at", to)),
+    unconfirmed,
+    pair((from, to) => db.from("organizations").select("id", head).gte("created_at", from).lt("created_at", to)),
+    pair((from, to) => db.from("call_sessions").select("id", head).eq("status", "scored").gte("created_at", from).lt("created_at", to)),
+    pair((from, to) => db.from("call_sessions").select("id", head).eq("outcome", "meeting_booked").gte("created_at", from).lt("created_at", to)),
+    count(db.from("organizations").select("id", head).in("plan", ["starter", "team", "enterprise"])),
+  ]);
+  return { karenCalls, karenEmails, signups, unconfirmed: unconfirmedPair, workspaces, practiceCalls, booked, paying };
+}

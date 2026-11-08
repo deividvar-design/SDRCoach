@@ -2,18 +2,20 @@ import "server-only";
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-/** The admin sections, in nav order. */
+/** The admin sections, in nav order, grouped by what they are for. */
 export const ADMIN_SECTIONS = [
-  { key: "signups", href: "/admin/signups", label: "Signups" },
-  { key: "leads", href: "/admin/leads", label: "Karen leads" },
-  { key: "usage", href: "/admin/usage", label: "Usage" },
-  { key: "rewards", href: "/admin/rewards", label: "Rewards" },
-  { key: "extensions", href: "/admin/extensions", label: "Extensions" },
-  { key: "access", href: "/admin/access", label: "Access links" },
-  { key: "partners", href: "/admin/partners", label: "Partners" },
-  { key: "affiliates", href: "/admin/affiliates", label: "Affiliates" },
-  { key: "sounds", href: "/admin/sounds", label: "Background sounds" },
+  { key: "signups", href: "/admin/signups", label: "Signups", group: "Coming in" },
+  { key: "leads", href: "/admin/leads", label: "Karen leads", group: "Coming in" },
+  { key: "usage", href: "/admin/usage", label: "Usage", group: "Customers" },
+  { key: "extensions", href: "/admin/extensions", label: "Extensions", group: "Customers" },
+  { key: "access", href: "/admin/access", label: "Access links", group: "Customers" },
+  { key: "rewards", href: "/admin/rewards", label: "Rewards", group: "Programs" },
+  { key: "partners", href: "/admin/partners", label: "Partners", group: "Programs" },
+  { key: "affiliates", href: "/admin/affiliates", label: "Affiliates", group: "Programs" },
+  { key: "sounds", href: "/admin/sounds", label: "Background sounds", group: "Settings" },
 ] as const;
+
+export const ADMIN_GROUPS = ["Coming in", "Customers", "Programs", "Settings"] as const;
 
 export type AdminSection = (typeof ADMIN_SECTIONS)[number]["key"];
 

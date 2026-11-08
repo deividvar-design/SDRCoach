@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 const PATH = "/admin/leads";
 const FILTERS = [
-  { key: "status", label: "Status", options: [{ value: "scored", label: "Scored" }, { value: "pending", label: "In progress" }, { value: "failed", label: "Failed" }, { value: "capped", label: "Capped" }] },
+  { key: "status", label: "Status", options: [{ value: "scored", label: "Scored" }, { value: "pending", label: "In progress" }, { value: "failed", label: "Failed" }, { value: "capped", label: "Capped" }, { value: "never", label: "Never dialled" }, { value: "all", label: "Everything" }] },
   { key: "source", label: "Source", options: [{ value: "ads", label: "Google Ads" }, { value: "direct", label: "Direct" }] },
   { key: "email", label: "Email", options: [{ value: "work", label: "Work" }, { value: "personal", label: "Personal" }, { value: "none", label: "None yet" }] },
   { key: "method", label: "Started via", options: [{ value: "call", label: "Call button" }, { value: "google", label: "Google sign-in" }, { value: "email", label: "Email form" }] },
@@ -43,9 +43,12 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   }
   const f = state.filters;
   if (f.status === "scored") query = query.eq("status", "scored");
-  else if (f.status === "pending") query = query.in("status", PENDING);
+  else if (f.status === "pending") query = query.in("status", PENDING.filter((s) => s !== "created"));
+  else if (f.status === "never") query = query.eq("status", "created");
   else if (f.status === "failed") query = query.eq("status", "failed").neq("error", "daily cap");
   else if (f.status === "capped") query = query.eq("status", "failed").eq("error", "daily cap");
+  // By default, leave out clicks that never dialled and left no email: they are not leads.
+  else if (f.status !== "all") query = query.or("status.neq.created,email.not.is.null");
   if (f.source === "ads") query = query.or("gclid.not.is.null,gbraid.not.is.null,wbraid.not.is.null");
   else if (f.source === "direct") query = query.is("gclid", null).is("gbraid", null).is("wbraid", null);
   if (f.email === "work") query = query.not("email", "is", null).eq("personal_email", false);
@@ -53,10 +56,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   else if (f.email === "none") query = query.is("email", null);
   if (f.method) query = query.eq("method", f.method);
 
-  const [{ data: rows, count }, { count: total }, { count: week }, { data: scoredRows }, { count: failed }, { count: newsletter }] = await Promise.all([
+  const [{ data: rows, count }, { count: weekCalls }, { count: weekEmails }, { data: scoredRows }, { count: failed }, { count: newsletter }] = await Promise.all([
     query.range(state.from, state.to),
-    db.from("demo_calls").select("id", { count: "exact", head: true }),
-    db.from("demo_calls").select("id", { count: "exact", head: true }).gte("created_at", daysAgoIso(7)),
+    db.from("demo_calls").select("id", { count: "exact", head: true }).eq("status", "scored").gte("created_at", daysAgoIso(7)),
+    db.from("demo_calls").select("id", { count: "exact", head: true }).eq("status", "scored").not("email", "is", null).gte("created_at", daysAgoIso(7)),
     db.from("demo_calls").select("overall").eq("status", "scored").limit(5000),
     db.from("demo_calls").select("id", { count: "exact", head: true }).eq("status", "failed"),
     db.from("demo_calls").select("id", { count: "exact", head: true }).eq("newsletter", true),
@@ -69,7 +72,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
     <div className="space-y-8">
       <PageHeader eyebrow="Internal" title="Karen leads" description="Everyone who challenged Karen, with where they came from. Scorecards went to the address shown; callers who left before the email step have none." actions={<Link href="/admin" className="text-sm underline underline-offset-4">Back to admin</Link>} />
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatTile label="Leads" value={total ?? 0} hint={`${week ?? 0} in the last 7 days`} />
+        <StatTile label="Calls, last 7 days" value={weekCalls ?? 0} hint={`${weekEmails ?? 0} left an email${weekCalls ? ` (${Math.round(((weekEmails ?? 0) / weekCalls) * 100)}%)` : ""}`} />
         <StatTile label="Completed calls" value={scored.length} hint={`${failed ?? 0} failed or capped`} />
         <StatTile label="Average score" value={avg === null ? "-" : avg.toFixed(1)} hint={`${newsletter ?? 0} opted into the newsletter`} />
       </div>
@@ -90,7 +93,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
           </TableHeader>
           <TableBody>
             {leads.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-muted-foreground py-8 text-center text-sm">{total ? "Nothing matches these filters." : "Nobody has called Karen yet."}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-muted-foreground py-8 text-center text-sm">{scored.length || f.status ? "Nothing matches these filters." : "Nobody has called Karen yet."}</TableCell></TableRow>
             ) : (
               leads.map((l) => {
                 const method = l.method ?? (l.email && !l.email_added_at ? "email" : "call");

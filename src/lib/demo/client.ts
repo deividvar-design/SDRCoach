@@ -215,6 +215,7 @@ export function createDemoClient() {
           const p = PROFILES.find((x) => x.id === id);
           return { data: { user: p ? { id, email: `${p.full_name?.split(" ")[0]?.toLowerCase() ?? "user"}@brightline.io` } : null }, error: null };
         },
+        listUsers: async () => ({ data: { users: [] }, error: null }),
       },
       signOut: async () => ({ error: null }),
       signInWithPassword: async () => ({ data: {}, error: null }),

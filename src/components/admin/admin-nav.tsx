@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ADMIN_SECTIONS, type AdminSection, type Badge } from "@/lib/admin/badges";
+import { ADMIN_GROUPS, ADMIN_SECTIONS, type AdminSection, type Badge } from "@/lib/admin/badges";
 
 /**
  * The admin section links with their counts. A red count is a decision waiting; a grey one is how much arrived since
@@ -8,18 +8,25 @@ import { ADMIN_SECTIONS, type AdminSection, type Badge } from "@/lib/admin/badge
  */
 export function AdminNav({ badges, current }: { badges: Record<AdminSection, Badge>; current?: AdminSection }) {
   return (
-    <nav aria-label="Admin sections" className="flex flex-wrap gap-1.5">
-      {ADMIN_SECTIONS.map((s) => {
-        const b = badges[s.key];
-        const isCurrent = s.key === current;
-        return (
-          <Link key={s.key} href={s.href} aria-current={isCurrent ? "page" : undefined} className={cn("inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors", isCurrent ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:bg-accent")}>
-            {s.label}
-            {b.action > 0 && <Count tone="action" n={b.action} label={`${b.action} waiting for a decision`} />}
-            {b.fresh > 0 && !isCurrent && <Count tone="fresh" n={b.fresh} label={`${b.fresh} new since your last visit`} />}
-          </Link>
-        );
-      })}
+    <nav aria-label="Admin sections" className="grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+      {ADMIN_GROUPS.map((group) => (
+        <div key={group} className="space-y-2">
+          <h2 className="text-muted-foreground text-[13px] font-medium">{group}</h2>
+          <div className="flex flex-wrap gap-1.5">
+            {ADMIN_SECTIONS.filter((s) => s.group === group).map((s) => {
+              const b = badges[s.key];
+              const isCurrent = s.key === current;
+              return (
+                <Link key={s.key} href={s.href} aria-current={isCurrent ? "page" : undefined} className={cn("inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors", isCurrent ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:bg-accent")}>
+                  {s.label}
+                  {b.action > 0 && <Count tone="action" n={b.action} label={`${b.action} waiting for a decision`} />}
+                  {b.fresh > 0 && !isCurrent && <Count tone="fresh" n={b.fresh} label={`${b.fresh} new since your last visit`} />}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </nav>
   );
 }

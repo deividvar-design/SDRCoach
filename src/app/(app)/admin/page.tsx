@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { loadFeedback, loadOverview } from "@/lib/admin/queries";
+import { loadFeedback, loadOverview, loadWeekly, type WeekNumber } from "@/lib/admin/queries";
 import { formatUsd } from "@/lib/usage/pricing";
 import { formatDate } from "@/lib/utils";
 import { PageHeader } from "@/components/shell/page-header";
@@ -31,7 +31,7 @@ const WORKSPACE_FILTERS = [{ key: "plan", label: "Plan", options: ["trial", "sta
 export default async function AdminPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const admin = await requireAdmin();
   const list = parseList(await searchParams, ["plan"]);
-  const [{ rows: allRows, totals, tokens, daily }, feedback, badges, countries] = await Promise.all([loadOverview(), loadFeedback(), adminBadges(createAdminClient(), admin.email), workspaceCountries()]);
+  const [{ rows: allRows, totals, tokens, daily }, feedback, badges, countries, week] = await Promise.all([loadOverview(), loadFeedback(), adminBadges(createAdminClient(), admin.email), workspaceCountries(), loadWeekly()]);
   const q = list.q.toLowerCase();
   const matching = allRows.filter((r) => (!list.filters.plan || r.org.plan === list.filters.plan) && (!q || [r.org.name, r.org.trial_domain, r.ownerEmail, countryName(countries.get(r.org.id))].some((v) => v?.toLowerCase().includes(q))));
   const { rows, total } = slicePage(matching, list);
@@ -39,7 +39,22 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Internal" title="Admin" description="Every workspace, what it uses and what it costs. Actions here are logged." actions={<AdminNav badges={badges} />} />
+      <PageHeader eyebrow="Internal" title="Admin" description="Every workspace, what it uses and what it costs. Actions here are logged." />
+      <section className="bg-card rounded-2xl border px-6 py-5">
+        <AdminNav badges={badges} />
+      </section>
+
+      <section aria-labelledby="this-week" className="space-y-3">
+        <h2 id="this-week" className="text-[17px] font-semibold">The last 7 days <span className="text-muted-foreground text-sm font-normal">next to the 7 before</span></h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <StatTile label="Karen calls" value={week.karenCalls.thisWeek} hint={versus(week.karenCalls)} />
+          <StatTile label="Karen callers who left an email" value={week.karenEmails.thisWeek} hint={`${share(week.karenEmails.thisWeek, week.karenCalls.thisWeek)}, ${versus(week.karenEmails)}`} />
+          <StatTile label="Sign-ups" value={week.signups.thisWeek} hint={week.unconfirmed.thisWeek ? `${week.unconfirmed.thisWeek} never confirmed their email, ${versus(week.signups)}` : versus(week.signups)} highlight={week.unconfirmed.thisWeek > 0} />
+          <StatTile label="New workspaces" value={week.workspaces.thisWeek} hint={`${week.paying} paying in total, ${versus(week.workspaces)}`} />
+          <StatTile label="Practice calls scored" value={week.practiceCalls.thisWeek} hint={versus(week.practiceCalls)} />
+          <StatTile label="Meetings booked on practice calls" value={week.booked.thisWeek} hint={versus(week.booked)} />
+        </div>
+      </section>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label="Workspaces" value={totals.orgs} hint={`${totals.trials} trial, ${totals.paid} paid, ${totals.canceled} canceled`} />
@@ -127,4 +142,14 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       </section>
     </div>
   );
+}
+
+/** "up 4 on last week" style hint for a weekly number. */
+function versus(n: WeekNumber) {
+  const d = n.thisWeek - n.lastWeek;
+  return d === 0 ? `same as last week (${n.lastWeek})` : `${d > 0 ? "up" : "down"} ${Math.abs(d)} on last week (${n.lastWeek})`;
+}
+
+function share(part: number, whole: number) {
+  return whole ? `${Math.round((part / whole) * 100)}%` : "0%";
 }
