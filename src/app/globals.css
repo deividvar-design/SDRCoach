@@ -33,7 +33,8 @@
   /* Small orange-family text on the off-white: the rust, 6.4:1. */
   --signal-ink: #8f3f2b;
   --success: oklch(0.55 0.13 150);
-  --warning: oklch(0.72 0.15 75);
+  /* Dark amber, the score pills' mid tone: 7:1 on the off-white, where the bright amber is 1.8:1. */
+  --warning: #7a4a12;
   --sidebar: #f4efe6;
   --radius: 0.875rem;
   color-scheme: light;
@@ -101,7 +102,8 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-host), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  /* No mono face: figures use Host Grotesk with tabular numbers, set on body. */
+  --font-mono: var(--font-host), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -176,10 +178,6 @@
   .dark .score-3 { background: color-mix(in oklch, oklch(0.8 0.15 85) 30%, var(--card)); color: oklch(0.88 0.1 85); }
   .dark .score-4 { background: color-mix(in oklch, oklch(0.75 0.15 140) 32%, var(--card)); color: oklch(0.86 0.11 140); }
   .dark .score-5 { background: color-mix(in oklch, oklch(0.62 0.17 150) 45%, var(--card)); color: oklch(0.9 0.12 150); }
-  .paper-grain {
-    background-image: radial-gradient(color-mix(in oklch, var(--foreground) 5%, transparent) 0.5px, transparent 0.5px);
-    background-size: 22px 22px;
-  }
   /* Entrances. One keyframe, three uses: the homepage hero sequence, the app's page change, the heatmap fill. */
   @keyframes rise {
     from { opacity: 0; transform: translateY(8px); }

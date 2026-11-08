@@ -31,17 +31,17 @@ export function TrialGate({ status, isManager, orgName, salesEmail, viewerEmail,
   return (
     <Dialog open>
       <DialogContent
-        className="paper-grain sm:max-w-lg [&>button:last-child]:hidden"
+        className="sm:max-w-lg [&>button:last-child]:hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <p className="text-signal text-xs font-medium tracking-[0.18em] uppercase">Subscription</p>
+          <p className="text-signal-ink text-sm font-medium">Subscription</p>
           <DialogTitle className="font-display text-3xl font-normal">Your subscription has ended.</DialogTitle>
           <DialogDescription className="text-base">Your calls, scores and targets are all still here. Pick a plan to get the team dialing again.</DialogDescription>
         </DialogHeader>
-        {isManager && offerLine && <p className="text-signal text-sm font-medium">{offerLine}</p>}
+        {isManager && offerLine && <p className="text-signal-ink text-sm font-medium">{offerLine}</p>}
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           {isManager && (
             <Button asChild size="lg">

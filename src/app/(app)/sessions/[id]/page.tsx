@@ -124,7 +124,7 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
 
       {unscored && collected && !noSpeech && (
         <>
-          <section className="bg-card paper-grain grid gap-6 rounded-2xl border p-6 md:grid-cols-[minmax(0,260px)_1fr] md:gap-10 md:p-8">
+          <section className="bg-card grid gap-6 rounded-2xl border p-6 md:grid-cols-[minmax(0,260px)_1fr] md:gap-10 md:p-8">
             <div>
               <div className="text-muted-foreground mb-2 text-xs">The prospect decided</div>
               {outcome ? <Badge variant={outcome.variant}>{outcome.label}</Badge> : <span className="text-muted-foreground text-sm">Not recorded</span>}

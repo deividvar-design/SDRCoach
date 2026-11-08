@@ -1,13 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Rays } from "@/components/shell/brand-panel";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import { Mic, MicOff, PhoneOff } from "lucide-react";
 import { cn, formatDuration, initials } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { track } from "@/components/analytics/provider";
 import { reportAdsConversion } from "@/components/analytics/ads-conversion";
 import { stripVoiceTags } from "@/lib/elevenlabs/tags";
@@ -162,28 +162,29 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
     // transcript then update under it. React's removeChild hits a node that moved and the screen dies mid-call.
     <div className="mx-auto w-full max-w-5xl px-6 py-10" translate="no">
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <section className="bg-card paper-grain relative flex min-h-[520px] flex-col items-center justify-center overflow-hidden rounded-2xl border p-8 text-center">
-          <div className="absolute top-5 left-5 flex items-center gap-2">
-            <Badge variant="destructive">Boss fight</Badge>
-            <Badge variant="outline">Demo</Badge>
+        <section className="brand-panel relative flex min-h-[560px] flex-col items-center justify-center rounded-3xl px-8 pt-20 pb-8 text-center">
+          <Rays className="-right-[2%] -left-[2%]" height={300} />
+          <div className="absolute top-5 left-5 flex items-center gap-2 text-xs font-semibold">
+            <span className="rounded-full bg-[#a35139] px-3 py-1">Boss fight</span>
+            <span className="rounded-full bg-white/10 px-3 py-1">Demo</span>
           </div>
           <div className="relative mb-6 grid place-items-center">
-            {(stage === "dialing" || speaking) && <span className={cn("bg-signal/30 absolute size-32 rounded-full", stage === "dialing" ? "dial-ring" : "ring-speaking")} />}
-            <div className={cn("bg-primary text-paper relative grid size-32 place-items-center rounded-full text-3xl font-medium transition-transform", speaking && "scale-105")}>{initials(prospect.name)}</div>
+            {(stage === "dialing" || speaking) && <span className={cn("absolute size-28 rounded-full bg-[#ffb162]/30", stage === "dialing" ? "dial-ring" : "ring-speaking")} />}
+            <div className={cn("relative grid size-28 place-items-center text-5xl font-semibold tracking-[-0.02em] text-[#f4f1ea] transition-transform", speaking && "scale-105")}>{initials(prospect.name)}</div>
           </div>
-          <h1 className="font-display text-4xl">{prospect.name}</h1>
+          <h1 className="text-[30px] font-semibold tracking-[-0.02em]">{prospect.name}</h1>
           <p className="text-muted-foreground mt-1">{prospect.title}, {prospect.company}</p>
           {(stage === "live" || stage === "ending") && (
-            <div className="bg-paper/80 mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-sm tabular">
+            <div className="mt-4 inline-flex items-center gap-2 text-sm tabular-nums">
               {stage === "live" ? (
                 <>
-                  <span className="bg-signal size-2 rounded-full live-pulse" />
-                  <span className="text-signal font-medium">LIVE</span>
+                  <span className="live-pulse size-2 rounded-full bg-[#ffb162]" />
+                  <span className="font-semibold text-[#ffb162]">LIVE</span>
                 </>
               ) : (
                 <span className="text-muted-foreground">Ended</span>
               )}
-              <span>{formatDuration(elapsed)}</span>
+              <span className="text-[28px] font-medium tracking-[-0.02em] text-[#ffb162]">{formatDuration(elapsed)}</span>
               {stage === "live" && <span className={cn("text-muted-foreground", remaining <= 30 && "text-destructive")}>· {formatDuration(remaining)} left</span>}
             </div>
           )}
@@ -201,8 +202,8 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
               <Button size="lg" variant="outline" asChild><Link href="/karen">Back</Link></Button>
             ) : stage === "live" ? (
               <>
-                <Button size="icon-lg" variant="outline" onClick={() => conversation.setMuted(!conversation.isMuted)} aria-label={conversation.isMuted ? "Unmute" : "Mute"}>{conversation.isMuted ? <MicOff /> : <Mic />}</Button>
-                <Button size="icon-lg" variant="destructive" onClick={hangUp} aria-label="Hang up"><PhoneOff /></Button>
+                <Button size="icon-lg" variant="ghost" className="size-16 bg-white/12 text-[#f4f1ea] hover:bg-white/20 hover:text-[#f4f1ea]" onClick={() => conversation.setMuted(!conversation.isMuted)} aria-label={conversation.isMuted ? "Unmute" : "Mute"}>{conversation.isMuted ? <MicOff /> : <Mic />}</Button>
+                <Button variant="destructive" className="h-16 gap-2.5 bg-[#a35139] px-7 text-[17px] font-semibold text-[#fbf6ee] hover:bg-[#a35139]/90" onClick={hangUp}><PhoneOff className="size-5" /> End call</Button>
               </>
             ) : (
               <Button size="lg" variant="outline" disabled>{stage === "dialing" ? "Connecting…" : "Wrapping up…"}</Button>

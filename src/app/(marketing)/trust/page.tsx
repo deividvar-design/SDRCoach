@@ -47,7 +47,7 @@ export default function TrustPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {PILLARS.map((p) => (
             <div key={p.title} className="bg-card rounded-2xl border p-6">
-              <p.icon className="text-signal size-5" />
+              <p.icon className="text-signal-ink size-5" />
               <h2 className="mt-4 font-medium">{p.title}</h2>
               <p className="text-muted-foreground mt-2 text-sm">{p.body}</p>
             </div>

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
-import { Geist_Mono, Host_Grotesk } from "next/font/google";
+import { Host_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeScript } from "@/components/theme/theme-script";
@@ -12,7 +12,6 @@ import { ConsentScript } from "@/components/analytics/consent-script";
 import { INDEXABLE, SITE } from "@/lib/site";
 import "./globals.css";
 
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 // The one family, site and app: 400 for text, 600 for headlines.
 const host = Host_Grotesk({ variable: "--font-host", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
@@ -36,7 +35,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${geistMono.variable} ${host.variable} h-full antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${host.variable} h-full antialiased`}>
       <head>
         <ThemeScript />
         <ConsentScript />

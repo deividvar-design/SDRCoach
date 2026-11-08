@@ -126,7 +126,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       </div>
 
       <div className="grid items-start gap-[18px] lg:grid-cols-[1.5fr_1fr]">
-        <div className="space-y-[18px]">
+        <div className="min-w-0 space-y-[18px]">
           <section className="bg-card overflow-hidden rounded-[18px] border">
             <div className="flex items-center justify-between px-6 py-[18px]">
               <h2 className="text-[17px] font-semibold">Recent calls</h2>
@@ -189,7 +189,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
           </section>
         </div>
 
-        <div className="space-y-[18px]">
+        <div className="min-w-0 space-y-[18px]">
           <section className="bg-card overflow-hidden rounded-[18px] border">
             <div className="flex items-center justify-between px-6 py-[18px]">
               <h2 className="text-[17px] font-semibold">Your levels</h2>

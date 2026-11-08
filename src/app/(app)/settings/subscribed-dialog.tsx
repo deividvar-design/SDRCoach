@@ -39,7 +39,7 @@ export function SubscribedDialog({ plan }: Props) {
       {open && !pending && <Confetti />}
       <DialogContent className="sm:max-w-xl text-center">
         <DialogHeader className="items-center text-center">
-          <p className="text-signal text-xs font-medium tracking-[0.18em] uppercase">{pending ? "Almost there" : "Welcome aboard"}</p>
+          <p className="text-signal-ink text-sm font-medium">{pending ? "Almost there" : "Welcome aboard"}</p>
           <DialogTitle className="font-display text-4xl leading-tight font-normal sm:text-5xl">
             {pending ? "Setting up your plan." : `You're on ${plan.name}.`}
           </DialogTitle>

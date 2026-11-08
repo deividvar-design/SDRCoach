@@ -24,12 +24,12 @@ export function RecordingNotice({ teamSees }: { teamSees: boolean }) {
   return (
     <Dialog open={open}>
       <DialogContent
-        className="paper-grain sm:max-w-xl [&>button:last-child]:hidden"
+        className="sm:max-w-xl [&>button:last-child]:hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <div className="bg-signal/10 text-signal grid size-10 place-items-center rounded-full">
+        <div className="bg-signal/20 text-signal-ink grid size-10 place-items-center rounded-full">
           <Mic className="size-5" />
         </div>
         <DialogHeader>

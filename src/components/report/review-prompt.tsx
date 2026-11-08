@@ -29,7 +29,7 @@ export function ReviewPrompt({ sessionId, skipped, collecting, variant = "ask" }
   }
 
   return (
-    <section className="bg-card paper-grain flex flex-col gap-5 rounded-2xl border p-6 md:flex-row md:items-center md:justify-between md:p-8">
+    <section className="bg-card flex flex-col gap-5 rounded-2xl border p-6 md:flex-row md:items-center md:justify-between md:p-8">
       <div>
         <div className="font-display text-2xl">Want the coach's review?</div>
         <p className="text-muted-foreground mt-1 max-w-prose text-sm">

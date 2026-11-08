@@ -1,4 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
+import { Rays } from "@/components/shell/brand-panel";
 import { Glow } from "@/components/marketing/glow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,8 @@ export default function SampleReportPage() {
       </Glow>
 
       <Section className="space-y-6 pt-0 md:pt-0">
-        <section className="bg-card paper-grain grid gap-6 rounded-2xl border p-6 md:grid-cols-[minmax(0,260px)_1fr] md:gap-10 md:p-8">
+        <section className="brand-panel grid gap-6 rounded-3xl p-6 md:grid-cols-[minmax(0,260px)_1fr] md:gap-10 md:p-8">
+          <Rays className="left-[35%]" height={190} />
           <div className="flex flex-col justify-between gap-6">
             <div>
               <div className="text-muted-foreground mb-3 text-xs">Overall</div>
@@ -55,9 +57,9 @@ export default function SampleReportPage() {
               <p className="text-muted-foreground mt-2 text-sm italic">“{r.outcomeReason}”</p>
             </div>
           </div>
-          <div className="md:border-l md:pl-10">
-            <div className="text-muted-foreground mb-2 text-xs">Coach</div>
-            <p className="font-display max-w-prose text-lg leading-relaxed text-pretty md:text-xl">{r.coachSummary}</p>
+          <div className="md:border-l md:border-white/15 md:pl-10">
+            <div className="text-muted-foreground mb-2 text-[13px]">Coach</div>
+            <p className="max-w-prose text-lg leading-relaxed font-medium text-pretty md:text-xl">{r.coachSummary}</p>
           </div>
         </section>
 
