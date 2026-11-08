@@ -34,7 +34,7 @@ export async function KarenHero() {
         <div className="enter space-y-5 lg:col-start-1 lg:row-start-1 lg:self-end" style={{ "--enter-delay": "0ms" } as React.CSSProperties}>
           <p className="text-muted-foreground text-sm font-medium">AI cold call practice for SDR teams</p>
           <h1 className="font-display text-[2.75rem] leading-[1] text-balance md:text-[4.25rem] xl:text-[4.75rem]">Practice cold calls on AI, not on your real leads.</h1>
-          <p className="font-display max-w-[34ch] text-xl leading-snug text-[#3b3430] md:text-[1.7rem]">Every real lead costs time and money to reach. New reps waste dozens of them while they learn. With 100 Dials, they practice on AI prospects that talk back first.</p>
+          <p className="font-display max-w-[34ch] text-xl leading-snug text-foreground/85 md:text-[1.7rem]">Every real lead costs time and money to reach. New reps waste dozens of them while they learn. With 100 Dials, they practice on AI prospects that talk back first.</p>
         </div>
 
         <section aria-label="Free call with Karen" className="enter stage text-paper flex flex-col gap-5 rounded-3xl p-5 shadow-[0_30px_60px_-30px_rgba(26,21,18,0.45)] md:p-7 lg:col-start-2 lg:row-span-2 lg:row-start-1" style={{ "--enter-delay": "120ms" } as React.CSSProperties}>

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
-import { Geist, Geist_Mono, Host_Grotesk, Instrument_Serif } from "next/font/google";
+import { Geist_Mono, Host_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeScript } from "@/components/theme/theme-script";
@@ -12,11 +12,9 @@ import { ConsentScript } from "@/components/analytics/consent-script";
 import { INDEXABLE, SITE } from "@/lib/site";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-// The app and admin type. Not preloaded: the public pages never use it.
-const host = Host_Grotesk({ variable: "--font-host", subsets: ["latin"], weight: ["400", "500", "600", "700"], preload: false });
-const display = Instrument_Serif({ variable: "--font-display", subsets: ["latin"], weight: "400", style: ["normal", "italic"] });
+// The one family, site and app: 400 for text, 600 for headlines.
+const host = Host_Grotesk({ variable: "--font-host", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -31,14 +29,14 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f5f0" },
+    { media: "(prefers-color-scheme: light)", color: "#eee9df" },
     { media: "(prefers-color-scheme: dark)", color: "#1c1b19" },
   ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} ${display.variable} ${host.variable} h-full antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${geistMono.variable} ${host.variable} h-full antialiased`}>
       <head>
         <ThemeScript />
         <ConsentScript />

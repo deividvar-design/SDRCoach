@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Onest } from "next/font/google";
 import { Check, Phone, Plus } from "lucide-react";
 import { CtaLink } from "@/components/analytics/cta-link";
 import { CookieSettingsLink } from "@/components/analytics/cookie-banner";
@@ -42,7 +41,6 @@ const FOOTER_COLS = [
   { title: "Legal", links: [["/company", "Company"], ["/privacy", "Privacy"], ["/terms", "Terms"], ["/cookies", "Cookies"]] },
 ] as const;
 
-const onest = Onest({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-hp" });
 
 const FEATURED = ["not-interested", "send-me-an-email", "no-budget", "we-already-have-a-solution", "call-me-back-later", "not-the-decision-maker"];
 const FIRST_LINE: Record<string, string> = { warm: "Hi, this is Dana.", inbound: "Dana speaking.", cold: "Yeah?" };
@@ -118,7 +116,7 @@ export default async function HomePage() {
   ];
 
   return (
-    <div className={cn(onest.variable, "homepage bg-[var(--hp-cream)] text-[var(--hp-ink)] antialiased")}>
+    <div className="homepage bg-[var(--hp-cream)] text-[var(--hp-ink)] antialiased">
       <JsonLd data={[organizationLd(), softwareLd()]} />
       {/* "Continue as …" for signed-out visitors: starts the Karen call, like the main button. */}
       <GoogleOneTap mode="karen" next="/karen/start" />

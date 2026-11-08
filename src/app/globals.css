@@ -4,39 +4,38 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  100 Dials design system: "ink & paper".
-  Warm paper surfaces in the light theme, warm graphite in the dark theme, ink-coloured primary
-  actions in both, and exactly one hot colour (signal orange) reserved for live/recording/dial states and the
-  primary call to action.
-  Serif display type carries the character; numerals are always tabular mono.
+  100 Dials design system: warm off-white, ink navy, and one amber for the call action.
+  Navy panels with light rays carry the brand on a few moments (hero, dialing, the live call, the overall score).
+  One family, Host Grotesk, for everything; numbers are tabular.
 */
 :root {
-  --background: oklch(0.975 0.006 85);
-  --foreground: oklch(0.2 0.01 60);
-  --card: oklch(0.995 0.003 85);
-  --card-foreground: oklch(0.2 0.01 60);
-  --popover: oklch(0.995 0.003 85);
-  --popover-foreground: oklch(0.2 0.01 60);
-  --primary: oklch(0.2 0.01 60);
-  --primary-foreground: oklch(0.975 0.006 85);
-  --secondary: oklch(0.94 0.008 85);
-  --secondary-foreground: oklch(0.25 0.01 60);
-  --muted: oklch(0.94 0.008 85);
-  --muted-foreground: oklch(0.5 0.012 60);
-  --accent: oklch(0.92 0.01 85);
-  --accent-foreground: oklch(0.2 0.01 60);
-  --destructive: oklch(0.58 0.2 27);
-  --border: oklch(0.88 0.01 80);
-  --input: oklch(0.86 0.01 80);
-  --ring: oklch(0.2 0.01 60);
-  --signal: #ff4a1c;
-  --signal-foreground: #ffffff;
-  /* Orange for small text on paper or the grey rung: 5:1 and 4.6:1, where the signal itself is 3.1:1. */
-  --signal-ink: #bd3510;
-  --success: oklch(0.6 0.15 150);
+  --background: #eee9df;
+  --foreground: #1b2632;
+  --card: #fbfaf7;
+  --card-foreground: #1b2632;
+  --popover: #fbfaf7;
+  --popover-foreground: #1b2632;
+  --primary: #1b2632;
+  --primary-foreground: #f4f1ea;
+  --secondary: #f4efe6;
+  --secondary-foreground: #1b2632;
+  --muted: #f4efe6;
+  --muted-foreground: #6f675a;
+  --accent: #e9e3d7;
+  --accent-foreground: #1b2632;
+  --destructive: #a35139;
+  --border: #e2dccf;
+  --input: #d9d2c4;
+  --ring: #ffb162;
+  /* Amber: the call action and "current". Dark text on it, 9.6:1. Never decoration. */
+  --signal: #ffb162;
+  --signal-foreground: #1b2632;
+  /* Small orange-family text on the off-white: the rust, 6.4:1. */
+  --signal-ink: #8f3f2b;
+  --success: oklch(0.55 0.13 150);
   --warning: oklch(0.72 0.15 75);
-  --sidebar: oklch(0.955 0.008 85);
-  --radius: 0.75rem;
+  --sidebar: #f4efe6;
+  --radius: 0.875rem;
   color-scheme: light;
 }
 
@@ -87,9 +86,9 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  /* Fixed, theme-independent: the ink panels on the marketing site always carry paper-coloured text. */
-  --color-paper: #f7f5f0;
-  --color-ink: #1c1b19;
+  /* Fixed, theme-independent: the navy panels always carry paper-coloured text. */
+  --color-paper: #f4f1ea;
+  --color-ink: #1b2632;
   --color-signal: var(--signal);
   --color-signal-ink: var(--signal-ink);
   --color-signal-foreground: var(--signal-foreground);
@@ -101,9 +100,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-host), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
 }
 
 @layer base {
@@ -115,7 +113,7 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    font-feature-settings: "cv11", "ss01", "tnum";
+    font-feature-settings: "tnum";
     -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3 {
@@ -127,13 +125,11 @@
 }
 
 @layer utilities {
+  /* Headlines: the same family, heavier and tighter. */
   .font-display {
-    font-family: var(--font-display);
-    font-weight: 400;
-    letter-spacing: -0.01em;
-    /* Geist's cv11/ss01 features must not reach the serif. Keep this face at 24px or larger: below that,
-       hinting in some renderers opens gaps after "a" and "d". */
-    font-feature-settings: normal;
+    font-family: var(--font-host), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
   }
   .tabular {
     font-variant-numeric: tabular-nums;
@@ -224,15 +220,13 @@
   }
   /* Dial counter: the one graphic device, used sparingly. */
   .dial {
-    font-family: var(--font-mono);
+    font-family: var(--font-host), ui-sans-serif, system-ui, sans-serif;
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.01em;
   }
-  /* Ink panels on the marketing site: the call stage and the boss-fight band. */
+  /* Navy panels on the public site: the call stage and the boss-fight band. */
   .stage {
-    background: #1c1b19;
-    background-image: radial-gradient(oklch(1 0 0 / 5%) 0.5px, transparent 0.5px);
-    background-size: 22px 22px;
+    background: linear-gradient(140deg, #0f161e 0%, #1b2632 55%, #2c3b4d 100%);
   }
   /* Waveform bars: each one bobs on its own phase. Paused (and flat) when nobody is talking. */
   .wave-bar {
@@ -284,14 +278,14 @@
   line-height: 1.7;
 }
 .prose > * + * { margin-top: 1.1em; }
-.prose h2 { font-family: var(--font-display); font-feature-settings: normal; font-size: 1.9rem; line-height: 1.15; margin-top: 2.4em; }
+.prose h2 { font-weight: 600; letter-spacing: -0.02em; font-size: 1.9rem; line-height: 1.15; margin-top: 2.4em; }
 .prose h3 { font-size: 1.15rem; font-weight: 500; margin-top: 1.8em; }
 .prose p, .prose li { color: color-mix(in oklch, var(--foreground) 88%, transparent); }
 .prose ul { list-style: disc; padding-left: 1.4em; }
 .prose ol { list-style: decimal; padding-left: 1.4em; }
 .prose li + li { margin-top: 0.4em; }
 .prose a { text-decoration: underline; text-underline-offset: 4px; }
-.prose blockquote { border-left: 3px solid var(--signal); padding-left: 1em; font-family: var(--font-display); font-feature-settings: normal; font-size: 1.5rem; line-height: 1.35; }
+.prose blockquote { border-left: 3px solid var(--signal); padding-left: 1em; font-weight: 500; font-size: 1.5rem; line-height: 1.35; }
 .prose code { font-family: var(--font-mono); font-size: 0.9em; background: var(--muted); padding: 0.1em 0.35em; border-radius: 4px; }
 .prose pre { background: var(--muted); padding: 1em; border-radius: var(--radius); overflow-x: auto; }
 .prose pre code { background: none; padding: 0; }
@@ -314,14 +308,13 @@ html[data-fpbar="off"] [data-fp-bar] {
 
 /* The homepage's own palette: navy stage, peach accent, warm cream, and the light columns behind its dark bands. */
 .homepage {
-  --hp-navy: #1d2532;
-  --hp-deep: #121821;
-  --hp-peach: #f5a65b;
-  --hp-cream: #ece7dd;
-  --hp-card: #f6f3ec;
-  --hp-ink: #1d2532;
-  --hp-rust: #b4532a;
-  font-family: var(--font-hp), var(--font-geist-sans), system-ui, sans-serif;
+  --hp-navy: #1b2632;
+  --hp-deep: #0f161e;
+  --hp-peach: #ffb162;
+  --hp-cream: #eee9df;
+  --hp-card: #fbfaf7;
+  --hp-ink: #1b2632;
+  --hp-rust: #8f3f2b;
 }
 .homepage .hp-bar {
   filter: blur(22px);
@@ -346,59 +339,17 @@ html[data-fpbar="off"] [data-fp-bar] {
   .homepage .hp-bar, .homepage .hp-vo { animation: none; }
 }
 
-/*
-  The app and admin: warm off-white, ink text, Host Grotesk, pill buttons, and amber for the call action only.
-  Scoped with :has(.app-shell) on <html>, so dialogs and menus portalled to <body> follow it too, and the public
-  site keeps its own look. The dark theme keeps its tokens; only the type and shapes carry over.
-*/
-html:not(.dark):has(.app-shell) {
-  --background: #eee9df;
-  --foreground: #1b2632;
-  --card: #fbfaf7;
-  --card-foreground: #1b2632;
-  --popover: #fbfaf7;
-  --popover-foreground: #1b2632;
-  --primary: #1b2632;
-  --primary-foreground: #f4f1ea;
-  --secondary: #f4efe6;
-  --secondary-foreground: #1b2632;
-  --muted: #f4efe6;
-  --muted-foreground: #6f675a;
-  --accent: #e9e3d7;
-  --accent-foreground: #1b2632;
-  --border: #e2dccf;
-  --input: #d9d2c4;
-  --ring: #ffb162;
-  --signal: #ffb162;
-  --signal-foreground: #1b2632;
-  /* Small orange-family text on the off-white: the rust, 6.4:1. */
-  --signal-ink: #8f3f2b;
-  --sidebar: #f4efe6;
-  --destructive: #a35139;
-}
-html:has(.app-shell) {
-  --radius: 0.875rem;
-  --font-geist-sans: var(--font-host);
-  --font-display: var(--font-host);
-}
-html:has(.app-shell) .font-display {
-  font-weight: 600;
-  letter-spacing: -0.025em;
-}
-html:has(.app-shell) [data-slot="button"] {
-  border-radius: 999px;
-}
-html:has(.app-shell) [data-slot="button"].shadow-xs {
+[data-slot="button"].shadow-xs {
   box-shadow: none;
 }
-html:not(.dark):has(.app-shell) ::selection {
+html:not(.dark) ::selection {
   background: #ffb162;
   color: #1b2632;
 }
 /* Score pills: 7 and up navy, 5 to 7 amber, under 5 rust. */
-html:not(.dark):has(.app-shell) [data-band="hi"] { background: #e3e8ef; color: #2c3b4d; }
-html:not(.dark):has(.app-shell) [data-band="mid"] { background: #fff1e0; color: #7a4a12; }
-html:not(.dark):has(.app-shell) [data-band="lo"] { background: #f6ded6; color: #8f3f2b; }
+html:not(.dark) [data-band="hi"] { background: #e3e8ef; color: #2c3b4d; }
+html:not(.dark) [data-band="mid"] { background: #fff1e0; color: #7a4a12; }
+html:not(.dark) [data-band="lo"] { background: #f6ded6; color: #8f3f2b; }
 
 /* Brand panel: the navy stage with light rays, used for the few moments that carry the brand inside the app. */
 .brand-panel {
