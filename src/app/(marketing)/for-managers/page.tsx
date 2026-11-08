@@ -1,4 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
+import { PLANS, TRIAL } from "@/lib/billing/plans";
 import { Glow } from "@/components/marketing/glow";
 import { bookingUrl } from "@/content/booking";
 import { FeatureRow } from "@/components/marketing/feature-row";
@@ -9,6 +10,10 @@ import { CtaLink } from "@/components/analytics/cta-link";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
 import { TestimonialCard } from "@/components/marketing/testimonial";
 import { SALESFORGE } from "@/content/testimonials";
+
+/** Call allowances quoted in the copy, from the plans so the page never disagrees with pricing. */
+const STARTER_CALLS = PLANS.find((p) => p.id === "starter")?.callsPerSeat ?? 40;
+const TEAM_CALLS = PLANS.find((p) => p.id === "team")?.callsPerSeat ?? 80;
 
 export const metadata = pageMetadata({
   title: "For sales managers: ramp SDRs on fake calls first",
@@ -21,7 +26,7 @@ const FAQ: [string, string][] = [
             ["Will reps game it?", "They can try. The prospect decides the outcome from its own words, the grader is calibrated so a nine is rare, the prospect brief is server-checked on every call, and you can read every transcript. Gaming it is harder than just getting better."],
             ["How long does setup take?", "Under ten minutes. Create the workspace, describe what you sell, invite reps. Six ramp personas and three boss fights are ready before the first invite is accepted, and the dashboard walks you through the rest."],
             ["Does it replace live coaching?", "No. It replaces the fifty calls you had to listen to before you knew what to coach. The report tells you where to spend your twenty minutes."],
-            ["What does it cost?", "Per seat with a monthly call allowance. The trial gives a rep five calls over two weeks; a Starter seat has forty a month and a Team seat a hundred, pooled across the team. See pricing for the numbers."],
+            ["What does it cost?", `You pay per rep, and each seat adds calls to one pool the team shares. A Starter seat adds ${STARTER_CALLS} calls a month and a Team seat ${TEAM_CALLS}. The free trial gives you ${TRIAL.calls} calls over ${TRIAL.days} days. Prices are on the pricing page.`],
           ];
 
 export default function ForManagersPage() {
@@ -34,7 +39,7 @@ export default function ForManagersPage() {
           <Eyebrow>For sales managers</Eyebrow>
           <h1 className="font-display mt-4 text-5xl text-balance md:text-6xl">Stop ramping reps on your real pipeline.</h1>
           <p className="text-muted-foreground mt-6 text-lg text-balance">
-            A new SDR's first fifty dials are the worst calls your prospects will ever get. Give them fifty fake ones first, score every one, and put them on the phones when the numbers say they're ready.
+            A new SDR's first fifty dials are the worst calls your prospects will ever get. Let them make those calls on AI prospects first, score every one, and put them on the phones when the numbers say they're ready.
           </p>
           <p className="text-muted-foreground mt-4">
             Not sure where your team breaks? Start with <Link href="/objections" className="text-foreground underline underline-offset-4">the fifteen objections new reps fumble most</Link>, or <Link href="/blog/average-sdr-ramp-time" className="text-foreground underline underline-offset-4">what a three-month ramp actually looks like</Link>.
@@ -66,7 +71,7 @@ export default function ForManagersPage() {
         />
         <FeatureRow
           eyebrow="Team"
-          title="See who dialled, who booked, and who went quiet."
+          title="See who dialed, who booked, and who went quiet."
           body={<><p>One table per workspace: calls, meetings booked and average score per rep, with a drill-down into every call they made. Invite reps by email, set roles, remove a seat when someone leaves.</p><p>Leave a note on any call and it lands on the rep's dashboard next to their streak and personal best.</p></>}
           image="/screens/team.png"
           alt="Team page with per-member stats"
