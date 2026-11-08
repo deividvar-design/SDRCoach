@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { startRingback } from "@/lib/audio/ringback";
 import { playHangupTone } from "@/lib/audio/hangup-tone";
 import { startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
 import type { Ambience } from "@/lib/domain/moods";
@@ -59,8 +60,17 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
     ambienceRef.current = null;
   };
 
-  // Never leave the sound running after the screen goes away.
-  useEffect(() => () => stopAmbience(), []);
+  // Rings from the dial until Karen picks up (or the call fails).
+  const ringRef = useRef<(() => void) | null>(null);
+  const stopRing = () => {
+    ringRef.current?.();
+    ringRef.current = null;
+  };
+  // Never leave the sound or the ringing running after the screen goes away.
+  useEffect(() => () => {
+    stopAmbience();
+    stopRing();
+  }, []);
 
   const endOnServer = useCallback(async () => {
     if (endedRef.current) return;
@@ -71,6 +81,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
 
   const conversation = useConversation({
     onConnect: ({ conversationId }) => {
+      stopRing();
       setStage("live");
       ambienceRef.current = startAmbience(pendingAmbienceRef.current);
       // The Google Ads "Karen call" conversion goes out the moment Karen picks up, while the caller is certainly on
@@ -88,6 +99,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
     },
     onDisconnect: (details) => {
       stopAmbience();
+      stopRing();
       const byKaren = details?.reason === "agent";
       track("demo_call_ended", { ended_by: details?.reason ?? "unknown" });
       setStage((s) => (s === "live" || s === "dialing" ? "ending" : s));
@@ -97,6 +109,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
     },
     onError: (message) => {
       stopAmbience();
+      stopRing();
       setError(message);
       setStage("error");
       endOnServer();
@@ -148,6 +161,8 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
     try {
       const granted = await navigator.permissions?.query({ name: "microphone" as PermissionName }).then((p) => p.state === "granted").catch(() => false);
       if (!granted) (await navigator.mediaDevices.getUserMedia({ audio: true })).getTracks().forEach((t) => t.stop());
+      stopRing();
+      ringRef.current = startRingback();
       const res = await fetch("/api/demo/start", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not start the call");
@@ -163,6 +178,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
         },
       });
     } catch (err) {
+      stopRing();
       const message = err instanceof Error ? err.message : "Could not start the call";
       setError(message.includes("Permission") || message.includes("NotAllowed") ? "Microphone access is required to call Karen." : message);
       setStage("error");

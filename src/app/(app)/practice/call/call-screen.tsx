@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { startRingback } from "@/lib/audio/ringback";
 import { playHangupTone } from "@/lib/audio/hangup-tone";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -43,37 +44,6 @@ interface LiveTurn {
   text: string;
 }
 
-/** Synthesised North American ringback tone (440 + 480 Hz, 2 s on / 4 s off). */
-function playRingback(ctx: AudioContext, cycles: number) {
-  const gain = ctx.createGain();
-  gain.gain.value = 0;
-  gain.connect(ctx.destination);
-  const oscA = ctx.createOscillator();
-  const oscB = ctx.createOscillator();
-  oscA.frequency.value = 440;
-  oscB.frequency.value = 480;
-  oscA.connect(gain);
-  oscB.connect(gain);
-  const t0 = ctx.currentTime;
-  for (let i = 0; i < cycles; i++) {
-    const on = t0 + i * 6;
-    gain.gain.setValueAtTime(0.0001, on);
-    gain.gain.exponentialRampToValueAtTime(0.08, on + 0.05);
-    gain.gain.setValueAtTime(0.08, on + 1.9);
-    gain.gain.exponentialRampToValueAtTime(0.0001, on + 2);
-  }
-  oscA.start(t0);
-  oscB.start(t0);
-  oscA.stop(t0 + cycles * 6);
-  oscB.stop(t0 + cycles * 6);
-  return () => {
-    try {
-      oscA.stop();
-      oscB.stop();
-    } catch {}
-  };
-}
-
 export function CallScreen(props: Props) {
   return (
     <ConversationProvider>
@@ -99,6 +69,14 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
   const startedRef = useRef<Promise<unknown> | null>(null);
   const micRef = useRef<MediaStream | null>(null);
   const ambienceRef = useRef<AmbienceHandle | null>(null);
+  // Rings from the dial until the prospect picks up (or the call fails).
+  const ringRef = useRef<(() => void) | null>(null);
+  const stopRing = () => {
+    ringRef.current?.();
+    ringRef.current = null;
+  };
+  // Never leave it ringing after the screen goes away.
+  useEffect(() => () => stopRing(), []);
   const pendingAmbienceRef = useRef<Ambience>("quiet");
   const gatekeeperRef = useRef<{ name: string; voiceLabel: string } | null>(null);
   const stopAmbience = () => {
@@ -121,6 +99,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
 
   const conversation = useConversation({
     onConnect: ({ conversationId }) => {
+      stopRing();
       setStage("live");
       ambienceRef.current = startAmbience(pendingAmbienceRef.current);
       if (sessionIdRef.current) {
@@ -142,6 +121,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
     onDisconnect: (details) => {
       const byProspect = details?.reason === "agent";
       track("call_ended", { difficulty, ended_by: details?.reason ?? "unknown" });
+      stopRing();
       releaseMic();
       stopAmbience();
       setStage((s) => (s === "live" || s === "dialing" ? "ending" : s));
@@ -152,6 +132,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
       });
     },
     onError: (message) => {
+      stopRing();
       setError(message);
       setStage("error");
       releaseMic();
@@ -229,7 +210,6 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
     setElapsed(0);
     setError(null);
     setStage("dialing");
-    let stopRing: (() => void) | null = null;
     try {
       // The SDK acquires its own microphone track. Pre-flight only when permission is not already granted, so a
       // rep who chose "allow this time" in Chrome is asked once per call, not twice.
@@ -237,8 +217,8 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
       if (!granted) micRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
       // So the "review is ready" notice can reach a backgrounded tab. Browsers only ever ask once.
       if (typeof Notification !== "undefined" && Notification.permission === "default") Notification.requestPermission().catch(() => {});
-      const ctx = new AudioContext();
-      stopRing = playRingback(ctx, 2);
+      stopRing();
+      ringRef.current = startRingback();
 
       const res = await fetch("/api/calls", {
         method: "POST",
@@ -257,11 +237,8 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
       setGatekeeperName(data.gatekeeper?.name ?? null);
       track("call_started", { difficulty, target_kind: target.kind, gatekeeper: Boolean(data.gatekeeper) });
 
-      // Let it ring once so it feels like a real dial.
+      // Let it ring at least once so it feels like a real dial. The ring carries on until she picks up (onConnect).
       await new Promise((r) => setTimeout(r, 2200));
-      stopRing();
-      stopRing = null;
-      ctx.close().catch(() => {});
 
       // The SDK owns its own microphone track from here on.
       releaseMic();
@@ -274,7 +251,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
         },
       });
     } catch (err) {
-      stopRing?.();
+      stopRing();
       releaseMic();
       const message = err instanceof Error ? err.message : "Could not start the call";
       setError(message.includes("Permission") || message.includes("NotAllowed") ? "Microphone access is required to make a call." : message);
