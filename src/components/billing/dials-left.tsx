@@ -22,19 +22,19 @@ export function DialsLeft({ allowance, isManager, formatDate }: { allowance: All
 
   const body = (
     <>
-      <div className="text-muted-foreground flex items-baseline justify-between text-xs">
+      <div className="text-muted-foreground flex items-baseline justify-between text-[13px]">
         <span className="shrink-0 whitespace-nowrap">{title}</span>
         {sub && <span className="truncate pl-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">{sub}</span>}
       </div>
       <div className="mt-1 flex items-baseline gap-1.5">
-        <span className={cn("dial text-xl leading-none font-medium", low && "text-signal")}>{left}</span>
-        <span className="text-muted-foreground text-xs">of {included}{allowance.bonus > 0 ? ` +${allowance.bonus} earned` : ""}</span>
+        <span className={cn("text-[22px] leading-none font-semibold tracking-tight tabular-nums", low && "text-signal-ink")}>{left}</span>
+        <span className="text-muted-foreground text-[13px]">of {included}{allowance.bonus > 0 ? ` +${allowance.bonus} earned` : ""}</span>
       </div>
-      <Progress value={pct} className="mt-2 h-1" indicatorClassName={low ? "bg-signal" : undefined} />
+      <Progress value={pct} className="mt-2 h-1.5" indicatorClassName={low ? "bg-signal" : undefined} />
     </>
   );
 
-  const className = "group block rounded-md px-3 py-2";
+  const className = "group bg-card my-2 block rounded-[14px] px-3 py-3.5 dark:bg-accent/40";
   const hint = sub ? `${title}: ${left} of ${included}, ${sub}` : undefined;
   return isManager ? (
     <Link href={kind === "trial" ? "/upgrade" : "/settings"} className={cn(className, "hover:bg-accent/60 transition-colors")} title={hint}>

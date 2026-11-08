@@ -35,13 +35,13 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const isAdmin = isAdminEmail(viewer.email);
 
   return (
-    <div className="flex min-h-dvh">
+    <div className="app-shell flex min-h-dvh">
       <IdentifyUser userId={viewer.userId} props={{ org_id: viewer.org.id, org_name: viewer.org.name, plan: viewer.org.plan, role: viewer.membership.role, seat_limit: viewer.org.seat_limit }} />
-      <aside className="bg-sidebar sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r p-3 md:flex">
+      <aside className="bg-sidebar sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col border-r px-3.5 py-5 md:flex">
         <Link href="/dashboard" className="px-2 py-3">
           <Logo />
         </Link>
-        <div className="text-muted-foreground mb-4 truncate px-3 text-xs">{viewer.org.name}</div>
+        <div className="text-muted-foreground mb-4 truncate px-3 text-[13px]">{viewer.org.name}</div>
         <SidebarNav isManager={isManager} />
         <div className="mt-auto flex flex-col gap-1">
           <RewardsLink />
@@ -64,7 +64,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <TrialBanner status={trial} isManager={isManager} offerLine={offer?.id === "trial15" ? `Upgrade by ${formatDate(offer.until)} for ${offer.percent}% off` : null} />
         <TrialGate status={trial} isManager={isManager} orgName={viewer.org.name} salesEmail={SITE.company.email} viewerEmail={viewer.email} offerLine={offer?.id === "comeback20" ? `${offer.percent}% off until ${formatDate(offer.until)}, applied at checkout.` : null} />
         <ReviewWatcher initialPending={(pendingRows ?? []).map((r) => r.id)} />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-24 md:px-8 md:py-8">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-24 md:px-10 md:py-8">{children}</main>
         <div className="bg-sidebar/95 fixed inset-x-0 bottom-0 z-20 border-t px-2 pt-1 pb-[max(env(safe-area-inset-bottom),4px)] backdrop-blur md:hidden">
           <SidebarNav isManager={isManager} variant="bar" />
         </div>

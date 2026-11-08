@@ -80,7 +80,8 @@ function Aurora({ className }: { className?: string }) {
             left: `${left}%`,
             width: `${width}%`,
             background: tone === "a" ? "linear-gradient(to bottom, transparent, rgba(245,166,91,.55) 55%, rgba(245,166,91,.15))" : "linear-gradient(to bottom, transparent, rgba(150,175,205,.32) 50%, rgba(150,175,205,.1))",
-            animationDelay: `${-i * 1.7}s`,
+            animationDuration: `${6 + (i % 5) * 1.4}s`,
+            animationDelay: `${-((i * 1.7) % 9).toFixed(1)}s`,
           }}
         />
       ))}
@@ -89,11 +90,11 @@ function Aurora({ className }: { className?: string }) {
 }
 
 function Wave() {
-  // A still waveform: louder in the middle of the line, like a voice mid-sentence.
+  // Karen's voice: each bar rises and falls on its own short cycle, louder in the middle of the line.
   const h = [5, 9, 14, 8, 11, 18, 22, 12, 7, 16, 24, 19, 10, 6, 13, 20, 15, 9, 12, 7, 10, 6, 8, 5, 7, 4, 6, 3];
   return (
     <div className="flex h-7 items-center gap-[3px]" aria-hidden>
-      {h.map((v, i) => <span key={i} className={cn("w-[3px] rounded-full", i < 18 ? "bg-[var(--hp-peach)]" : "bg-white/25")} style={{ height: v }} />)}
+      {h.map((v, i) => <span key={i} className={cn("hp-vo w-[3px] rounded-full", i < 18 ? "bg-[var(--hp-peach)]" : "bg-white/25")} style={{ height: v, animationDuration: `${0.7 + (i % 5) * 0.15}s`, animationDelay: `${-((i * 0.13) % 1).toFixed(2)}s` }} />)}
     </div>
   );
 }

@@ -57,8 +57,8 @@ export default async function TeamPage() {
         }
       />
 
-      <section className="bg-card rounded-xl border p-6">
-        <h2 className="mb-4 font-medium">Invite someone</h2>
+      <section className="bg-card rounded-[18px] border p-6">
+        <h2 className="mb-4 text-[17px] font-semibold">Invite someone</h2>
         <InviteForm />
         {!!invites?.length && (
           <ul className="mt-6 divide-y border-t">
@@ -80,7 +80,7 @@ export default async function TeamPage() {
         )}
       </section>
 
-      <section className="bg-card rounded-xl border">
+      <section className="bg-card overflow-hidden rounded-[18px] border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -121,7 +121,7 @@ export default async function TeamPage() {
                   <TableCell className="tabular-nums">{st?.calls ?? 0}</TableCell>
                   <TableCell className={st?.lastCallAt && st.lastCallAt >= thirtyDaysAgo ? "text-xs" : "text-muted-foreground text-xs"}>{st?.lastCallAt ? fmtDate(st.lastCallAt) : "Never"}</TableCell>
                   <TableCell className="tabular-nums">{st?.booked ?? 0}</TableCell>
-                  <TableCell className="text-right"><ScorePill value={avg} /></TableCell>
+                  <TableCell className="text-right"><ScorePill value={avg} className="h-7 min-w-[42px] items-center justify-center rounded-lg px-2 text-sm font-semibold" /></TableCell>
                   <TableCell>
                     {m.role !== "owner" && m.user_id !== viewer.userId && <RemoveMemberButton membershipId={m.id} name={m.profiles?.full_name ?? m.profiles?.email ?? "this member"} />}
                   </TableCell>

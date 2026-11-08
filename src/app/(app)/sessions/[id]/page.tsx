@@ -19,6 +19,7 @@ import { ReviewPrompt } from "@/components/report/review-prompt";
 import { Comments } from "@/components/report/comments";
 import { DeleteCallButton } from "@/components/report/delete-call";
 import { StatTile } from "@/components/stat-tile";
+import { Rays } from "@/components/shell/brand-panel";
 import type { CallOutcome } from "@/types/database";
 
 export const metadata = { title: "Call report" };
@@ -199,10 +200,11 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
 
       {score && (
         <>
-          <section className="bg-card paper-grain grid gap-6 rounded-2xl border p-6 md:grid-cols-[minmax(0,260px)_1fr] md:gap-10 md:p-8">
+          <section className="brand-panel grid gap-6 rounded-3xl p-6 md:grid-cols-[minmax(0,260px)_1fr] md:gap-10 md:p-8">
+            <Rays className="left-[35%]" height={190} />
             <div className="flex flex-col justify-between gap-6">
               <div>
-                <div className="text-muted-foreground mb-3 text-xs">Overall</div>
+                <div className="text-muted-foreground mb-3 text-[13px]">Overall</div>
                 <ScoreReveal value={score.overall} animate={fresh === "1"} />
               </div>
               {outcome && (
@@ -213,9 +215,9 @@ export default async function SessionPage({ params, searchParams }: PageProps<"/
                 </div>
               )}
             </div>
-            <div className="md:border-l md:pl-10">
-              <div className="text-muted-foreground mb-2 text-xs">Coach</div>
-              <p className="font-display max-w-prose text-lg leading-relaxed text-pretty md:text-xl">{score.coach_summary}</p>
+            <div className="md:border-l md:border-white/15 md:pl-10">
+              <div className="text-muted-foreground mb-2 text-[13px]">Coach</div>
+              <p className="max-w-prose text-lg leading-relaxed font-medium text-pretty md:text-xl">{score.coach_summary}</p>
             </div>
           </section>
 

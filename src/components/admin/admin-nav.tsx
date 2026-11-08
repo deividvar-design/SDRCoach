@@ -8,12 +8,12 @@ import { ADMIN_SECTIONS, type AdminSection, type Badge } from "@/lib/admin/badge
  */
 export function AdminNav({ badges, current }: { badges: Record<AdminSection, Badge>; current?: AdminSection }) {
   return (
-    <nav aria-label="Admin sections" className="flex flex-wrap gap-x-4 gap-y-2">
+    <nav aria-label="Admin sections" className="flex flex-wrap gap-1.5">
       {ADMIN_SECTIONS.map((s) => {
         const b = badges[s.key];
         const isCurrent = s.key === current;
         return (
-          <Link key={s.key} href={s.href} aria-current={isCurrent ? "page" : undefined} className={cn("inline-flex items-center gap-1.5 text-sm underline-offset-4", isCurrent ? "text-foreground font-medium" : "underline")}>
+          <Link key={s.key} href={s.href} aria-current={isCurrent ? "page" : undefined} className={cn("inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors", isCurrent ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:bg-accent")}>
             {s.label}
             {b.action > 0 && <Count tone="action" n={b.action} label={`${b.action} waiting for a decision`} />}
             {b.fresh > 0 && !isCurrent && <Count tone="fresh" n={b.fresh} label={`${b.fresh} new since your last visit`} />}

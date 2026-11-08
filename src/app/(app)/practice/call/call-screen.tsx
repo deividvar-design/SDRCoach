@@ -9,7 +9,7 @@ import { cn, formatDuration, initials } from "@/lib/utils";
 import type { LevelSpec } from "@/lib/domain/levels";
 import type { Difficulty } from "@/types/database";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Rays } from "@/components/shell/brand-panel";
 import { track } from "@/components/analytics/provider";
 import { startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
 import type { Ambience } from "@/lib/domain/moods";
@@ -290,51 +290,58 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
     <div className="mx-auto max-w-5xl" translate="no">
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         {/* Stage */}
-        <section className="bg-card paper-grain relative flex min-h-[540px] flex-col items-center justify-center overflow-hidden rounded-2xl border p-8 text-center">
-          <div className="absolute top-5 left-5 flex items-center gap-2">
-            <Badge variant="secondary">L{level.level} {level.name}</Badge>
-            {target.kind === "practice" && <Badge variant="outline">Practice persona</Badge>}
-            {target.kind === "boss" && <Badge variant="destructive">Boss fight</Badge>}
+        <section className="brand-panel relative flex min-h-[560px] flex-col items-center justify-center rounded-3xl px-8 pt-20 pb-8 text-center">
+          <Rays className="-right-[2%] -left-[2%]" height={300} />
+          <div className="absolute top-5 left-5 flex flex-wrap items-center gap-2 text-xs font-semibold">
+            <span className="rounded-full bg-white/10 px-3 py-1">L{level.level} {level.name}</span>
+            {target.kind === "practice" && <span className="rounded-full bg-white/10 px-3 py-1">Practice persona</span>}
+            {target.kind === "boss" && <span className="rounded-full bg-[#a35139] px-3 py-1">Boss fight</span>}
           </div>
+          {stage === "live" && (
+            <span className="absolute top-5 right-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">
+              <span aria-hidden className="live-pulse size-2 rounded-full bg-[#ffb162]" />
+              On a call · recording
+            </span>
+          )}
 
           <div className="relative mb-6 grid place-items-center">
             {(stage === "dialing" || prospectSpeaking) && (
               <>
-                <span className={cn("bg-signal/30 absolute size-32 rounded-full", stage === "dialing" ? "dial-ring" : "ring-speaking")} />
-                {stage === "dialing" && <span className="bg-signal/20 absolute size-32 rounded-full dial-ring [animation-delay:0.8s]" />}
+                <span className={cn("absolute size-28 rounded-full bg-[#ffb162]/30", stage === "dialing" ? "dial-ring" : "ring-speaking")} />
+                {stage === "dialing" && <span className="dial-ring absolute size-28 rounded-full bg-[#ffb162]/20 [animation-delay:0.8s]" />}
               </>
             )}
-            <div className={cn("bg-primary text-primary-foreground relative grid size-32 place-items-center rounded-full text-3xl font-medium transition-transform", prospectSpeaking && "scale-105")}>
+            <div className={cn("relative grid size-28 place-items-center rounded-full border-4 border-white/20 bg-[#a35139] bg-[radial-gradient(80%_80%_at_30%_25%,#ffb162_0%,#a35139_75%)] text-3xl font-semibold text-[#1b2632] transition-transform", prospectSpeaking && "scale-105")}>
               {initials(target.name)}
             </div>
           </div>
 
-          <h1 className="font-display text-4xl">{target.name}</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-[30px] font-semibold tracking-[-0.02em]">{target.name}</h1>
+          <p className="mt-1.5 text-[15px] text-[#b9c0cb]">
             {target.title}, {target.company}
           </p>
           {(stage === "live" || stage === "ending") && (
-            <div className="bg-background/80 mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 dial text-sm" aria-live="off">
+            <div className="mt-4 inline-flex items-center gap-2 text-sm tabular-nums" aria-live="off">
               {stage === "live" ? (
                 <>
-                  <span className="bg-signal size-2 rounded-full live-pulse" />
-                  <span className="text-signal font-medium">LIVE</span>
+                  <span className="live-pulse size-2 rounded-full bg-[#ffb162]" />
+                  <span className="font-semibold text-[#ffb162]">LIVE</span>
                 </>
               ) : (
-                <span className="text-muted-foreground">Ended</span>
+                <span className="text-[#b9c0cb]">Ended</span>
               )}
-              <span>{formatDuration(elapsed)}</span>
-              {stage === "live" && MAX_CALL_SECONDS - elapsed <= 60 && <span className="text-muted-foreground">· {formatDuration(Math.max(0, MAX_CALL_SECONDS - elapsed))} left</span>}
+              <span className="text-[28px] font-medium tracking-[-0.02em] text-[#ffb162]">{formatDuration(elapsed)}</span>
+              {stage === "live" && MAX_CALL_SECONDS - elapsed <= 60 && <span className="text-[#b9c0cb]">· {formatDuration(Math.max(0, MAX_CALL_SECONDS - elapsed))} left</span>}
             </div>
           )}
 
-          <p className="text-muted-foreground mt-6 h-5 text-sm">
+          <p className="mt-6 h-5 text-sm text-[#b9c0cb]">
             {stage === "idle" && (!voiceConfigured ? "Voice service is not configured yet." : !audioOk ? "This browser cannot play the call." : "Ready when you are.")}
             {stage === "dialing" && "Ringing…"}
             {stage === "live" && (prospectSpeaking ? `${target.name.split(" ")[0]} is speaking` : "Listening to you")}
             {stage === "ending" && "Call ended. Your coach is reviewing it…"}
             {stage === "error" && (
-              <span className="text-destructive">
+              <span className="text-[#ffc9b8]">
                 {error}
                 {trialBlocked && (
                   <>
@@ -352,36 +359,36 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
                 <Button size="lg" variant="signal" onClick={dial} disabled={!voiceConfigured || !audioOk}>
                   <Mic /> {stage === "error" ? "Try again" : "Dial"}
                 </Button>
-                <Button size="lg" variant="ghost" asChild>
+                <Button size="lg" variant="ghost" className="text-[#f4f1ea] hover:bg-white/10 hover:text-[#f4f1ea]" asChild>
                   <Link href="/practice">Back</Link>
                 </Button>
               </>
             ) : stage === "live" ? (
               <>
-                <Button size="icon-lg" variant="outline" onClick={() => conversation.setMuted(!conversation.isMuted)} aria-label={conversation.isMuted ? "Unmute" : "Mute"}>
+                <Button size="icon-lg" variant="ghost" className="size-16 bg-white/12 text-[#f4f1ea] hover:bg-white/20 hover:text-[#f4f1ea]" onClick={() => conversation.setMuted(!conversation.isMuted)} aria-label={conversation.isMuted ? "Unmute" : "Mute"}>
                   {conversation.isMuted ? <MicOff /> : <Mic />}
                 </Button>
                 <MicMeter level={micLevel} muted={conversation.isMuted} />
-                <Button size="icon-lg" variant="destructive" onClick={hangUp} aria-label="Hang up">
-                  <PhoneOff />
+                <Button variant="destructive" className="h-16 gap-2.5 bg-[#a35139] px-7 text-[17px] font-semibold text-[#fbf6ee] hover:bg-[#a35139]/90" onClick={hangUp}>
+                  <PhoneOff className="size-5" /> End call
                 </Button>
               </>
             ) : (
-              <Button size="lg" variant="outline" disabled>
+              <Button size="lg" variant="outline" className="border-white/30 bg-transparent text-[#f4f1ea]" disabled>
                 {stage === "dialing" ? "Connecting…" : "Wrapping up…"}
               </Button>
             )}
           </div>
-          {stage === "idle" && !audioOk && <p className="text-destructive mt-6 max-w-sm text-sm text-balance">{NO_WEB_AUDIO_MESSAGE} No call has been used.</p>}
+          {stage === "idle" && !audioOk && <p className="mt-6 text-[#ffc9b8] max-w-sm text-sm text-balance">{NO_WEB_AUDIO_MESSAGE} No call has been used.</p>}
 
           {stage === "live" && silentMic && !conversation.isMuted && (
-            <p className="text-destructive mt-6 max-w-sm text-sm text-balance" role="status">
+            <p className="mt-6 max-w-sm text-sm text-balance text-[#ffc9b8]" role="status">
               The prospect can't hear you. Check the mic icon in your browser's address bar for which microphone is in use, and that your headset isn't muted.
             </p>
           )}
 
           {stage === "idle" && (
-            <p className="text-muted-foreground mt-8 max-w-sm text-xs text-balance">
+            <p className="mt-8 mb-16 max-w-sm text-[13px] text-balance text-[#b9c0cb]">
               Headset on. The prospect picks up as soon as it connects. They decide how the call ends, so treat it like a real dial.
             </p>
           )}
@@ -390,7 +397,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
         {/* Sidebar: research + live transcript */}
         <aside className="flex flex-col gap-4">
           <div className="bg-card rounded-2xl border p-5">
-            <div className="text-muted-foreground mb-2 text-xs">Your research</div>
+            <div className="mb-2 text-[15px] font-semibold">Your research</div>
             <p className="text-sm">
               {target.name} is {target.title} at {target.company}
               {target.industry ? ` (${target.industry})` : ""}.
@@ -400,7 +407,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
           </div>
 
           <div className="bg-card flex min-h-[260px] flex-1 flex-col rounded-2xl border">
-            <div className="text-muted-foreground border-b px-5 py-3 text-xs">Live transcript</div>
+            <div className="border-b px-5 py-3.5 text-[15px] font-semibold">Live transcript</div>
             <div ref={transcriptRef} className="max-h-[420px] flex-1 space-y-3 overflow-y-auto p-5">
               {turns.length === 0 ? (
                 <p className="text-muted-foreground text-sm">Words appear here as you both speak.</p>
@@ -426,7 +433,7 @@ function MicMeter({ level, muted }: { level: number; muted: boolean }) {
   return (
     <div className="flex h-11 items-end gap-0.5" aria-label={muted ? "Microphone muted" : `Microphone level ${Math.round((lit / 8) * 100)}%`} title="Your mic">
       {Array.from({ length: 8 }, (_, i) => (
-        <span key={i} className={cn("w-1 rounded-sm transition-colors duration-100", i < lit ? "bg-signal" : "bg-border")} style={{ height: `${8 + i * 3}px` }} />
+        <span key={i} className={cn("w-1 rounded-sm transition-colors duration-100", i < lit ? "bg-[#ffb162]" : "bg-white/20")} style={{ height: `${8 + i * 3}px` }} />
       ))}
     </div>
   );

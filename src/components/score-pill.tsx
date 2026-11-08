@@ -7,5 +7,7 @@ export function scoreStep(v: number) {
 
 export function ScorePill({ value, className }: { value: number | null | undefined; className?: string }) {
   if (value == null) return <span className={cn("text-muted-foreground text-xs", className)}>—</span>;
-  return <span className={cn("inline-flex rounded-md px-2 py-0.5 text-xs font-medium tabular-nums", `score-${scoreStep(value)}`, className)}>{value.toFixed(1)}</span>;
+  // data-band drives the app's three-colour pills; the public site keeps the five-step ramp.
+  const band = value >= 7 ? "hi" : value >= 5 ? "mid" : "lo";
+  return <span data-band={band} className={cn("inline-flex rounded-md px-2 py-0.5 text-xs font-medium tabular-nums", `score-${scoreStep(value)}`, className)}>{value.toFixed(1)}</span>;
 }
