@@ -1,4 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
+import { bookingUrl } from "@/content/booking";
 import { FeatureRow } from "@/components/marketing/feature-row";
 import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/marketing/sections";
 import { Button } from "@/components/ui/button";
@@ -95,7 +96,7 @@ export default function ForManagersPage() {
         </dl>
       </Section>
 
-      <CtaBand title="Put your next hire on the phones a week earlier." />
+      <CtaBand title="Put your next hire on the phones a week earlier." link={{ href: bookingUrl("managers_cta"), label: "Rather talk it through? Book a 30-minute call", ctaId: "managers_book_call" }} />
     </>
   );
 }

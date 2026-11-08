@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { bookingUrl } from "@/content/booking";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -93,7 +94,7 @@ export function PlanGrid({
           const isFounding = Boolean(founding && (p.id === "starter" || p.id === "team"));
           const price = isFounding && founding && (p.id === "starter" || p.id === "team") ? founding.price[p.id][currency][interval] : listPrice;
           const subject = encodeURIComponent(`100 Dials ${p.name}${orgName ? ` for ${orgName}` : ""}`);
-          const href = p.id === "enterprise" || !marketing ? `mailto:${SALES_EMAIL}?subject=${subject}` : `/signup?plan=${p.id}&billing=${interval}`;
+          const href = p.id === "enterprise" ? bookingUrl(marketing ? "pricing_enterprise" : "upgrade_enterprise") : !marketing ? `mailto:${SALES_EMAIL}?subject=${subject}` : `/signup?plan=${p.id}&billing=${interval}`;
           return (
             <div key={p.id} className={cn("bg-card relative flex flex-col rounded-2xl border p-6", p.highlight && "border-foreground shadow-lg", isFounding && "border-signal/60")}>
               {p.highlight && <span className="bg-foreground text-background absolute -top-3 left-6 rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase">Recommended</span>}

@@ -1,4 +1,5 @@
 import { CtaLink } from "@/components/analytics/cta-link";
+import { bookingUrl } from "@/content/booking";
 import { pageMetadata } from "@/lib/seo";
 import { AnchorStrip } from "@/components/pricing/anchor-strip";
 import { PricingCalculator } from "@/components/pricing/calculator";
@@ -82,7 +83,7 @@ export default async function PricingPage() {
           </dl>
         </section>
       </div>
-      <CtaBand title="Start with five free calls." body="Every plan begins as a trial. Upgrade from inside the app when the team is ready." secondary={{ href: "/karen", label: "Not ready? Try one call against Karen" }} link={{ href: `mailto:${SALES_EMAIL}?subject=${encodeURIComponent("Extended trial of 100 Dials")}`, label: "Talk to us about an extended trial", ctaId: "pricing_extended_trial" }} />
+      <CtaBand title="Start with five free calls." body="Every plan begins as a trial. Upgrade from inside the app when the team is ready." secondary={{ href: "/karen", label: "Not ready? Try one call against Karen" }} link={{ href: bookingUrl("pricing_extended_trial"), label: "Talk to us about an extended trial", ctaId: "pricing_extended_trial" }} />
     </>
   );
 }

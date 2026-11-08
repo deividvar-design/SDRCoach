@@ -1,4 +1,5 @@
 import { SITE, absoluteUrl } from "@/lib/site";
+import { bookingUrl } from "@/content/booking";
 import { TRIAL } from "@/lib/billing/plans";
 import { RUBRIC, type RubricKey } from "@/lib/scoring/rubric";
 import { OUTCOME_TEXT } from "@/lib/domain/session-status";
@@ -320,7 +321,9 @@ export const templates = {
       `The deal, as on the page: start within ${p.startWithinDays} days, and each rep makes ${p.callsPerRepPerWeek} calls a week for ${p.weeks} weeks. At day 30 you get a report of how the team's scores moved, and you approve anything before it is published.`,
       "Reply to this email any time. It reaches a person.",
     ];
-    return { subject: `${p.company} is a ${SITE.name} founding partner`, html: layout("You're a founding partner.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+    const kickoff = bookingUrl("partner_kickoff", "email");
+    const foot = `<p style="margin:0 0 12px">Want a kickoff call with the team lead first? <a href="${kickoff}">Pick a time</a>. The pilot runs fine without one.</p>`;
+    return { subject: `${p.company} is a ${SITE.name} founding partner`, html: layout("You're a founding partner.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("") + foot, cta), text: textOf([...lines, "", `Kickoff call, if you want one: ${kickoff}`], cta) };
   },
 
   partnerDeclined(p: { firstName: string; company: string }): Rendered {
@@ -381,7 +384,9 @@ export const templates = {
   extensionApproved(p: { firstName: string; orgName: string; calls: number; days: number }): Rendered {
     const cta = { label: "Make a call", href: absoluteUrl("/practice") };
     const lines = [`Hi ${p.firstName},`, `Done: ${p.calls} more calls and ${p.days} more days on ${p.orgName}'s trial. They are live now.`, "Spend one on the prospect that gave you the most trouble. That is where the score moves."];
-    return { subject: `${p.calls} more calls on your trial`, html: layout("More calls, as asked.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join(""), cta), text: textOf(lines, cta) };
+    const call = bookingUrl("extension_approved", "email");
+    const foot = `<p style="margin:0 0 12px">Weighing a plan for the team? <a href="${call}">Book a 30-minute call</a> and we'll build a prospect from your accounts before it.</p>`;
+    return { subject: `${p.calls} more calls on your trial`, html: layout("More calls, as asked.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("") + foot, cta), text: textOf([...lines, "", `Weighing a plan for the team? Book a call: ${call}`], cta) };
   },
 
   extensionDeclined(p: { firstName: string; note: string | null }): Rendered {
