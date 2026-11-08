@@ -167,7 +167,7 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
                         const v = avg(r.dims[k]);
                         return (
                           <TableCell key={k} className="text-right">
-                            <span className={cn("inline-flex min-w-10 justify-center rounded-md px-2 py-0.5 font-mono text-xs tabular", heat(v))}>{v == null ? "—" : v.toFixed(1)}</span>
+                            <span className={cn("inline-flex min-w-10 justify-center rounded-md px-2 py-0.5 font-mono text-xs tabular", heat(v))}>{v == null ? "-" : v.toFixed(1)}</span>
                           </TableCell>
                         );
                       })}
@@ -179,7 +179,7 @@ export default async function CoachingPage({ searchParams }: PageProps<"/team/co
                     <TableCell className="text-right tabular">{calls.length}</TableCell>
                     {RUBRIC_KEYS.map((k) => (
                       <TableCell key={k} className="text-right">
-                        <span className={cn("inline-flex min-w-10 justify-center rounded-md px-2 py-0.5 font-mono text-xs font-medium tabular", heat(teamDim[k]))}>{teamDim[k] == null ? "—" : teamDim[k]!.toFixed(1)}</span>
+                        <span className={cn("inline-flex min-w-10 justify-center rounded-md px-2 py-0.5 font-mono text-xs font-medium tabular", heat(teamDim[k]))}>{teamDim[k] == null ? "-" : teamDim[k]!.toFixed(1)}</span>
                       </TableCell>
                     ))}
                     <TableCell className="text-right"><ScorePill value={avg(calls.map((c) => c.score!.overall))} /></TableCell>

@@ -75,7 +75,7 @@ export default async function AdminAffiliatesPage() {
                   </TableCell>
                   <TableCell className="text-sm whitespace-normal">
                     {(["usd", "eur"] as const).map((c) => (toDate.balanceCents[c] ? <div key={c}>{money(toDate.balanceCents[c], c)}</div> : null))}
-                    {!toDate.balanceCents.usd && !toDate.balanceCents.eur && <span className="text-muted-foreground">—</span>}
+                    {!toDate.balanceCents.usd && !toDate.balanceCents.eur && <span className="text-muted-foreground">-</span>}
                     {(toDate.paidCents.usd > 0 || toDate.paidCents.eur > 0) && <div className="text-muted-foreground text-xs">paid out {[toDate.paidCents.usd ? money(toDate.paidCents.usd, "usd") : null, toDate.paidCents.eur ? money(toDate.paidCents.eur, "eur") : null].filter(Boolean).join(", ")}</div>}
                   </TableCell>
                   <TableCell className="text-right"><AffiliateRowActions id={a.id} status={a.status} period={last.label} suggested={payable ? { currency: payable[0], amount: payable[1] } : null} /></TableCell>

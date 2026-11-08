@@ -95,9 +95,9 @@ export default async function RepPage({ params }: PageProps<"/team/[userId]">) {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label="Calls" value={all.length} hint={`${scored.length} scored`} />
-        <StatTile label="Average" value={avg == null ? "—" : avg.toFixed(1)} unit="/ 10" />
-        <StatTile label="Booked" value={decided ? `${Math.round((booked / decided) * 100)}%` : "—"} hint={decided ? `${booked} of ${decided} decided` : undefined} />
-        <StatTile label="Streak" value={streakDays(lite)} unit="days" hint={`Best score ${personalBest(lite)?.toFixed(1) ?? "—"}`} />
+        <StatTile label="Average" value={avg == null ? "-" : avg.toFixed(1)} unit="/ 10" />
+        <StatTile label="Booked" value={decided ? `${Math.round((booked / decided) * 100)}%` : "-"} hint={decided ? `${booked} of ${decided} decided` : undefined} />
+        <StatTile label="Streak" value={streakDays(lite)} unit="days" hint={`Best score ${personalBest(lite)?.toFixed(1) ?? "-"}`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">

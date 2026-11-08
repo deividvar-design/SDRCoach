@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { Rays } from "@/components/shell/brand-panel";
 import { SITE } from "@/lib/site";
 import { CookieSettingsLink } from "@/components/analytics/cookie-banner";
 
@@ -11,10 +12,11 @@ const COLS = [
 
 export function MarketingFooter() {
   return (
-    <footer className="border-t">
+    <footer className="brand-panel mx-3 mb-3 rounded-[28px] md:mx-4">
+      <Rays className="left-0 opacity-70" height={220} />
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="space-y-3">
-          <Logo />
+          <Logo inverse />
           <p className="text-muted-foreground max-w-xs text-sm">{SITE.description}</p>
           <p className="text-muted-foreground text-xs">
             {SITE.company.legalName}{SITE.company.address ? `, ${SITE.company.address}` : ""}
@@ -32,7 +34,7 @@ export function MarketingFooter() {
           </div>
         ))}
       </div>
-      <div className="text-muted-foreground mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-6 pb-8 text-xs">
+      <div className="text-muted-foreground mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 border-t border-white/12 px-6 py-6 text-xs">
         <span>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</span>
         <a href={`mailto:${SITE.company.email}`} className="hover:underline">{SITE.company.email}</a>
       </div>

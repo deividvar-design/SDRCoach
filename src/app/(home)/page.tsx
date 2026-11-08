@@ -168,7 +168,6 @@ export default async function HomePage() {
 
           <aside aria-label="Karen, the prospect" className="rounded-3xl border border-white/12 bg-[rgba(18,24,33,.72)] p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,.6)] backdrop-blur-md lg:ml-auto lg:w-[24rem]">
             <div className="flex items-start gap-3">
-              <span className="size-11 shrink-0 rounded-full bg-[radial-gradient(circle_at_40%_35%,#ffd9a8,#f08a3c_45%,#7a2e12)]" />
               <div className="min-w-0 flex-1">
                 <div className="font-semibold">{KAREN.name}</div>
                 <div className="text-[13px] text-white/65">{KAREN.title}, {KAREN.company}</div>
@@ -256,7 +255,7 @@ export default async function HomePage() {
           <span className="text-white/55">A new rep burns 30 to 50 real conversations while learning.</span> Right now your pipeline pays for them.
         </h2>
         <div className="mx-auto mt-10 flex max-w-3xl flex-wrap items-start justify-center gap-x-6 gap-y-6">
-          {[["30–50", "real conversations burned in month one", ""], ["×", "", "op"], ["~$100", "to get each one", ""], ["=", "", "op"], ["$3–5k", "of pipeline spent on practice", "hot"]].map(([big, cap, k]) => (
+          {[["30 to 50", "real conversations burned in month one", ""], ["×", "", "op"], ["~$100", "to get each one", ""], ["=", "", "op"], ["$3k to $5k", "of pipeline spent on practice", "hot"]].map(([big, cap, k]) => (
             <div key={big} className={cn("text-left", k === "op" && "pt-5 text-2xl text-white/45")}>
               {k === "op" ? big : <>
                 <div className={cn("text-5xl font-semibold tracking-[-0.03em] tabular-nums md:text-6xl", k === "hot" && "text-[var(--hp-peach)]")}>{big}</div>

@@ -91,15 +91,15 @@ const WEAKER = [
 ];
 
 const REFERENCES = [
-  "Cook DA, Hatala R, Brydges R, et al. Technology-enhanced simulation for health professions education: a systematic review and meta-analysis. JAMA. 2011;306(9):978–988.",
-  "Sitzmann T. A meta-analytic examination of the instructional effectiveness of computer-based simulation games. Personnel Psychology. 2011;64(2):489–528.",
-  "Taylor PJ, Russ-Eft DF, Chan DWL. A meta-analytic review of behavior modeling training. Journal of Applied Psychology. 2005;90(4):692–709.",
-  "Adesope OO, Trevisan DA, Sundararajan N. Rethinking the use of tests: a meta-analysis of practice testing. Review of Educational Research. 2017;87(3):659–701.",
-  "Kluger AN, DeNisi A. The effects of feedback interventions on performance: a historical review, a meta-analysis, and a preliminary feedback intervention theory. Psychological Bulletin. 1996;119(2):254–284.",
-  "Stajkovic AD, Luthans F. Self-efficacy and work-related performance: a meta-analysis. Psychological Bulletin. 1998;124(2):240–261.",
-  "Singh SS, Sen R, Borle S. Online training of salespeople: impact, heterogeneity, and spillover effects. Journal of Marketing Research. 2022;59(1):230–249.",
-  "Dover HF, Freling RE, Forbes LP. Beyond the script: assessing the effectiveness of sales role-plays in developing selling skills. Journal of Selling. 2025;25(1):77–90.",
-  "Macnamara BN, Hambrick DZ, Oswald FL. Deliberate practice and performance in music, games, sports, education, and professions: a meta-analysis. Psychological Science. 2014;25(8):1608–1618.",
+  "Cook DA, Hatala R, Brydges R, et al. Technology-enhanced simulation for health professions education: a systematic review and meta-analysis. JAMA. 2011;306(9):978-988.",
+  "Sitzmann T. A meta-analytic examination of the instructional effectiveness of computer-based simulation games. Personnel Psychology. 2011;64(2):489-528.",
+  "Taylor PJ, Russ-Eft DF, Chan DWL. A meta-analytic review of behavior modeling training. Journal of Applied Psychology. 2005;90(4):692-709.",
+  "Adesope OO, Trevisan DA, Sundararajan N. Rethinking the use of tests: a meta-analysis of practice testing. Review of Educational Research. 2017;87(3):659-701.",
+  "Kluger AN, DeNisi A. The effects of feedback interventions on performance: a historical review, a meta-analysis, and a preliminary feedback intervention theory. Psychological Bulletin. 1996;119(2):254-284.",
+  "Stajkovic AD, Luthans F. Self-efficacy and work-related performance: a meta-analysis. Psychological Bulletin. 1998;124(2):240-261.",
+  "Singh SS, Sen R, Borle S. Online training of salespeople: impact, heterogeneity, and spillover effects. Journal of Marketing Research. 2022;59(1):230-249.",
+  "Dover HF, Freling RE, Forbes LP. Beyond the script: assessing the effectiveness of sales role-plays in developing selling skills. Journal of Selling. 2025;25(1):77-90.",
+  "Macnamara BN, Hambrick DZ, Oswald FL. Deliberate practice and performance in music, games, sports, education, and professions: a meta-analysis. Psychological Science. 2014;25(8):1608-1618.",
 ];
 
 export default function ResearchPage() {

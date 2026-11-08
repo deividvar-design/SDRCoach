@@ -116,12 +116,12 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label="Streak" value={streak} unit={streak === 1 ? "day" : "days"} hint={streak ? "Consecutive days with a call" : "Call today to start one"} highlight={streak >= 3} />
-        <StatTile label={isManager ? "Team average" : "Average score"} value={avg == null ? "—" : avg.toFixed(1)} unit="/ 10" hint={`${scope.length} call${scope.length === 1 ? "" : "s"}`} />
-        <StatTile label="Meetings booked" value={bookRate == null ? "—" : `${bookRate}%`} hint={decided ? `${booked} of ${decided} decided calls` : "The prospect decides"} />
+        <StatTile label={isManager ? "Team average" : "Average score"} value={avg == null ? "-" : avg.toFixed(1)} unit="/ 10" hint={`${scope.length} call${scope.length === 1 ? "" : "s"}`} />
+        <StatTile label="Meetings booked" value={bookRate == null ? "-" : `${bookRate}%`} hint={decided ? `${booked} of ${decided} decided calls` : "The prospect decides"} />
         {isManager ? (
           <StatTile label="Team" value={members?.length ?? 0} unit={`/ ${viewer.org.seat_limit} seats`} hint={`${activeSeats} dialed in the last 30 days, ${targetCount ?? 0} live targets`} />
         ) : (
-          <StatTile label="Personal best" value={best == null ? "—" : best.toFixed(1)} unit="/ 10" hint={best == null ? "Set one today" : "Beat it"} />
+          <StatTile label="Personal best" value={best == null ? "-" : best.toFixed(1)} unit="/ 10" hint={best == null ? "Set one today" : "Beat it"} />
         )}
       </div>
 

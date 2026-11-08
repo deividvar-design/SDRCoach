@@ -1,6 +1,6 @@
 /**
  * Plans. Prices are launch placeholders sized against unit cost:
- * a 6-minute call runs roughly $0.60–0.75 in voice + LLM + scoring, so every seat carries a call allowance.
+ * a 6-minute call runs roughly $0.60 to $0.75 in voice + LLM + scoring, so every seat carries a call allowance.
  */
 import type { Currency } from "./currency";
 

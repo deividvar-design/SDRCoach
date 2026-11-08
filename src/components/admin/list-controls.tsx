@@ -38,14 +38,14 @@ export function ListToolbar({ path, state, filters, placeholder = "Search" }: { 
   );
 }
 
-/** "1–50 of 213" with previous and next, keeping the search and filters. */
+/** "1 to 50 of 213" with previous and next, keeping the search and filters. */
 export function Pager({ path, state, total }: { path: string; state: ListState; total: number }) {
   const pages = Math.max(1, Math.ceil(total / state.per));
   const first = total === 0 ? 0 : state.from + 1;
   const last = Math.min(total, state.to + 1);
   return (
     <div className="text-muted-foreground flex items-center justify-between gap-4 border-t px-5 py-3 text-xs">
-      <span>{total === 0 ? "Nothing matches" : `${first}–${last} of ${total}`}</span>
+      <span>{total === 0 ? "Nothing matches" : `${first} to ${last} of ${total}`}</span>
       <span className="flex items-center gap-1">
         <PageLink href={pageHref(path, state, state.page - 1)} disabled={state.page <= 1} label="Previous page"><ChevronLeft className="size-4" /></PageLink>
         <span className="tabular px-2">{state.page} / {pages}</span>

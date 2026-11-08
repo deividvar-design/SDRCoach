@@ -71,7 +71,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       <div className="grid gap-4 sm:grid-cols-3">
         <StatTile label="Leads" value={total ?? 0} hint={`${week ?? 0} in the last 7 days`} />
         <StatTile label="Completed calls" value={scored.length} hint={`${failed ?? 0} failed or capped`} />
-        <StatTile label="Average score" value={avg === null ? "—" : avg.toFixed(1)} hint={`${newsletter ?? 0} opted into the newsletter`} />
+        <StatTile label="Average score" value={avg === null ? "-" : avg.toFixed(1)} hint={`${newsletter ?? 0} opted into the newsletter`} />
       </div>
       <section className="bg-card rounded-2xl border">
         <ListToolbar path={PATH} state={state} filters={FILTERS} placeholder="Email, domain or company" />
@@ -107,10 +107,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(l.created_at)}</TableCell>
                     <TableCell><Badge variant={l.status === "scored" ? "success" : l.status === "failed" ? "destructive" : "secondary"}>{l.status === "failed" && l.error === "daily cap" ? "capped" : l.status}</Badge></TableCell>
-                    <TableCell className="text-sm">{l.outcome ? OUTCOME_TEXT[l.outcome] ?? l.outcome : "—"}</TableCell>
-                    <TableCell className="tabular text-right">{l.overall === null ? "—" : Number(l.overall).toFixed(1)}</TableCell>
-                    <TableCell className="tabular text-muted-foreground text-right text-sm">{l.duration_seconds ? `${Math.floor(l.duration_seconds / 60)}m ${l.duration_seconds % 60}s` : "—"}</TableCell>
-                    <TableCell className="text-sm">{l.newsletter ? "Yes" : "—"}</TableCell>
+                    <TableCell className="text-sm">{l.outcome ? OUTCOME_TEXT[l.outcome] ?? l.outcome : "-"}</TableCell>
+                    <TableCell className="tabular text-right">{l.overall === null ? "-" : Number(l.overall).toFixed(1)}</TableCell>
+                    <TableCell className="tabular text-muted-foreground text-right text-sm">{l.duration_seconds ? `${Math.floor(l.duration_seconds / 60)}m ${l.duration_seconds % 60}s` : "-"}</TableCell>
+                    <TableCell className="text-sm">{l.newsletter ? "Yes" : "-"}</TableCell>
                   </TableRow>
                 );
               })

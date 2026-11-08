@@ -38,7 +38,7 @@ const DRAFT = {
   company_description: "Example Co sells renewals software to procurement teams.",
   product_description: "A renewals desk that chases contract owners before auto-renew dates.",
   ideal_customer_profile: "Heads of procurement at 200 to 2,000 person companies.",
-  target: { name: "Dana Whitfield", title: "Head of Procurement", company: "Northwind Freight", industry: "Logistics", company_size: "500–1,000 employees", persona_notes: "Busy, direct.", pain_points: ["missed auto-renewals"], objections: ["We have a spreadsheet for that."], voice_id: "not-a-real-voice" },
+  target: { name: "Dana Whitfield", title: "Head of Procurement", company: "Northwind Freight", industry: "Logistics", company_size: "500 to 1,000 employees", persona_notes: "Busy, direct.", pain_points: ["missed auto-renewals"], objections: ["We have a spreadsheet for that."], voice_id: "not-a-real-voice" },
 };
 
 describe("linkStatus", () => {

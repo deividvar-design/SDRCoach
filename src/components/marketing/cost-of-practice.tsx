@@ -11,7 +11,7 @@ export function CostOfPractice({ price }: { price: string }) {
   const starterCalls = PLANS.find((p) => p.id === "starter")?.callsPerSeat ?? 40;
   const tiles = [
     { big: "~$100", caption: "what one real conversation costs" },
-    { big: "30–50", caption: "real conversations a new rep burns while learning" },
+    { big: "30 to 50", caption: "real conversations a new rep burns while learning" },
     { big: price, caption: `a month for ${starterCalls} practice calls` },
   ];
   return (

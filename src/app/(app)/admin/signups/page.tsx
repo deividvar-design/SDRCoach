@@ -97,7 +97,7 @@ export default async function SignupsPage({ searchParams }: { searchParams: Prom
       <PageHeader eyebrow="Internal" title="Signups" description="Every account: where they came from, why they said they came, and whether they have dialed." actions={<Link href="/admin" className="text-sm underline underline-offset-4">Back to admin</Link>} />
       <div className="grid gap-4 sm:grid-cols-3">
         <StatTile label="Accounts" value={total ?? 0} hint={`${week ?? 0} in the last 7 days`} />
-        <StatTile label="Dialed at least once" value={dialedTotal} hint={total ? `${Math.round((dialedTotal / total) * 100)}% of accounts` : "—"} />
+        <StatTile label="Dialed at least once" value={dialedTotal} hint={total ? `${Math.round((dialedTotal / total) * 100)}% of accounts` : "-"} />
         <StatTile label="Ramping new SDRs" value={ramping ?? 0} hint={`${karen ?? 0} just want to fight Karen`} />
       </div>
       <section className="bg-card rounded-2xl border">
@@ -126,23 +126,23 @@ export default async function SignupsPage({ searchParams }: { searchParams: Prom
                 return (
                   <TableRow key={r.id}>
                     <TableCell>
-                      <div className="font-medium">{r.full_name ?? "—"}</div>
-                      <div className="text-muted-foreground text-xs">{r.email ? <a href={`mailto:${r.email}`} className="hover:underline">{r.email}</a> : "—"}{r.phone ? ` · ${r.phone}` : ""}</div>
+                      <div className="font-medium">{r.full_name ?? "-"}</div>
+                      <div className="text-muted-foreground text-xs">{r.email ? <a href={`mailto:${r.email}`} className="hover:underline">{r.email}</a> : "-"}{r.phone ? ` · ${r.phone}` : ""}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm">{org?.name ?? "—"}{m?.role ? <span className="text-muted-foreground"> · {m.role}</span> : null}</div>
+                      <div className="text-sm">{org?.name ?? "-"}{m?.role ? <span className="text-muted-foreground"> · {m.role}</span> : null}</div>
                       <div className="text-muted-foreground text-xs">{[org?.trial_domain, org?.plan, m ? countryName(countries.get(m.org_id)) : null].filter(Boolean).join(" · ")}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant={ad ? "success" : "outline"}>{ad ? "Google Ads" : "Direct"}</Badge>
                       <div className="text-muted-foreground mt-1 text-xs">
-                        {provider ? PROVIDER_LABEL[provider] ?? provider : "—"}
+                        {provider ? PROVIDER_LABEL[provider] ?? provider : "-"}
                         {r.plan_intent ? ` · wanted ${r.plan_intent.replace(":", ", ")}` : ""}
                         {r.hero_variant ? ` · hero ${r.hero_variant}` : ""}
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm">{reasonLabel(r.signup_reason) ?? "—"}</TableCell>
-                    <TableCell className="text-muted-foreground max-w-xs text-xs">{r.signup_goal ?? "—"}</TableCell>
+                    <TableCell className="text-sm">{reasonLabel(r.signup_reason) ?? "-"}</TableCell>
+                    <TableCell className="text-muted-foreground max-w-xs text-xs">{r.signup_goal ?? "-"}</TableCell>
                     <TableCell className="tabular text-right">{callsBy.get(r.id) ?? 0}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(r.created_at)}</TableCell>
                   </TableRow>

@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 const RANGES = [7, 30, 90];
 const mins = (m: number) => (m >= 100 ? `${Math.round(m)} min` : `${m.toFixed(1)} min`);
-const length = (s: number) => (s ? `${Math.floor(s / 60)}m ${Math.round(s % 60)}s` : "—");
+const length = (s: number) => (s ? `${Math.floor(s / 60)}m ${Math.round(s % 60)}s` : "-");
 
 /** Voice minutes and scoring tokens, by day, by workspace and by kind of call. Karen calls included. */
 export default async function AdminUsagePage({ searchParams }: { searchParams: Promise<{ days?: string }> }) {
@@ -70,13 +70,13 @@ export default async function AdminUsagePage({ searchParams }: { searchParams: P
         <div className="border-b px-5 py-4"><h2 className="font-medium">Karen, last {days} days</h2></div>
         <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
           <StatTile label="Started" value={u.karen.started} hint={`${u.karen.connected} connected, ${u.karen.scored} scored`} />
-          <StatTile label="Left an email" value={u.karen.started ? `${Math.round((u.karen.withEmail / u.karen.started) * 100)}%` : "—"} hint={`${u.karen.withEmail} of ${u.karen.started}, ${u.karen.personal} personal`} />
-          <StatTile label="Average score" value={u.karen.avgScore === null ? "—" : u.karen.avgScore.toFixed(1)} hint={`${u.karen.survived} survived, average ${length(u.karen.avgSeconds)}`} />
+          <StatTile label="Left an email" value={u.karen.started ? `${Math.round((u.karen.withEmail / u.karen.started) * 100)}%` : "-"} hint={`${u.karen.withEmail} of ${u.karen.started}, ${u.karen.personal} personal`} />
+          <StatTile label="Average score" value={u.karen.avgScore === null ? "-" : u.karen.avgScore.toFixed(1)} hint={`${u.karen.survived} survived, average ${length(u.karen.avgSeconds)}`} />
           <StatTile label="From Google Ads" value={u.karen.fromAds} hint={`${u.karen.rematches} rematch${u.karen.rematches === 1 ? "" : "es"}`} />
         </div>
         <div className="text-muted-foreground grid gap-2 border-t px-5 py-4 text-sm sm:grid-cols-2">
-          <div><span className="text-foreground font-medium">Started via:</span> {u.karen.byMethod.map(([k, n]) => `${k} ${n}`).join(", ") || "—"}</div>
-          <div><span className="text-foreground font-medium">Outcomes:</span> {u.karen.byOutcome.map(([k, n]) => `${OUTCOME_TEXT[k] ?? k} ${n}`).join(", ") || "—"}</div>
+          <div><span className="text-foreground font-medium">Started via:</span> {u.karen.byMethod.map(([k, n]) => `${k} ${n}`).join(", ") || "-"}</div>
+          <div><span className="text-foreground font-medium">Outcomes:</span> {u.karen.byOutcome.map(([k, n]) => `${OUTCOME_TEXT[k] ?? k} ${n}`).join(", ") || "-"}</div>
         </div>
       </section>
 
@@ -96,7 +96,7 @@ export default async function AdminUsagePage({ searchParams }: { searchParams: P
                   <TableCell className="tabular text-right">{w.calls}</TableCell>
                   <TableCell className="tabular text-right">{w.minutes.toFixed(1)}</TableCell>
                   <TableCell className="font-mono text-xs tabular text-right">{formatUsd(w.cost)}</TableCell>
-                  <TableCell className="text-xs">{w.lastCall ? formatDate(w.lastCall) : "—"}</TableCell>
+                  <TableCell className="text-xs">{w.lastCall ? formatDate(w.lastCall) : "-"}</TableCell>
                 </TableRow>
               ))
             )}
@@ -106,7 +106,7 @@ export default async function AdminUsagePage({ searchParams }: { searchParams: P
                 <TableCell className="tabular text-right">{u.totals.karenCalls}</TableCell>
                 <TableCell className="tabular text-right">{(u.karen.avgSeconds * u.karen.connected / 60).toFixed(1)}</TableCell>
                 <TableCell className="font-mono text-xs tabular text-right">{formatUsd(u.karenCost)}</TableCell>
-                <TableCell className="text-xs">—</TableCell>
+                <TableCell className="text-xs">-</TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -128,9 +128,9 @@ export default async function AdminUsagePage({ searchParams }: { searchParams: P
                   <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{formatDate(c.at)}</TableCell>
                   <TableCell className="text-sm">{c.kind === "app" ? <Link href={`/sessions/${c.id}`} className="hover:underline">{c.who}</Link> : c.who}</TableCell>
                   <TableCell><Badge variant={c.status === "scored" ? "success" : c.status === "failed" ? "destructive" : "secondary"}>{c.status}</Badge></TableCell>
-                  <TableCell className="text-sm">{c.outcome ? OUTCOME_TEXT[c.outcome] ?? c.outcome : "—"}</TableCell>
+                  <TableCell className="text-sm">{c.outcome ? OUTCOME_TEXT[c.outcome] ?? c.outcome : "-"}</TableCell>
                   <TableCell className="tabular text-right text-sm">{length(c.seconds)}</TableCell>
-                  <TableCell className="tabular text-right">{c.score === null ? "—" : Number(c.score).toFixed(1)}</TableCell>
+                  <TableCell className="tabular text-right">{c.score === null ? "-" : Number(c.score).toFixed(1)}</TableCell>
                   <TableCell className="font-mono text-xs tabular text-right">{formatUsd(c.cost)}</TableCell>
                 </TableRow>
               ))

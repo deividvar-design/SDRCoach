@@ -1,4 +1,5 @@
 import "server-only";
+import { NO_DASHES_RULE, withoutLongDashes } from "@/lib/text/dashes";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
@@ -11,7 +12,7 @@ import type { Mood } from "@/lib/domain/moods";
 export const SCORING_MODEL = "claude-opus-5";
 
 const dimension = z.object({
-  score: z.number().min(0).max(10).describe("0–10, one decimal allowed"),
+  score: z.number().min(0).max(10).describe("0 to 10, one decimal allowed"),
   rationale: z.string().describe("One or two sentences quoting or paraphrasing what the rep actually said"),
 });
 
@@ -100,7 +101,7 @@ export async function scoreCall(input: ScoreInput) {
   const personaBlock = persona.length || bossNote ? `\nAbout the prospect: ${persona.join(". ")}.${bossNote}` : "";
 
   // Static first (cacheable across every call), then the per-call context.
-  const staticSystem = `You are an elite SDR coach grading a simulated cold call. Grade only the rep. The prospect's behaviour is not under review.
+  const staticSystem = `You are an elite SDR coach grading a simulated cold call. Grade only the rep. The prospect's behaviour is not under review. ${NO_DASHES_RULE}
 
 Score each rubric dimension from 0 to 10 using these definitions:
 ${RUBRIC_KEYS.map((k) => `- ${k}: ${RUBRIC[k].description}`).join("\n")}
@@ -145,7 +146,7 @@ ${renderTranscript(input.turns, input.repName, input.prospect.name)}
   });
 
   if (response.stop_reason === "refusal") throw new Error("scoring refused");
-  const parsed = response.parsed_output;
+  const parsed = response.parsed_output && withoutLongDashes(response.parsed_output);
   if (!parsed) throw new Error("scoring returned no parseable output");
 
   const dimensions: ScoreDimensions = {

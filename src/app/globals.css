@@ -372,8 +372,19 @@ html:not(.dark) [data-band="lo"] { background: #f6ded6; color: #8f3f2b; }
   .brand-panel .ray { animation: none; }
 }
 /* Inside a brand panel the page's text tokens read as light, so shared components need no dark variant. */
+.brand-panel { color: #f4f1ea; }
 .brand-panel .text-foreground { color: #f4f1ea; }
 .brand-panel .text-muted-foreground { color: #b9c0cb; }
+.brand-panel .text-signal-ink { color: #ffb162; }
+.brand-panel .text-destructive { color: #ffc9b8; }
+.brand-panel .border:not(.bg-card) { border-color: rgb(255 255 255 / 0.16); }
+.brand-panel [data-slot="button"].bg-transparent { border-color: rgb(255 255 255 / 0.4); }
+.brand-panel [data-slot="button"].bg-transparent:hover { background: rgb(255 255 255 / 0.1); color: #fff; }
+/* A white card on a navy panel keeps the page's colours. */
+.brand-panel .bg-card { color: var(--card-foreground); }
+.brand-panel .bg-card .text-foreground { color: var(--foreground); }
+.brand-panel .bg-card .text-muted-foreground { color: var(--muted-foreground); }
+.brand-panel .bg-card .border:not(.bg-card) { border-color: var(--border); }
 @media (max-width: 640px) {
   .brand-panel .ray:nth-child(even) { display: none; }
 }

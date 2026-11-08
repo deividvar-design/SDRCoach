@@ -60,11 +60,11 @@ export default function SampleReportPage() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
           <StatTile label="Call length" value={formatDuration(r.durationSeconds)} hint="Short. Enough for a reason and one objection." />
-          <StatTile label="Rep talked" value={`${Math.round(m.rep_talk_ratio * 100)}%`} hint="In the 40–60% sweet spot" />
+          <StatTile label="Rep talked" value={`${Math.round(m.rep_talk_ratio * 100)}%`} hint="In the 40 to 60% sweet spot" />
           <StatTile label="Longest monologue" value={m.longest_rep_monologue_secs} unit="sec" hint="Kept it tight" />
           <StatTile label="Questions asked" value={m.rep_questions} hint="Good curiosity" />
           <StatTile label="Filler words" value={m.filler_words} hint="Clean delivery" />
-          <StatTile label="First objection" value={m.first_objection_secs ?? "—"} unit="sec" hint="Early. The opener invited it." />
+          <StatTile label="First objection" value={m.first_objection_secs ?? "-"} unit="sec" hint="Early. The opener invited it." />
           <StatTile label="Interruptions" value={m.interruptions_by_rep} hint="Once or twice, watch it" />
         </div>
 
@@ -134,7 +134,7 @@ export default function SampleReportPage() {
         <div className="stage text-paper rounded-3xl px-8 py-14 text-center md:px-16">
           <h2 className="font-display text-5xl text-balance md:text-6xl">Your call, scored like this.</h2>
           <p className="mx-auto mt-4 max-w-md text-balance opacity-80">Three minutes against Karen, no account, no card. The six skills, the objections and the coach's notes land a minute after she hangs up.</p>
-          <Button size="lg" variant="signal" className="mt-8" asChild><CtaLink ctaId="sample_report_karen" href="/karen?from=/sample-report">Get your own report — call Karen</CtaLink></Button>
+          <Button size="lg" variant="signal" className="mt-8" asChild><CtaLink ctaId="sample_report_karen" href="/karen?from=/sample-report">Get your own report: call Karen</CtaLink></Button>
         </div>
       </Section>
     </>

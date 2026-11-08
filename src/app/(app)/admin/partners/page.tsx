@@ -90,11 +90,11 @@ export default async function AdminPartnersPage({ searchParams }: { searchParams
                     <Badge variant={VARIANT[a.status]}>{a.status}</Badge>
                     {link && <div className="text-muted-foreground mt-1 text-xs">{link.claimed_at ? `opened ${formatDate(link.claimed_at)} · ${made} calls` : "link not opened yet"}</div>}
                     {link?.org_id && <div className="text-xs"><Link href={`/admin/orgs/${link.org_id}`} className="underline underline-offset-4">Workspace</Link></div>}
-                    {report && <div className="mt-1 text-xs">Score {report.firstWeekAvg ?? "–"} → {report.lastWeekAvg ?? "–"} · {report.calls} calls</div>}
+                    {report && <div className="mt-1 text-xs">Score {report.firstWeekAvg ?? "-"} → {report.lastWeekAvg ?? "-"} · {report.calls} calls</div>}
                     {a.quote && <div className="mt-1 max-w-xs text-xs">{a.quote_approved_at ? "Approved quote" : "Quote, not approved"}: “{a.quote}”</div>}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{formatDate(a.created_at)}</TableCell>
-                  <TableCell className="text-right">{a.status === "pending" ? <PartnerRowActions id={a.id} company={a.company} /> : <span className="text-muted-foreground text-xs">{a.decided_at ? `${a.status} ${formatDate(a.decided_at)}` : "—"}</span>}</TableCell>
+                  <TableCell className="text-right">{a.status === "pending" ? <PartnerRowActions id={a.id} company={a.company} /> : <span className="text-muted-foreground text-xs">{a.decided_at ? `${a.status} ${formatDate(a.decided_at)}` : "-"}</span>}</TableCell>
                 </TableRow>
               );
             })}

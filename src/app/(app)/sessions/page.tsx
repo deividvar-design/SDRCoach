@@ -126,7 +126,7 @@ export default async function SessionsPage({ searchParams }: PageProps<"/session
                       <TableCell>
                         <Link href={`/sessions/${s.id}`} className="hover:underline">{fmtDate(s.created_at)}</Link>
                       </TableCell>
-                      {showTeam && <TableCell>{s.profiles?.full_name ?? "—"}</TableCell>}
+                      {showTeam && <TableCell>{s.profiles?.full_name ?? "-"}</TableCell>}
                       <TableCell>
                         <div>{s.targets?.name ?? "Deleted target"}</div>
                         <div className="text-muted-foreground text-xs">{s.targets?.company}</div>

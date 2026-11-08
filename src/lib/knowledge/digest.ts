@@ -1,4 +1,5 @@
 import "server-only";
+import { NO_DASHES_RULE, withoutLongDashes } from "@/lib/text/dashes";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
@@ -47,12 +48,12 @@ export async function digestKnowledgeSource(id: string) {
       max_tokens: 8000,
       thinking: { type: "adaptive" },
       system:
-        "You analyse real B2B cold-call material (transcripts, scripts, playbooks, objection sheets) for a sales training tool. Extract what an AI prospect would need to sound like the real buyers in this market, and what a coach would need to grade reps against this team's playbook. Be concrete and quote real phrasing. Ignore anything that is not about selling conversations.",
+        "You analyse real B2B cold-call material (transcripts, scripts, playbooks, objection sheets) for a sales training tool. Extract what an AI prospect would need to sound like the real buyers in this market, and what a coach would need to grade reps against this team's playbook. Be concrete and quote real phrasing. Ignore anything that is not about selling conversations. " + NO_DASHES_RULE,
       messages: [{ role: "user", content: `Material name: ${source.name}\nType: ${source.kind}\n\n${text}` }],
       output_config: { format: zodOutputFormat(DigestSchema), effort: "medium" },
     });
 
-    const parsed = response.parsed_output;
+    const parsed = response.parsed_output && withoutLongDashes(response.parsed_output);
     if (!parsed) throw new Error("no parseable digest");
 
     await db.from("knowledge_sources").update({ status: "ready", summary: parsed.summary, extracted: parsed }).eq("id", id);

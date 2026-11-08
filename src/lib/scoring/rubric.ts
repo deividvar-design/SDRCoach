@@ -31,7 +31,7 @@ export const RUBRIC = {
   close: {
     label: "Close",
     description:
-      "Asks for a specific, small next step (a 15–30 minute call) with a proposed day and time, handles a soft no, confirms the details, and ends cleanly.",
+      "Asks for a specific, small next step (a 15 to 30 minute call) with a proposed day and time, handles a soft no, confirms the details, and ends cleanly.",
   },
 } as const;
 

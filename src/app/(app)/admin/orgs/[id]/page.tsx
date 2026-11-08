@@ -60,7 +60,7 @@ export default async function AdminOrgPage({ params, searchParams }: PageProps<"
             {members.map((m) => (
               <li key={m.user_id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
                 <div className="min-w-0">
-                  <div className="truncate font-medium">{m.profiles?.full_name ?? "—"}</div>
+                  <div className="truncate font-medium">{m.profiles?.full_name ?? "-"}</div>
                   <div className="text-muted-foreground truncate text-xs">{m.email ?? m.user_id}</div>
                 </div>
                 <Badge variant="secondary">{ROLE_LABEL[m.role]}</Badge>
@@ -105,11 +105,11 @@ export default async function AdminOrgPage({ params, searchParams }: PageProps<"
               {sessions.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell><Link href={`/sessions/${s.id}`} className="hover:underline">{formatDate(s.created_at)}</Link></TableCell>
-                  <TableCell>{s.targets?.name ?? "—"}</TableCell>
+                  <TableCell>{s.targets?.name ?? "-"}</TableCell>
                   <TableCell><Badge variant="secondary">L{LEVELS[s.difficulty].level}</Badge></TableCell>
                   <TableCell><Badge variant={s.status === "scored" ? "success" : s.status === "failed" ? "destructive" : "outline"}>{SESSION_STATUS[s.status].label}</Badge></TableCell>
                   <TableCell className="font-mono text-xs">{formatDuration(s.duration_seconds)}</TableCell>
-                  <TableCell className="capitalize">{s.outcome?.replaceAll("_", " ") ?? "—"}</TableCell>
+                  <TableCell className="capitalize">{s.outcome?.replaceAll("_", " ") ?? "-"}</TableCell>
                   <TableCell className="text-right"><ScorePill value={s.call_scores?.overall ?? null} /></TableCell>
                 </TableRow>
               ))}

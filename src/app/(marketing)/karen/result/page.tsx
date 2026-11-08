@@ -95,7 +95,7 @@ export default async function KarenResultPage() {
             <div className="bg-card mt-6 flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="font-medium">Your team's reps face these same objections.</div>
-                <div className="text-muted-foreground text-sm">Build their prospects from your own calls — 5 free calls, no card.</div>
+                <div className="text-muted-foreground text-sm">Build their prospects from your own calls. 5 free calls, no card.</div>
                 <div className="text-muted-foreground mt-1 text-sm">Running 3+ SDRs? <CtaLink ctaId="report_founding_partner" href="/founding-partners" className="text-foreground underline underline-offset-4">Apply for a founding-partner pilot</CtaLink>, set up for you.</div>
                 {cameFrom && (
                   <div className="text-muted-foreground mt-2 text-sm">

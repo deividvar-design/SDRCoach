@@ -62,7 +62,7 @@ export default async function AdminExtensionsPage() {
                 <TableRow key={r.id} className="align-top">
                   <TableCell className="max-w-xs whitespace-normal">
                     <div className="font-medium">{org ? <Link href={`/admin/orgs/${org.id}`} className="underline underline-offset-4">{org.name}</Link> : "Workspace"}</div>
-                    <div className="text-muted-foreground text-xs">{user?.full_name || "—"} · {user?.email ?? "—"} {user?.email && !work && <Badge variant="outline" className="ml-1">personal</Badge>}</div>
+                    <div className="text-muted-foreground text-xs">{user?.full_name || "-"} · {user?.email ?? "-"} {user?.email && !work && <Badge variant="outline" className="ml-1">personal</Badge>}</div>
                     <div className="text-muted-foreground text-xs">asked {formatDate(r.created_at)}</div>
                   </TableCell>
                   <TableCell className="max-w-md text-sm whitespace-normal">

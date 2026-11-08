@@ -66,11 +66,11 @@ export function ContextForm({ site }: { site?: string }) {
       </div>
       <div className="space-y-2">
         <Label htmlFor="product_description">What reps are selling on the phone</Label>
-        <Textarea id="product_description" name="product_description" required value={fields.product_description} onChange={set("product_description")} placeholder="A dashboard and driver app that cuts fuel and idle time. Typically $40–80 per vehicle per month. The ask on a cold call is a 15-minute demo." />
+        <Textarea id="product_description" name="product_description" required value={fields.product_description} onChange={set("product_description")} placeholder="A dashboard and driver app that cuts fuel and idle time. Typically $40 to $80 per vehicle per month. The ask on a cold call is a 15-minute demo." />
       </div>
       <div className="space-y-2">
         <Label htmlFor="ideal_customer_profile">Who you call</Label>
-        <Textarea id="ideal_customer_profile" name="ideal_customer_profile" required value={fields.ideal_customer_profile} onChange={set("ideal_customer_profile")} placeholder="VP Ops or fleet managers at 100–1,000 vehicle fleets in freight, last-mile and field services. Trigger events: fleet growth, a new depot, insurance renewals." />
+        <Textarea id="ideal_customer_profile" name="ideal_customer_profile" required value={fields.ideal_customer_profile} onChange={set("ideal_customer_profile")} placeholder="VP Ops or fleet managers at 100 to 1,000 vehicle fleets in freight, last-mile and field services. Trigger events: fleet growth, a new depot, insurance renewals." />
       </div>
 
       {target && (

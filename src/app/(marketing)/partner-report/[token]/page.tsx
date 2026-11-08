@@ -18,8 +18,8 @@ export default async function PartnerReportPage({ params }: { params: Promise<{ 
   const stats: [string, string][] = [
     ["Scored calls", String(report.calls)],
     ["Reps", String(report.reps)],
-    ["First-week average", report.firstWeekAvg === null ? "–" : `${report.firstWeekAvg}`],
-    ["Last-week average", report.lastWeekAvg === null ? "–" : `${report.lastWeekAvg}`],
+    ["First-week average", report.firstWeekAvg === null ? "-" : `${report.firstWeekAvg}`],
+    ["Last-week average", report.lastWeekAvg === null ? "-" : `${report.lastWeekAvg}`],
   ];
   return (
     <Section className="pt-14 md:pt-20">

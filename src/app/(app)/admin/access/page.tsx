@@ -74,7 +74,7 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
                     {status === "open" && <div className="text-muted-foreground mt-1 text-xs">until {formatDate(l.expires_at)}</div>}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{formatDate(l.created_at)}<div className="text-xs">{l.created_by}</div></TableCell>
-                  <TableCell className="text-right">{status === "open" ? <AccessRowActions id={l.id} link={accessUrl(l.token)} /> : <span className="text-muted-foreground text-xs">{l.claimed_at ? `claimed ${formatDate(l.claimed_at)}` : "—"}</span>}</TableCell>
+                  <TableCell className="text-right">{status === "open" ? <AccessRowActions id={l.id} link={accessUrl(l.token)} /> : <span className="text-muted-foreground text-xs">{l.claimed_at ? `claimed ${formatDate(l.claimed_at)}` : "-"}</span>}</TableCell>
                 </TableRow>
               );
             })}

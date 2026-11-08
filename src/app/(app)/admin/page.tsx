@@ -81,14 +81,14 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               <TableRow key={r.org.id}>
                 <TableCell>
                   <Link href={`/admin/orgs/${r.org.id}`} className="font-medium hover:underline">{r.org.name}</Link>
-                  <div className="text-muted-foreground text-xs">{r.ownerEmail ?? r.org.trial_domain ?? "—"}{countries.has(r.org.id) ? ` · ${countryName(countries.get(r.org.id))}` : ""}</div>
+                  <div className="text-muted-foreground text-xs">{r.ownerEmail ?? r.org.trial_domain ?? "-"}{countries.has(r.org.id) ? ` · ${countryName(countries.get(r.org.id))}` : ""}</div>
                 </TableCell>
                 <TableCell>
                   <Badge variant={PLAN_VARIANT[r.org.plan] ?? "outline"} className="capitalize">{r.org.plan}</Badge>
                   {r.org.subscription_status === "past_due" && <Badge variant="destructive" className="ml-1">Past due</Badge>}
                 </TableCell>
                 <TableCell className="text-xs">
-                  {r.trial.onTrial ? (r.trial.exhausted ? <span className="text-destructive">exhausted</span> : `${r.trial.callsLeft} calls, ${r.trial.daysLeft}d left`) : "—"}
+                  {r.trial.onTrial ? (r.trial.exhausted ? <span className="text-destructive">exhausted</span> : `${r.trial.callsLeft} calls, ${r.trial.daysLeft}d left`) : "-"}
                 </TableCell>
                 <TableCell className="tabular">{r.members} / {r.org.seat_limit}</TableCell>
                 <TableCell className="tabular">{r.calls30d}<span className="text-muted-foreground"> ({r.connected30d})</span></TableCell>
@@ -116,7 +116,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
                 <div className="text-xs">
                   <div className="font-medium">{f.name ?? f.email}</div>
                   <div className="text-muted-foreground">{f.reply_ok ? <a href={`mailto:${f.email}`} className="hover:underline">{f.email}</a> : `${f.email} (no reply)`}</div>
-                  <div className="text-muted-foreground mt-1">{f.orgName ?? "—"}{f.role ? `, ${f.role}` : ""}</div>
+                  <div className="text-muted-foreground mt-1">{f.orgName ?? "-"}{f.role ? `, ${f.role}` : ""}</div>
                   <div className="text-muted-foreground">{formatDate(f.created_at)}{f.page ? `, on ${f.page}` : ""}</div>
                 </div>
                 <p className="text-sm whitespace-pre-wrap">{f.body}</p>

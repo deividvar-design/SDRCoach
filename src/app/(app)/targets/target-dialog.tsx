@@ -55,7 +55,7 @@ export function TargetDialog() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="company_size">Company size</Label>
-              <Input id="company_size" name="company_size" placeholder="200–500 employees" />
+              <Input id="company_size" name="company_size" placeholder="200 to 500 employees" />
             </div>
           </div>
           <div className="space-y-2">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Rays } from "@/components/shell/brand-panel";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROOF } from "@/content/proof";
@@ -82,7 +83,8 @@ export function CtaBand({
 }: { title?: string; body?: string; primary?: BandLink; secondary?: BandLink | null; link?: BandLink | null; note?: string | null }) {
   return (
     <Section>
-      <div className="stage text-paper rounded-3xl px-8 py-14 text-center md:px-16">
+      <div className="brand-panel text-paper rounded-3xl px-8 py-14 text-center md:px-16">
+        <Rays className="left-0 opacity-70" height={180} />
         <h2 className="font-display text-5xl text-balance md:text-6xl">{title}</h2>
         <p className="mx-auto mt-4 max-w-md text-balance opacity-80">{body}</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">

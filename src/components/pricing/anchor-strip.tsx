@@ -21,7 +21,7 @@ export function AnchorStrip({ price, currency }: { price: number; currency: Curr
   const money = formatMoney(price, currency);
   const tiles = [
     { big: "~$100", caption: "What one real conversation costs in rep time, data and tools" },
-    { big: "30–50", caption: "Real conversations a new rep burns in their first month while learning the opener" },
+    { big: "30 to 50", caption: "Real conversations a new rep burns in their first month while learning the opener" },
     { big: money, caption: `Per seat per month. ${starterCalls} practice calls a month. Make the mistakes here, not on your pipeline.` },
   ];
   return (

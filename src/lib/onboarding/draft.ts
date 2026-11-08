@@ -1,4 +1,5 @@
 import "server-only";
+import { NO_DASHES_RULE, withoutLongDashes } from "@/lib/text/dashes";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
@@ -22,7 +23,7 @@ const DraftSchema = z.object({
     title: z.string(),
     company: z.string().describe("A fictional company that fits the ideal customer profile."),
     industry: z.string(),
-    company_size: z.string().describe("A range such as 200–500 employees."),
+    company_size: z.string().describe("A range such as 200 to 500 employees."),
     persona_notes: z.string().describe("Three or four sentences on temperament, what they care about this quarter, and how they treat cold callers."),
     pain_points: z.array(z.string()).min(2).max(4),
     objections: z.array(z.string()).min(3).max(5).describe("Objections this buyer would raise to this specific product."),
@@ -161,12 +162,12 @@ export async function draftWorkspace(input: { orgName: string; site: string; tex
     model: DRAFT_MODEL,
     max_tokens: 1_500,
     system:
-      "You set up sales-training workspaces. Given a company's homepage text, write the context an AI cold-call prospect needs about the seller, and design one realistic buyer for the seller's reps to practise on. Be concrete and plain. Use only what the page supports; where it is silent, make sensible industry-typical choices and keep them modest. Never invent customer names or statistics. British or American spelling to match the page.",
+      "You set up sales-training workspaces. Given a company's homepage text, write the context an AI cold-call prospect needs about the seller, and design one realistic buyer for the seller's reps to practise on. Be concrete and plain. Use only what the page supports; where it is silent, make sensible industry-typical choices and keep them modest. Never invent customer names or statistics. British or American spelling to match the page. " + NO_DASHES_RULE,
     messages: [{ role: "user", content: `Company: ${input.orgName}\nWebsite: ${input.site}\n\n<homepage>\n${input.text}\n</homepage>` }],
     output_config: { format: zodOutputFormat(DraftSchema) },
   });
   if (response.stop_reason === "refusal") throw new Error("draft refused");
-  const parsed = response.parsed_output;
+  const parsed = response.parsed_output && withoutLongDashes(response.parsed_output);
   if (!parsed) throw new Error("draft returned no parseable output");
 
   const pool = VOICES.filter((v) => v.gender === parsed.target.gender);

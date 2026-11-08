@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
 
-/** 0–10 scores on a red-to-green ramp. Five steps; green starts at the 7.0 level-up threshold. */
+/** 0 to 10 scores on a red-to-green ramp. Five steps; green starts at the 7.0 level-up threshold. */
 export function scoreStep(v: number) {
   return v >= 8.5 ? 5 : v >= 7 ? 4 : v >= 5.5 ? 3 : v >= 4 ? 2 : 1;
 }
 
 export function ScorePill({ value, className }: { value: number | null | undefined; className?: string }) {
-  if (value == null) return <span className={cn("text-muted-foreground text-xs", className)}>—</span>;
+  if (value == null) return <span className={cn("text-muted-foreground text-xs", className)}>-</span>;
   // data-band drives the app's three-colour pills; the public site keeps the five-step ramp.
   const band = value >= 7 ? "hi" : value >= 5 ? "mid" : "lo";
   return <span data-band={band} className={cn("inline-flex rounded-md px-2 py-0.5 text-xs font-medium tabular-nums", `score-${scoreStep(value)}`, className)}>{value.toFixed(1)}</span>;

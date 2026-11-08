@@ -41,7 +41,7 @@ export default function ForEnablementPage() {
             <Button size="lg" variant="signal" asChild><Link href="/signup">Start free trial</Link></Button>
             <Button size="lg" variant="outline" asChild><Link href="/trust">How we handle your data</Link></Button>
           </div>
-          <TranscriptSources className="mt-10" />
+          <TranscriptSources className="bg-card text-foreground mt-10 rounded-2xl px-5 py-4" />
         </div>
       </Section>
       </Glow>
@@ -111,7 +111,7 @@ export default function ForEnablementPage() {
       <CtaBand
         title="Ground a prospect in your calls this afternoon."
         body="Five free calls. Upload transcripts during the trial. Any email."
-        primary={{ href: "/karen?from=/for-enablement", label: "Call Karen — 3 min, no signup", ctaId: "enablement_bottom_karen" }}
+        primary={{ href: "/karen?from=/for-enablement", label: "Call Karen: 3 min, no signup", ctaId: "enablement_bottom_karen" }}
         secondary={null}
         link={{ href: "/signup", label: "Start free trial", ctaId: "enablement_bottom_trial" }}
       />

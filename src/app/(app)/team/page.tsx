@@ -106,7 +106,7 @@ export default async function TeamPage() {
                         <AvatarFallback>{initials(m.profiles?.full_name)}</AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">
-                        <Link href={`/team/${m.user_id}`} className="font-medium hover:underline">{m.profiles?.full_name ?? "—"}</Link>
+                        <Link href={`/team/${m.user_id}`} className="font-medium hover:underline">{m.profiles?.full_name ?? "-"}</Link>
                         {m.profiles?.email && <div className="text-muted-foreground truncate text-xs">{m.profiles.email}</div>}
                       </div>
                     </div>
