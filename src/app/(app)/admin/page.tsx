@@ -47,20 +47,20 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <section aria-labelledby="this-week" className="space-y-3">
         <h2 id="this-week" className="text-[17px] font-semibold">The last 7 days <span className="text-muted-foreground text-sm font-normal">next to the 7 before</span></h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <StatTile label="Karen calls" value={week.karenCalls.thisWeek} hint={versus(week.karenCalls)} />
-          <StatTile label="Karen callers who left an email" value={week.karenEmails.thisWeek} hint={`${share(week.karenEmails.thisWeek, week.karenCalls.thisWeek)}, ${versus(week.karenEmails)}`} />
-          <StatTile label="Sign-ups" value={week.signups.thisWeek} hint={week.unconfirmed.thisWeek ? `${week.unconfirmed.thisWeek} never confirmed their email, ${versus(week.signups)}` : versus(week.signups)} highlight={week.unconfirmed.thisWeek > 0} />
-          <StatTile label="New workspaces" value={week.workspaces.thisWeek} hint={`${week.paying} paying in total, ${versus(week.workspaces)}`} />
-          <StatTile label="Practice calls scored" value={week.practiceCalls.thisWeek} hint={versus(week.practiceCalls)} />
-          <StatTile label="Meetings booked on practice calls" value={week.booked.thisWeek} hint={versus(week.booked)} />
+          <StatTile compact label="Karen calls" value={week.karenCalls.thisWeek} change={week.karenCalls.thisWeek - week.karenCalls.lastWeek} hint={versus(week.karenCalls)} />
+          <StatTile compact label="Karen callers who left an email" value={week.karenEmails.thisWeek} change={week.karenEmails.thisWeek - week.karenEmails.lastWeek} hint={`${share(week.karenEmails.thisWeek, week.karenCalls.thisWeek)}, ${versus(week.karenEmails)}`} />
+          <StatTile compact label="Sign-ups" value={week.signups.thisWeek} change={week.signups.thisWeek - week.signups.lastWeek} hint={week.unconfirmed.thisWeek ? `${week.unconfirmed.thisWeek} never confirmed their email, ${versus(week.signups)}` : versus(week.signups)} highlight={week.unconfirmed.thisWeek > 0} />
+          <StatTile compact label="New workspaces" value={week.workspaces.thisWeek} change={week.workspaces.thisWeek - week.workspaces.lastWeek} hint={`${week.paying} paying in total, ${versus(week.workspaces)}`} />
+          <StatTile compact label="Practice calls scored" value={week.practiceCalls.thisWeek} change={week.practiceCalls.thisWeek - week.practiceCalls.lastWeek} hint={versus(week.practiceCalls)} />
+          <StatTile compact label="Meetings booked on practice calls" value={week.booked.thisWeek} change={week.booked.thisWeek - week.booked.lastWeek} hint={versus(week.booked)} />
         </div>
       </section>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile label="Workspaces" value={totals.orgs} hint={`${totals.trials} trial, ${totals.paid} paid, ${totals.canceled} canceled`} />
-        <StatTile label="Calls, 30 days" value={totals.calls30d + totals.karen30d} hint={`${totals.calls30d} in workspaces, ${totals.karen30d} Karen`} />
-        <StatTile label="Est. cost, 30 days" value={formatUsd(totals.cost30d)} hint={`${formatUsd(tokens.voiceCost)} voice, ${formatUsd(tokens.anthropicCost)} scoring`} />
-        <StatTile label="Tokens, 30 days" value={fmtTokens(tokens.input + tokens.output)} hint={`${fmtTokens(tokens.input)} in, ${fmtTokens(tokens.output)} out, ${fmtTokens(tokens.cacheRead)} cached, ${Math.round(tokens.voiceSeconds / 60)} voice min`} />
+        <StatTile compact label="Workspaces" value={totals.orgs} hint={`${totals.trials} trial, ${totals.paid} paid, ${totals.canceled} canceled`} />
+        <StatTile compact label="Calls, 30 days" value={totals.calls30d + totals.karen30d} hint={`${totals.calls30d} in workspaces, ${totals.karen30d} Karen`} />
+        <StatTile compact label="Est. cost, 30 days" value={formatUsd(totals.cost30d)} hint={`${formatUsd(tokens.voiceCost)} voice, ${formatUsd(tokens.anthropicCost)} scoring`} />
+        <StatTile compact label="Tokens, 30 days" value={fmtTokens(tokens.input + tokens.output)} hint={`${fmtTokens(tokens.input)} in, ${fmtTokens(tokens.output)} out, ${fmtTokens(tokens.cacheRead)} cached, ${Math.round(tokens.voiceSeconds / 60)} voice min`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -144,10 +144,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   );
 }
 
-/** "up 4 on last week" style hint for a weekly number. */
+/** The hint under a weekly number; the arrow beside the value carries the change. */
 function versus(n: WeekNumber) {
   const d = n.thisWeek - n.lastWeek;
-  return d === 0 ? `same as last week (${n.lastWeek})` : `${d > 0 ? "up" : "down"} ${Math.abs(d)} on last week (${n.lastWeek})`;
+  return d === 0 ? `same as last week (${n.lastWeek})` : `${n.lastWeek} the week before`;
 }
 
 function share(part: number, whole: number) {

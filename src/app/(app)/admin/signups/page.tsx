@@ -96,9 +96,9 @@ export default async function SignupsPage({ searchParams }: { searchParams: Prom
     <div className="space-y-8">
       <PageHeader eyebrow="Internal" title="Signups" description="Every account: where they came from, why they said they came, and whether they have dialed." actions={<Link href="/admin" className="text-sm underline underline-offset-4">Back to admin</Link>} />
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatTile label="Accounts" value={total ?? 0} hint={`${week ?? 0} in the last 7 days`} />
-        <StatTile label="Dialed at least once" value={dialedTotal} hint={total ? `${Math.round((dialedTotal / total) * 100)}% of accounts` : "-"} />
-        <StatTile label="Ramping new SDRs" value={ramping ?? 0} hint={`${karen ?? 0} just want to fight Karen`} />
+        <StatTile compact label="Accounts" value={total ?? 0} hint={`${week ?? 0} in the last 7 days`} />
+        <StatTile compact label="Dialed at least once" value={dialedTotal} hint={total ? `${Math.round((dialedTotal / total) * 100)}% of accounts` : "-"} />
+        <StatTile compact label="Ramping new SDRs" value={ramping ?? 0} hint={`${karen ?? 0} just want to fight Karen`} />
       </div>
       <section className="bg-card rounded-2xl border">
         <ListToolbar path={PATH} state={state} filters={FILTERS} placeholder="Name or email" />

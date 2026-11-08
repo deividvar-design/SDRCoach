@@ -218,8 +218,10 @@ export function createDemoClient() {
         listUsers: async () => ({ data: { users: [] }, error: null }),
       },
       signOut: async () => ({ error: null }),
-      signInWithPassword: async () => ({ data: {}, error: null }),
-      signUp: async () => ({ data: { session: {} }, error: null }),
+      // DEMO_CONFIRM=1 behaves like a project that requires email confirmation, to preview the check-your-inbox step.
+      signUp: async () => ({ data: { session: process.env.DEMO_CONFIRM === "1" ? null : {}, user: null }, error: null }),
+      signInWithPassword: async () => (process.env.DEMO_CONFIRM === "1" ? { data: {}, error: { code: "email_not_confirmed", message: "Email not confirmed" } } : { data: {}, error: null }),
+      resend: async () => ({ data: {}, error: null }),
       exchangeCodeForSession: async () => ({ error: null }),
     },
     storage: {

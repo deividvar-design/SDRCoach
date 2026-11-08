@@ -45,9 +45,9 @@ export default async function AdminRewardsPage({ searchParams }: { searchParams:
     <div className="space-y-8">
       <PageHeader eyebrow="Internal" title="Rewards" description="Pasted post links wait here. Approve adds the calls and emails the workspace; reject sends the reason and reopens the card." actions={<Link href="/admin" className="text-sm underline underline-offset-4">Back to admin</Link>} />
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatTile label="Waiting" value={pending ?? 0} hint="pasted links to check" />
-        <StatTile label="Calls granted" value={totalCalls} hint={`about $${(totalCalls * 0.35).toFixed(0)} at today's call lengths`} />
-        <StatTile label="Claims" value={count ?? 0} hint="matching the filters" />
+        <StatTile compact label="Waiting" value={pending ?? 0} hint="pasted links to check" />
+        <StatTile compact label="Calls granted" value={totalCalls} hint={`about $${(totalCalls * 0.35).toFixed(0)} at today's call lengths`} />
+        <StatTile compact label="Claims" value={count ?? 0} hint="matching the filters" />
       </div>
       <section className="bg-card rounded-2xl border">
         <ListToolbar path={PATH} state={state} filters={FILTERS} placeholder="Search is by filters only" />

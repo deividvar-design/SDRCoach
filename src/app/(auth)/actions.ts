@@ -17,6 +17,10 @@ import { readAdClick } from "@/lib/ads/click";
 export interface AuthState {
   error?: string;
   message?: string;
+  /** Sign-up went through and a confirmation email is on its way to this address. */
+  confirmEmail?: string;
+  /** Sign-in refused because this address has not been confirmed yet. */
+  unconfirmedEmail?: string;
 }
 
 const credentials = z.object({
@@ -31,6 +35,9 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  if (error?.code === "email_not_confirmed") {
+    return { error: "Confirm your email first: the link is in the email we sent when you signed up.", unconfirmedEmail: parsed.data.email };
+  }
   if (error) return { error: "Wrong email or password." };
 
   redirect(safeNext(formData.get("next")));
@@ -93,7 +100,32 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
 
   // Email confirmation off: session exists immediately.
   if (data.session) redirect(invite ? `/invite/${invite}` : "/onboarding");
-  return { message: "Check your inbox to confirm your email, then sign in." };
+  return { confirmEmail: parsed.data.email };
+}
+
+export interface ResendState {
+  sent?: boolean;
+  error?: string;
+}
+
+/**
+ * Sends the sign-up confirmation email again. Supabase limits how often one address can ask, and answers the same
+ * way whether or not the address has an account, so this cannot be used to probe accounts.
+ */
+export async function resendConfirmation(_prev: ResendState, formData: FormData): Promise<ResendState> {
+  const parsed = z.string().email().safeParse(formData.get("email"));
+  if (!parsed.success) return { error: "That address doesn't look right. Start again from sign-up." };
+  const invite = typeof formData.get("invite") === "string" ? String(formData.get("invite")) : "";
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: parsed.data,
+    options: { emailRedirectTo: `${appUrl()}/auth/callback${invite ? `?next=/invite/${invite}` : ""}` },
+  });
+  await logFunnel("signup_resend", { email: parsed.data, meta: { ok: !error } });
+  if (error?.status === 429 || /seconds|rate/i.test(error?.message ?? "")) return { error: "We just sent one. Give it a minute, then try again." };
+  if (error) return { error: "Couldn't send it just now. Try again in a minute." };
+  return { sent: true };
 }
 
 

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 import { GoogleOneTap } from "@/components/auth/google-one-tap";
 import { GoogleMark } from "@/components/auth/google-mark";
+import { CheckInbox, ResendConfirmation } from "./check-inbox";
 
 export interface PlanIntent {
   plan: string;
@@ -30,6 +31,9 @@ export function AuthForm({ mode, next, invite, email, notice, intent }: { mode: 
     } catch {}
   }, [intent]);
 
+
+  // The account exists; the only step left is the link in their inbox.
+  if (state.confirmEmail) return <CheckInbox email={state.confirmEmail} invite={invite} />;
 
   return (
     <div className="space-y-6">
@@ -95,6 +99,8 @@ export function AuthForm({ mode, next, invite, email, notice, intent }: { mode: 
           {pending ? "One moment…" : mode === "login" ? "Sign in" : "Create account with email"}
         </Button>
       </form>
+      {/* Outside the sign-in form: a form cannot sit inside another. */}
+      {state.unconfirmedEmail && <ResendConfirmation email={state.unconfirmedEmail} invite={invite} variant="default" label="Send the confirmation email again" />}
 
       <p className="text-muted-foreground text-center text-sm">
         {mode === "login" ? (

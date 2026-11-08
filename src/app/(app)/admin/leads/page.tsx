@@ -72,9 +72,9 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
     <div className="space-y-8">
       <PageHeader eyebrow="Internal" title="Karen leads" description="Everyone who challenged Karen, with where they came from. Scorecards went to the address shown; callers who left before the email step have none." actions={<Link href="/admin" className="text-sm underline underline-offset-4">Back to admin</Link>} />
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatTile label="Calls, last 7 days" value={weekCalls ?? 0} hint={`${weekEmails ?? 0} left an email${weekCalls ? ` (${Math.round(((weekEmails ?? 0) / weekCalls) * 100)}%)` : ""}`} />
-        <StatTile label="Completed calls" value={scored.length} hint={`${failed ?? 0} failed or capped`} />
-        <StatTile label="Average score" value={avg === null ? "-" : avg.toFixed(1)} hint={`${newsletter ?? 0} opted into the newsletter`} />
+        <StatTile compact label="Calls, last 7 days" value={weekCalls ?? 0} hint={`${weekEmails ?? 0} left an email${weekCalls ? ` (${Math.round(((weekEmails ?? 0) / weekCalls) * 100)}%)` : ""}`} />
+        <StatTile compact label="Completed calls" value={scored.length} hint={`${failed ?? 0} failed or capped`} />
+        <StatTile compact label="Average score" value={avg === null ? "-" : avg.toFixed(1)} hint={`${newsletter ?? 0} opted into the newsletter`} />
       </div>
       <section className="bg-card rounded-2xl border">
         <ListToolbar path={PATH} state={state} filters={FILTERS} placeholder="Email, domain or company" />

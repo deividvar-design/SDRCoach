@@ -41,10 +41,10 @@ export default async function AdminOrgPage({ params, searchParams }: PageProps<"
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile label="Connected calls" value={connected} hint={trial.onTrial ? `${trial.callsLeft} of ${org.trial_call_limit} trial calls left, ${trial.daysLeft} days` : "Paid plan"} highlight={trial.onTrial && trial.exhausted} />
-        <StatTile label="Seats" value={`${members.length} / ${org.seat_limit}`} />
-        <StatTile label="Cost, 30 days" value={formatUsd(usage30d.cost)} hint={`${Math.round(usage30d.voiceSeconds / 60)} voice min, ${Math.round((usage30d.input + usage30d.output) / 1000)}k tokens`} />
-        <StatTile label="Cost, all time" value={formatUsd(usageAll.cost)} hint={`${Math.round(usageAll.voiceSeconds / 60)} voice min, ${Math.round((usageAll.input + usageAll.output) / 1000)}k tokens`} />
+        <StatTile compact label="Connected calls" value={connected} hint={trial.onTrial ? `${trial.callsLeft} of ${org.trial_call_limit} trial calls left, ${trial.daysLeft} days` : "Paid plan"} highlight={trial.onTrial && trial.exhausted} />
+        <StatTile compact label="Seats" value={`${members.length} / ${org.seat_limit}`} />
+        <StatTile compact label="Cost, 30 days" value={formatUsd(usage30d.cost)} hint={`${Math.round(usage30d.voiceSeconds / 60)} voice min, ${Math.round((usage30d.input + usage30d.output) / 1000)}k tokens`} />
+        <StatTile compact label="Cost, all time" value={formatUsd(usageAll.cost)} hint={`${Math.round(usageAll.voiceSeconds / 60)} voice min, ${Math.round((usageAll.input + usageAll.output) / 1000)}k tokens`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

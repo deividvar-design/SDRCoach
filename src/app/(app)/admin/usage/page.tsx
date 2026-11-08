@@ -47,10 +47,10 @@ export default async function AdminUsagePage({ searchParams }: { searchParams: P
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile label="Connected calls" value={u.totalCalls} hint={`${u.totals.appCalls} in workspaces, ${u.totals.karenCalls} Karen`} />
-        <StatTile label="Voice minutes" value={mins(u.totals.minutes)} hint={`average call ${length(u.avgSeconds)}`} />
-        <StatTile label="Estimated cost" value={formatUsd(totalCost)} hint={`${formatUsd(u.totals.voiceCost)} voice, ${formatUsd(u.totals.scoringCost)} scoring`} />
-        <StatTile label="Per call" value={formatUsd(costPerCall)} hint={`${formatUsd(u.karenCost)} of the total is Karen`} />
+        <StatTile compact label="Connected calls" value={u.totalCalls} hint={`${u.totals.appCalls} in workspaces, ${u.totals.karenCalls} Karen`} />
+        <StatTile compact label="Voice minutes" value={mins(u.totals.minutes)} hint={`average call ${length(u.avgSeconds)}`} />
+        <StatTile compact label="Estimated cost" value={formatUsd(totalCost)} hint={`${formatUsd(u.totals.voiceCost)} voice, ${formatUsd(u.totals.scoringCost)} scoring`} />
+        <StatTile compact label="Per call" value={formatUsd(costPerCall)} hint={`${formatUsd(u.karenCost)} of the total is Karen`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -69,10 +69,10 @@ export default async function AdminUsagePage({ searchParams }: { searchParams: P
       <section className="bg-card rounded-2xl border">
         <div className="border-b px-5 py-4"><h2 className="font-medium">Karen, last {days} days</h2></div>
         <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
-          <StatTile label="Started" value={u.karen.started} hint={`${u.karen.connected} connected, ${u.karen.scored} scored`} />
-          <StatTile label="Left an email" value={u.karen.started ? `${Math.round((u.karen.withEmail / u.karen.started) * 100)}%` : "-"} hint={`${u.karen.withEmail} of ${u.karen.started}, ${u.karen.personal} personal`} />
-          <StatTile label="Average score" value={u.karen.avgScore === null ? "-" : u.karen.avgScore.toFixed(1)} hint={`${u.karen.survived} survived, average ${length(u.karen.avgSeconds)}`} />
-          <StatTile label="From Google Ads" value={u.karen.fromAds} hint={`${u.karen.rematches} rematch${u.karen.rematches === 1 ? "" : "es"}`} />
+          <StatTile compact label="Started" value={u.karen.started} hint={`${u.karen.connected} connected, ${u.karen.scored} scored`} />
+          <StatTile compact label="Left an email" value={u.karen.started ? `${Math.round((u.karen.withEmail / u.karen.started) * 100)}%` : "-"} hint={`${u.karen.withEmail} of ${u.karen.started}, ${u.karen.personal} personal`} />
+          <StatTile compact label="Average score" value={u.karen.avgScore === null ? "-" : u.karen.avgScore.toFixed(1)} hint={`${u.karen.survived} survived, average ${length(u.karen.avgSeconds)}`} />
+          <StatTile compact label="From Google Ads" value={u.karen.fromAds} hint={`${u.karen.rematches} rematch${u.karen.rematches === 1 ? "" : "es"}`} />
         </div>
         <div className="text-muted-foreground grid gap-2 border-t px-5 py-4 text-sm sm:grid-cols-2">
           <div><span className="text-foreground font-medium">Started via:</span> {u.karen.byMethod.map(([k, n]) => `${k} ${n}`).join(", ") || "-"}</div>

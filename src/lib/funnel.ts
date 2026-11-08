@@ -23,6 +23,7 @@ export type FunnelKind =
   | "signup_submit"
   | "signup_rejected"
   | "signup_completed"
+  | "signup_resend"
   | "first_call"
   | "first_trial_call"
   | "trial_to_paid";
