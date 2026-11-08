@@ -10,6 +10,7 @@ import { ListToolbar, Pager } from "@/components/admin/list-controls";
 import { PageHeader } from "@/components/shell/page-header";
 import { StatTile } from "@/components/stat-tile";
 import { Badge } from "@/components/ui/badge";
+import { countryName, workspaceCountries } from "@/lib/geo";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const metadata = { title: "Signups" };
@@ -34,9 +35,10 @@ export default async function SignupsPage({ searchParams }: { searchParams: Prom
   const db = createAdminClient();
 
   // Workspace and call facts are small tables keyed by user; load them once and filter by id lists.
-  const [memberships, callers] = await Promise.all([
+  const [memberships, callers, countries] = await Promise.all([
     fetchAll((a, b) => db.from("memberships").select("user_id, role, org_id, organizations(name, trial_domain, plan)").range(a, b)),
     fetchAll((a, b) => db.from("call_sessions").select("user_id").not("started_at", "is", null).range(a, b)),
+    workspaceCountries(),
   ]);
   const orgOf = new Map(memberships.map((m) => [m.user_id, m]));
   const callsBy = new Map<string, number>();
@@ -129,7 +131,7 @@ export default async function SignupsPage({ searchParams }: { searchParams: Prom
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">{org?.name ?? "—"}{m?.role ? <span className="text-muted-foreground"> · {m.role}</span> : null}</div>
-                      <div className="text-muted-foreground text-xs">{org?.trial_domain ?? ""}{org?.plan ? ` · ${org.plan}` : ""}</div>
+                      <div className="text-muted-foreground text-xs">{[org?.trial_domain, org?.plan, m ? countryName(countries.get(m.org_id)) : null].filter(Boolean).join(" · ")}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant={ad ? "success" : "outline"}>{ad ? "Google Ads" : "Direct"}</Badge>

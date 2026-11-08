@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { recordWorkspaceCountry } from "@/lib/geo";
 import { reportError } from "@/lib/sentry";
 import { logFunnel } from "@/lib/funnel";
 import { z } from "zod";
@@ -85,6 +86,7 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
     ]);
     if (process.env.SDRCOACH_DEMO !== "1") {
       await attachReferral(createAdminClient(), orgId, (await cookies()).get(REFERRAL_COOKIE)?.value).catch((err) => reportError(err, { where: "attach_referral", orgId }));
+      await recordWorkspaceCountry(orgId);
       after(() => sendLifecycle(orgId, "welcome").catch((err) => reportError(err, { where: "welcome_email", orgId })));
     }
     await track("workspace_created", { with_site: Boolean(site) }).catch(() => {});

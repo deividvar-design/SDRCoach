@@ -1,4 +1,5 @@
 import { SESSION_STATUS } from "@/lib/domain/session-status";
+import { countryName, workspaceCountries } from "@/lib/geo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -28,6 +29,7 @@ export default async function AdminOrgPage({ params, searchParams }: PageProps<"
   const d = await loadOrgDetail(id, { from: list.from, to: list.to });
   if (!d) notFound();
   const { org, members, sessions, callCount, trial, connected, usageAll, usage30d, actions, emails } = d;
+  const country = countryName((await workspaceCountries()).get(org.id));
 
   return (
     <div className="space-y-8">
@@ -35,7 +37,7 @@ export default async function AdminOrgPage({ params, searchParams }: PageProps<"
       <PageHeader
         eyebrow={`${org.plan.charAt(0).toUpperCase()}${org.plan.slice(1)}${org.subscription_status ? `, ${org.subscription_status.replace("_", " ")}` : ""}, created ${formatDate(org.created_at)}`}
         title={org.name}
-        description={[org.trial_domain, org.stripe_customer_id ? `Stripe ${org.stripe_customer_id}` : "No Stripe customer", org.current_period_end ? `${org.cancel_at_period_end ? "ends" : "renews"} ${formatDate(org.current_period_end)}` : null].filter(Boolean).join(", ")}
+        description={[country ? `Signed up from ${country}` : "Country not recorded", org.trial_domain, org.stripe_customer_id ? `Stripe ${org.stripe_customer_id}` : "No Stripe customer", org.current_period_end ? `${org.cancel_at_period_end ? "ends" : "renews"} ${formatDate(org.current_period_end)}` : null].filter(Boolean).join(", ")}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

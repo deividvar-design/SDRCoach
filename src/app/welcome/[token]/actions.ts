@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { claimAccessLink } from "@/lib/access/links";
+import { recordWorkspaceCountry } from "@/lib/geo";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { reportError } from "@/lib/sentry";
 import { track } from "@vercel/analytics/server";
@@ -25,6 +26,7 @@ export async function claimAccess(token: string, _prev: ClaimState, formData: Fo
 
   const result = await claimAccessLink(token, { password: parsed.data.password, fullName: parsed.data.full_name ?? null });
   if ("error" in result) return { error: result.error, exists: result.code === "exists" };
+  await recordWorkspaceCountry(result.orgId);
 
   after(() => sendLifecycle(result.orgId, "welcome").catch((err) => reportError(err, { where: "welcome_email", orgId: result.orgId })));
   await track("workspace_created", { with_site: Boolean(result.targetId), access_link: true }).catch(() => {});

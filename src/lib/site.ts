@@ -21,7 +21,7 @@ export const SITE = {
     privacyEmail: "privacy@100dials.com",
     securityEmail: "security@100dials.com",
   },
-  legalUpdated: "2026-09-26",
+  legalUpdated: "2026-11-08",
   /** Bumped when marketing pages change materially; the sitemap reports it instead of "now". */
   contentUpdated: "2026-11-08",
 } as const;

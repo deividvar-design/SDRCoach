@@ -13,6 +13,7 @@ import { ListToolbar, Pager } from "@/components/admin/list-controls";
 import { parseList, slicePage, type SearchParams } from "@/lib/admin/list";
 import { adminBadges, totalAction } from "@/lib/admin/badges";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { countryName, workspaceCountries } from "@/lib/geo";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +31,9 @@ const WORKSPACE_FILTERS = [{ key: "plan", label: "Plan", options: ["trial", "sta
 export default async function AdminPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const admin = await requireAdmin();
   const list = parseList(await searchParams, ["plan"]);
-  const [{ rows: allRows, totals, tokens, daily }, feedback, badges] = await Promise.all([loadOverview(), loadFeedback(), adminBadges(createAdminClient(), admin.email)]);
+  const [{ rows: allRows, totals, tokens, daily }, feedback, badges, countries] = await Promise.all([loadOverview(), loadFeedback(), adminBadges(createAdminClient(), admin.email), workspaceCountries()]);
   const q = list.q.toLowerCase();
-  const matching = allRows.filter((r) => (!list.filters.plan || r.org.plan === list.filters.plan) && (!q || [r.org.name, r.org.trial_domain, r.ownerEmail].some((v) => v?.toLowerCase().includes(q))));
+  const matching = allRows.filter((r) => (!list.filters.plan || r.org.plan === list.filters.plan) && (!q || [r.org.name, r.org.trial_domain, r.ownerEmail, countryName(countries.get(r.org.id))].some((v) => v?.toLowerCase().includes(q))));
   const { rows, total } = slicePage(matching, list);
   const fmtTokens = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
 
@@ -80,7 +81,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               <TableRow key={r.org.id}>
                 <TableCell>
                   <Link href={`/admin/orgs/${r.org.id}`} className="font-medium hover:underline">{r.org.name}</Link>
-                  <div className="text-muted-foreground text-xs">{r.ownerEmail ?? r.org.trial_domain ?? "—"}</div>
+                  <div className="text-muted-foreground text-xs">{r.ownerEmail ?? r.org.trial_domain ?? "—"}{countries.has(r.org.id) ? ` · ${countryName(countries.get(r.org.id))}` : ""}</div>
                 </TableCell>
                 <TableCell>
                   <Badge variant={PLAN_VARIANT[r.org.plan] ?? "outline"} className="capitalize">{r.org.plan}</Badge>

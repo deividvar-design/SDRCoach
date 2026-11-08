@@ -131,6 +131,9 @@ export type ManagerIntro = {
 /** When an admin last opened an admin section. */
 export type AdminSeen = { admin_email: string; section: string; seen_at: string };
 
+/** The country a workspace was created from, by IP at signup. Admin-only. */
+export type WorkspaceCountry = { org_id: string; country: string; created_at: string };
+
 /** Someone outside the product who shares a referral link for a share of what referred teams pay. */
 export type Affiliate = {
   id: string;
@@ -543,6 +546,7 @@ export type Database = {
         ]
       >;
       admin_seen: Table<AdminSeen, Insert<AdminSeen, "seen_at">>;
+      workspace_countries: Table<WorkspaceCountry, Insert<WorkspaceCountry, "created_at">>;
       trial_extension_requests: Table<TrialExtensionRequest, Insert<TrialExtensionRequest, "id" | "need" | "status" | "calls" | "days" | "note" | "decided_at" | "decided_by" | "created_at">>;
       manager_intros: Table<ManagerIntro, Insert<ManagerIntro, "id" | "note" | "sent_at" | "opened_at" | "opted_out_at" | "created_at">>;
       affiliates: Table<Affiliate, Insert<Affiliate, "id" | "channel" | "status" | "terms_accepted_at" | "ip" | "created_at">>;
