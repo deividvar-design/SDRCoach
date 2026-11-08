@@ -2,6 +2,7 @@
  * Brings an existing prospect agent up to date. Safe to re-run.
  *
  *   ELEVENLABS_API_KEY=... ELEVENLABS_AGENT_ID=... node scripts/elevenlabs-update.mjs
+ *   add --tools-only to refresh just the end_call tool description
  *
  * Sets: turn timeout 6s, the gatekeeper voices the agent may switch to, the TTS model from
  * ELEVENLABS_TTS_MODEL (falls back to eleven_flash_v2 if the API refuses it), and the override permissions.
@@ -47,6 +48,28 @@ async function update(modelId) {
       },
     },
   });
+}
+
+/**
+ * --tools-only: refresh the hang-up tool's description (and the base prompt text) and touch nothing else, so the
+ * voice model and voices stay as they are. Run it once per agent (workspace and Karen).
+ */
+const END_CALL_DESCRIPTION = "Hangs up the phone immediately and for good. There is no test, draft or placeholder use: every call to this tool disconnects the rep at once. Use it only after you have said your final closing line and mean to end the call. If you want to keep talking, or you are waiting for the rep to answer, just speak and do not use this tool.";
+if (process.argv.includes("--tools-only")) {
+  await client.conversationalAi.agents.update(agentId, {
+    conversationConfig: {
+      agent: {
+        prompt: {
+          prompt: "You are a prospect on a sales call. 100 Dials replaces this prompt on every call.",
+          builtInTools: {
+            endCall: { type: "system", name: "end_call", params: { systemToolType: "end_call" }, description: END_CALL_DESCRIPTION },
+          },
+        },
+      },
+    },
+  });
+  console.log(`Agent ${agentId}: end_call description updated. Voice model and voices unchanged.`);
+  process.exit(0);
 }
 
 try {

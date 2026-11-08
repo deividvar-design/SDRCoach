@@ -38,7 +38,7 @@ const res = await client.conversationalAi.agents.create({
       firstMessage: "Hello?",
       language: "en",
       prompt: {
-        prompt: "Placeholder. 100 Dials overrides this prompt on every call.",
+        prompt: "You are a prospect on a sales call. 100 Dials replaces this prompt on every call.",
         llm,
         temperature: 0.7,
         builtInTools: {
@@ -46,7 +46,7 @@ const res = await client.conversationalAi.agents.create({
             type: "system",
             name: "end_call",
             params: { systemToolType: "end_call" },
-            description: "Hang up the phone. Use when you, the prospect, would realistically end the call: after saying goodbye, or when you have lost patience with the caller. Always say a natural closing line first.",
+            description: "Hangs up the phone immediately and for good. There is no test, draft or placeholder use: every call to this tool disconnects the rep at once. Use it only after you have said your final closing line and mean to end the call. If you want to keep talking, or you are waiting for the rep to answer, just speak and do not use this tool.",
           },
         },
       },
