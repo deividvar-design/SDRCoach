@@ -41,30 +41,31 @@
 }
 
 .dark {
-  --background: oklch(0.17 0.006 60);
-  --foreground: oklch(0.94 0.008 85);
-  --card: oklch(0.21 0.007 60);
-  --card-foreground: oklch(0.94 0.008 85);
-  --popover: oklch(0.23 0.007 60);
-  --popover-foreground: oklch(0.94 0.008 85);
-  --primary: oklch(0.94 0.008 85);
-  --primary-foreground: oklch(0.17 0.006 60);
-  --secondary: oklch(0.26 0.007 60);
-  --secondary-foreground: oklch(0.92 0.008 85);
-  --muted: oklch(0.26 0.007 60);
-  --muted-foreground: oklch(0.68 0.01 70);
-  --accent: oklch(0.28 0.008 60);
-  --accent-foreground: oklch(0.94 0.008 85);
-  --destructive: oklch(0.66 0.19 27);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.94 0.008 85);
-  --signal: oklch(0.72 0.19 40);
-  --signal-foreground: #ffffff;
-  --signal-ink: oklch(0.78 0.17 40);
-  --success: oklch(0.72 0.15 150);
-  --warning: oklch(0.8 0.14 75);
-  --sidebar: oklch(0.15 0.006 60);
+  /* Dark theme in the brand: the homepage navy, off-white text, amber kept for the call action. */
+  --background: #0f161e;
+  --foreground: #f4f1ea;
+  --card: #1b2632;
+  --card-foreground: #f4f1ea;
+  --popover: #1b2632;
+  --popover-foreground: #f4f1ea;
+  --primary: #f4f1ea;
+  --primary-foreground: #1b2632;
+  --secondary: #223040;
+  --secondary-foreground: #f4f1ea;
+  --muted: #223040;
+  --muted-foreground: #b9c0cb;
+  --accent: #26364a;
+  --accent-foreground: #f4f1ea;
+  --destructive: #d9775c;
+  --border: rgb(255 255 255 / 0.09);
+  --input: rgb(255 255 255 / 0.16);
+  --ring: #ffb162;
+  --signal: #ffb162;
+  --signal-foreground: #1b2632;
+  --signal-ink: #ffb162;
+  --success: oklch(0.76 0.13 150);
+  --warning: #ffc98f;
+  --sidebar: #121b25;
   color-scheme: dark;
 }
 
@@ -348,6 +349,11 @@ html:not(.dark) ::selection {
 html:not(.dark) [data-band="hi"] { background: #e3e8ef; color: #2c3b4d; }
 html:not(.dark) [data-band="mid"] { background: #fff1e0; color: #7a4a12; }
 html:not(.dark) [data-band="lo"] { background: #f6ded6; color: #8f3f2b; }
+html.dark [data-band="hi"] { background: #2c3b4d; color: #dbe4ef; }
+html.dark [data-band="mid"] { background: rgb(255 177 98 / 0.16); color: #ffc98f; }
+html.dark [data-band="lo"] { background: rgb(217 119 92 / 0.22); color: #f2b6a3; }
+/* On the navy page the navy panel needs an edge. */
+.dark .brand-panel { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08); }
 
 /* Brand panel: the navy stage with light rays, used for the few moments that carry the brand inside the app. */
 .brand-panel {

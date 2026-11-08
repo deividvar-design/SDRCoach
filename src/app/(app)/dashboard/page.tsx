@@ -204,8 +204,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 text-[15px] font-semibold">
                       L{p.level.level} {p.level.name}
-                      {p.ready && <span className="rounded-full bg-[#e3e8ef] px-2 py-0.5 text-xs font-semibold text-[#2c3b4d]">Ready for L{p.next?.level}</span>}
-                      {nextLevel === p.level.id && mine.length > 0 && !p.ready && <span className="rounded-full bg-[#fff1e0] px-2 py-0.5 text-xs font-semibold text-[#7a4a12]">Current</span>}
+                      {p.ready && <span data-band="hi" className="rounded-full px-2 py-0.5 text-xs font-semibold">Ready for L{p.next?.level}</span>}
+                      {nextLevel === p.level.id && mine.length > 0 && !p.ready && <span data-band="mid" className="rounded-full px-2 py-0.5 text-xs font-semibold">Current</span>}
                     </div>
                     <div className="text-muted-foreground mt-0.5 text-[13px]">
                       {p.calls} call{p.calls === 1 ? "" : "s"}
