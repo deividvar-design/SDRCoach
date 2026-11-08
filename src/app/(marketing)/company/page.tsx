@@ -27,6 +27,7 @@ export default function CompanyPage() {
     ["Free resources", <>The <Link href="/objections" className="underline underline-offset-4">objection library</Link>, the <Link href="/blog" className="underline underline-offset-4">blog</Link>, and <Link href="/karen" className="underline underline-offset-4">a free three-minute call against Karen</Link>.</>],
   ];
   return (
+    <>
     <Glow>
     <Section className="pt-14 md:pt-20">
       <div className="mx-auto max-w-3xl">
@@ -34,7 +35,12 @@ export default function CompanyPage() {
         <p className="text-muted-foreground mt-4 text-lg">
           100 Dials is made by a small team in Vilnius, Lithuania, who have run outbound floors and watched new reps learn on real pipeline. The product exists so they can learn somewhere cheaper first.
         </p>
-        <dl className="mt-10 divide-y">
+      </div>
+    </Section>
+    </Glow>
+    <Section className="pt-6 md:pt-10">
+      <div className="mx-auto max-w-3xl">
+        <dl className="divide-y">
           {facts.map(([k, v]) => (
             <div key={k} className="grid gap-2 py-5 md:grid-cols-[10rem_1fr]">
               <dt className="font-medium">{k}</dt>
@@ -44,6 +50,6 @@ export default function CompanyPage() {
         </dl>
       </div>
     </Section>
-    </Glow>
+    </>
   );
 }

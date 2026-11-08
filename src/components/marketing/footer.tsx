@@ -7,7 +7,7 @@ import { SITE } from "@/lib/site";
 
 const COLS = [
   { title: "Product", links: [["/for-managers", "For managers"], ["/for-enablement", "For enablement"], ["/pricing", "Pricing"], ["/founding-partners", "Founding partners"], ["/signup", "Start free trial"]] },
-  { title: "Resources", links: [["/blog", "Blog"], ["/objections", "Objection library"], ["/karen", "Fight Karen"], ["/refer", "Refer a team"], ["/affiliates", "Affiliates"], ["/research", "Research"], ["/trust", "Trust & security"]] },
+  { title: "Resources", links: [["/blog", "Blog"], ["/objections", "Objection library"], ["/karen", "Fight Karen"], ["/karen/leaderboard", "Karen leaderboard"], ["/refer", "Refer a team"], ["/affiliates", "Affiliates"], ["/research", "Research"], ["/trust", "Trust & security"]] },
   { title: "Legal", links: [["/company", "Company"], ["/privacy", "Privacy"], ["/terms", "Terms"], ["/cookies", "Cookies"]] },
 ] as const;
 
