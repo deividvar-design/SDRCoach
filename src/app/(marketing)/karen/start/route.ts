@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { DEMO_COOKIE } from "@/lib/demo/session";
+import { DEMO_COOKIE, demoCookieValue } from "@/lib/demo/session";
 import { DEMO_COOKIE_OPTIONS, startDemo } from "@/lib/demo/start";
 import { cleanObjection, cleanSourcePath } from "@/lib/demo/source";
 
@@ -24,6 +24,6 @@ export async function GET(request: NextRequest) {
   if ("waitlisted" in result) return to("/karen?busy=1");
   if ("error" in result) return to(`/karen?error=${encodeURIComponent(result.code)}`);
   const response = to("/karen/call");
-  response.cookies.set(DEMO_COOKIE, result.id, DEMO_COOKIE_OPTIONS);
+  response.cookies.set(DEMO_COOKIE, demoCookieValue(result.id), DEMO_COOKIE_OPTIONS);
   return response;
 }

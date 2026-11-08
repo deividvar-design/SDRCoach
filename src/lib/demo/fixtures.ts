@@ -239,7 +239,7 @@ export const KNOWLEDGE: KnowledgeSource[] = [
   { id: "k-3", org_id: ORG.id, uploaded_by: "u-deividas", name: "objections-master-sheet.csv", kind: "objection_sheet", storage_path: "org-1/k-3.csv", raw_text: "…", status: "processing", summary: null, extracted: null, error: null, created_at: daysAgo(0, 8) },
 ];
 
-export const DEMO_USER = { id: "u-deividas", email: "deividas@brightline.io" };
+export const DEMO_USER = { id: "u-deividas", email: "deividas@brightline.io", email_confirmed_at: daysAgo(40) };
 
 export const USAGE: UsageEvent[] = SESSIONS.flatMap((s, i) => [
   { id: `ue-v-${i}`, org_id: ORG.id, session_id: s.id, demo_id: null, provider: "elevenlabs" as const, kind: "voice" as const, model: null, input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_write_tokens: 0, seconds: s.duration_seconds ?? 0, cost_usd: Math.round(((s.duration_seconds ?? 0) / 60) * 0.1 * 100000) / 100000, created_at: s.created_at },

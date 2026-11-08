@@ -12,13 +12,19 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { reportError } from "@/lib/sentry";
 
-/** The rep who made the call, or a manager in the same workspace. */
+/**
+ * The rep who made the call, or a manager, judged by the caller's role in the call's own workspace. The active
+ * workspace is not enough: someone in two workspaces must not carry a role from one into the other.
+ */
 async function ownSession(sessionId: string) {
   const viewer = await requireViewer();
   const db = createAdminClient();
   const { data } = await db.from("call_sessions").select("id, status, user_id, org_id, finalize_attempts").eq("id", sessionId).maybeSingle();
-  const allowed = data && (data.user_id === viewer.userId || (data.org_id === viewer.org.id && canManage(viewer.membership.role)));
-  return { db, session: allowed ? data : null };
+  if (!data) return { db, session: null, role: null };
+  const { data: member } = await db.from("memberships").select("role").eq("org_id", data.org_id).eq("user_id", viewer.userId).maybeSingle();
+  const role = member?.role ?? null;
+  const allowed = role !== null && (data.user_id === viewer.userId || canManage(role));
+  return { db, session: allowed ? data : null, role };
 }
 
 /** The rep wants the coach's review. Scores now if the transcript is in; otherwise scoring follows collection. */
@@ -75,13 +81,17 @@ export async function deleteComment(id: string, sessionId: string) {
 
 /** Removes the call everywhere: our rows (cascade) and the recording and transcript at the voice provider. */
 export async function deleteCall(sessionId: string) {
-  const viewer = await requireViewer();
-  // Managers only: a rep deleting their own calls would erase bad ones from the board and the coaching data.
-  if (!canManage(viewer.membership.role)) return { error: "Only managers can delete calls." };
-  const { db, session } = await ownSession(sessionId);
+  const { db, session, role } = await ownSession(sessionId);
   if (!session) return { error: "Not found" };
-  const { data: full } = await db.from("call_sessions").select("elevenlabs_conversation_id").eq("id", sessionId).maybeSingle();
-  if (full?.elevenlabs_conversation_id && process.env.ELEVENLABS_API_KEY) {
+  // Managers of the call's workspace only: a rep deleting their own calls would erase bad ones from the board.
+  if (!role || !canManage(role)) return { error: "Only managers can delete calls." };
+  const [{ data: full }, { data: verified }] = await Promise.all([
+    db.from("call_sessions").select("elevenlabs_conversation_id").eq("id", sessionId).maybeSingle(),
+    db.from("call_transcripts").select("session_id").eq("session_id", sessionId).maybeSingle(),
+  ]);
+  // The browser reports the conversation id. Only a call whose transcript passed the prompt check provably owns its
+  // conversation, so only then is the recording deleted at the provider.
+  if (verified && full?.elevenlabs_conversation_id && process.env.ELEVENLABS_API_KEY) {
     try {
       await elevenlabs().conversationalAi.conversations.delete(full.elevenlabs_conversation_id);
     } catch (err) {

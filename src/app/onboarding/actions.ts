@@ -65,6 +65,11 @@ export async function createOrganization(_prev: OnboardingState, formData: FormD
   // Any real address can start a trial. A work address carries the one-trial-per-company rule; a personal one owns
   // no domain. Founders are exempt from the rule so they can test with any address.
   const admin = isAdminEmail(user.email);
+  // One workspace per person. A member who made a second one would own it, and that role would follow them around.
+  if (!admin) {
+    const { data: existing } = await supabase.from("memberships").select("id").eq("user_id", user.id).limit(1).maybeSingle();
+    if (existing) redirect("/dashboard");
+  }
   const check = admin ? ({ ok: true, domain: null } as const) : await validateTrialEmail(user.email);
   if (!check.ok) return { error: check.message };
 

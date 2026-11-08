@@ -61,6 +61,22 @@ export async function checkDemoLimits(db: Db, { email, domain, ip, personal = fa
   return null;
 }
 
+/**
+ * The same daily limits, counted after this call took its mint: a burst of rows created before any of them minted
+ * all pass checkDemoLimits, so the mint itself is where the limit holds. True when this call is one too many.
+ */
+export async function overDemoLimits(db: Db, { domain, ip, personal }: { domain: string | null; ip: string | null; personal: boolean }): Promise<boolean> {
+  const since = new Date(Date.now() - DAY).toISOString();
+  const count = async (q: ReturnType<Db["from"]>) => (await q).count ?? 0;
+  const minted = () => db.from("demo_calls").select("id", { count: "exact", head: true }).not("prompt_hash", "is", null).gte("created_at", since);
+  const [byDomain, byIp, global] = await Promise.all([
+    domain && !personal ? count(minted().eq("domain", domain)) : Promise.resolve(0),
+    ip ? count(minted().eq("ip", ip)) : Promise.resolve(0),
+    count(minted()),
+  ]);
+  return byDomain > DEMO_LIMITS.perDomainPerDay || byIp > DEMO_LIMITS.perIpPerDay || global > DEMO_LIMITS.globalPerDay;
+}
+
 /** Karen's brief. Every caller sells the same made-up product, shown to them on the page and on the call screen. */
 export function demoPrompt(demo: Pick<DemoCall, "email">) {
   const org = {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { safeNext } from "@/lib/safe-next";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { recordOneTap } from "@/app/(auth)/actions";
@@ -81,7 +82,8 @@ function ensureSetup(mode: Mode) {
           return;
         }
         await recordOneTap(target.mode).catch(() => {});
-        window.location.assign(target.next);
+        // Same-origin paths only: `next` can come from the address bar.
+        window.location.assign(safeNext(target.next));
       },
     });
     return { id, nonce: raw };

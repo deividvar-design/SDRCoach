@@ -46,7 +46,7 @@ function scheduleDigest(id: string) {
 
 export async function addKnowledgeText(_prev: KnowledgeState, formData: FormData): Promise<KnowledgeState> {
   const parsed = z
-    .object({ name: z.string().min(2, "Give it a name"), kind: KIND, raw_text: z.string().min(50, "Paste at least a few lines") })
+    .object({ name: z.string().min(2, "Give it a name"), kind: KIND, raw_text: z.string().min(50, "Paste at least a few lines").max(350_000, "That is more than we read. Paste up to about 350,000 characters, or split it into two sources.") })
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
@@ -106,7 +106,7 @@ export async function uploadKnowledgeFiles(_prev: KnowledgeState, formData: Form
 export async function retryDigest(id: string) {
   const viewer = await requireManager();
   const supabase = await createClient();
-  const { data } = await supabase.from("knowledge_sources").update({ status: "pending", error: null }).eq("id", id).eq("org_id", viewer.org.id).select("id").maybeSingle();
+  const { data } = await supabase.from("knowledge_sources").update({ status: "pending", error: null }).eq("id", id).eq("org_id", viewer.org.id).eq("status", "failed").select("id").maybeSingle();
   if (data) scheduleDigest(data.id);
   revalidatePath("/knowledge");
 }

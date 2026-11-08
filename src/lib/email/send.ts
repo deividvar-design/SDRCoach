@@ -27,7 +27,9 @@ export async function sendMail(mail: Mail): Promise<{ id: string | null; skipped
   client ??= new Resend(process.env.RESEND_API_KEY);
   const base = process.env.EMAIL_FROM ?? `${SITE.name} <hello@${new URL(SITE.url).hostname}>`;
   const address = base.match(/<([^>]+)>/)?.[1] ?? base;
-  const from = mail.fromName ? `${mail.fromName.replace(/[<>"\r\n]/g, "").trim()} via ${SITE.name} <${address}>` : base;
+  // A person's name only: letters, spaces and name punctuation, so it cannot pose as a brand or a security team.
+  const name = mail.fromName?.replace(/[^\p{L}\p{M} .'-]/gu, "").replace(/\s+/g, " ").trim().slice(0, 60) ?? "";
+  const from = name ? `${name} via ${SITE.name} <${address}>` : base;
   const { data, error } = await client.emails.send({ from, to: mail.to, subject: mail.subject, html: mail.html, text: mail.text, replyTo: mail.replyTo ?? SITE.company.email });
   if (error) throw new Error(error.message);
   return { id: data?.id ?? null, skipped: false };

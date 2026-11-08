@@ -45,7 +45,7 @@ export async function joinAffiliates(_prev: JoinState, formData: FormData): Prom
   const ip = await clientIp();
 
   // The same address gets its existing link back rather than a second account.
-  const { data: existing } = await db.from("affiliates").select("code, status").ilike("email", d.email).maybeSingle();
+  const { data: existing } = await db.from("affiliates").select("code, status").ilike("email", d.email.replace(/[%_\\]/g, (c) => `\\${c}`)).maybeSingle();
   if (existing) return existing.status === "active" ? { link: affiliateLink(existing.code) } : { error: "This account is closed. Reply to any of our emails if you think that is wrong.", values };
 
   const { count: fromIp } = ip ? await db.from("affiliates").select("id", { count: "exact", head: true }).eq("ip", ip).gte("created_at", new Date(Date.now() - 86_400_000).toISOString()) : { count: 0 };

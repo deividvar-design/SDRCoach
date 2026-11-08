@@ -54,6 +54,11 @@ export function isAdminEmail(email: string | null | undefined) {
 export async function requireAdmin() {
   const viewer = await requireViewer();
   if (!isAdminEmail(viewer.email)) notFound();
+  // An unconfirmed address proves nothing: anyone can sign up with an admin's email before its owner does.
+  const {
+    data: { user },
+  } = await (await createClient()).auth.getUser();
+  if (!user?.email_confirmed_at) notFound();
   return viewer;
 }
 

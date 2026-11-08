@@ -113,6 +113,8 @@ export async function sendManagerIntro(_prev: IntroState, formData: FormData): P
   }
   const d = parsed.data;
   if (d.manager_email === viewer.email.toLowerCase()) return { error: "That's your own address. Add your manager's.", field: "manager_email" };
+  // The note goes out under our domain. Links are left to the button, so the note cannot carry a phishing URL.
+  if (d.note && /(https?:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|io|co|ai|app|xyz|info|biz|me|ly|ru|cn|top|link|site)\b)/i.test(d.note)) return { error: "Leave links out of the note. The email already has a button to the trial.", field: "note" };
   const check = await validateBusinessEmail(d.manager_email);
   if (!check.ok) return { error: check.reason === "free" ? "Use your manager's work address, not a personal one." : check.message, field: "manager_email" };
 

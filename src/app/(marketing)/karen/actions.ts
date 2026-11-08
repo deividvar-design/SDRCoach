@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { DEMO_COOKIE, currentDemo } from "@/lib/demo/session";
+import { DEMO_COOKIE, currentDemo, demoCookieValue } from "@/lib/demo/session";
 import { DEMO_COOKIE_OPTIONS, attachDemoEmail, startDemo } from "@/lib/demo/start";
 import { cleanObjection, cleanSourcePath } from "@/lib/demo/source";
 
@@ -30,7 +30,7 @@ export async function callKaren(formData?: FormData) {
   const result = await startDemo({ email, method: rematch ? "rematch" : email ? "google" : "call", source });
   if ("waitlisted" in result) redirect("/karen?busy=1");
   if ("error" in result) redirect(`/karen?error=${encodeURIComponent(result.code)}`);
-  (await cookies()).set(DEMO_COOKIE, result.id, DEMO_COOKIE_OPTIONS);
+  (await cookies()).set(DEMO_COOKIE, demoCookieValue(result.id), DEMO_COOKIE_OPTIONS);
   redirect("/karen/call");
 }
 

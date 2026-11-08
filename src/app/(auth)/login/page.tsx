@@ -1,4 +1,5 @@
 import { AuthForm } from "../auth-form";
+import { safeNext } from "@/lib/safe-next";
 
 export const metadata = { title: "Sign in" };
 
@@ -9,5 +10,5 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
     : error === "auth" ? { kind: "error" as const, text: "That sign-in link is invalid or has expired. Sign in again or request a new one." }
     : error === "google" ? { kind: "error" as const, text: "Google sign-in is not available right now. Use your email instead." }
     : undefined;
-  return <AuthForm mode="login" next={typeof next === "string" ? next : undefined} email={typeof email === "string" ? email : undefined} notice={message} />;
+  return <AuthForm mode="login" next={typeof next === "string" ? safeNext(next) : undefined} email={typeof email === "string" ? email : undefined} notice={message} />;
 }

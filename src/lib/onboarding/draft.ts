@@ -57,11 +57,11 @@ export function normaliseSite(input: string): URL | null {
 function isPrivateAddress(ip: string) {
   const v4 = ip.replace(/^::ffff:/i, "");
   if (isIP(v4) === 4) {
-    const [a, b] = v4.split(".").map(Number) as [number, number];
-    return a === 10 || a === 127 || a === 0 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254) || (a === 100 && b >= 64 && b <= 127);
+    const [a, b, c] = v4.split(".").map(Number) as [number, number, number];
+    return a === 10 || a === 127 || a === 0 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254) || (a === 100 && b >= 64 && b <= 127) || (a === 198 && (b === 18 || b === 19)) || (a === 192 && b === 0 && c === 0) || a >= 224;
   }
   const low = ip.toLowerCase();
-  return low === "::1" || low === "::" || low.startsWith("fc") || low.startsWith("fd") || low.startsWith("fe80");
+  return low === "::1" || low === "::" || low.startsWith("fc") || low.startsWith("fd") || low.startsWith("fe8") || low.startsWith("fe9") || low.startsWith("fea") || low.startsWith("feb") || low.startsWith("fec") || low.startsWith("ff") || low.startsWith("64:ff9b:") || low.startsWith("2002:");
 }
 
 /**

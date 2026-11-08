@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { track } from "@vercel/analytics/server";
 import { createClient } from "@/lib/supabase/server";
-import { validateBusinessEmail, validateTrialEmail } from "@/lib/email/business";
+import { validateTrialEmail } from "@/lib/email/business";
 import { safeNext } from "@/lib/safe-next";
 import { isAdminEmail } from "@/lib/auth";
 import { appUrl } from "@/lib/site";
@@ -13,8 +13,6 @@ import { reportError } from "@/lib/sentry";
 import { heroVariant } from "@/lib/marketing/hero";
 import { logFunnel } from "@/lib/funnel";
 import { readAdClick } from "@/lib/ads/click";
-import { sendMail } from "@/lib/email/send";
-import { templates } from "@/lib/email/templates";
 
 export interface AuthState {
   error?: string;
@@ -98,25 +96,6 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   return { message: "Check your inbox to confirm your email, then sign in." };
 }
 
-/** Sends the signup link to a work address, for someone who arrived with a personal one. */
-export async function requestWorkEmailLink(_prev: AuthState, formData: FormData): Promise<AuthState> {
-  const parsed = z.object({ work_email: z.string().email("Enter a valid email") }).safeParse({ work_email: formData.get("work_email") });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
-  const email = parsed.data.work_email.trim().toLowerCase();
-  const check = await validateBusinessEmail(email);
-  if (!check.ok) {
-    await logFunnel("signup_rejected", { email, reason: check.reason, meta: { step: "work_link" } });
-    return { error: check.reason === "free" ? "That one is personal too. It needs to be the address your company gave you." : check.message };
-  }
-  await logFunnel("signup_submit", { email, meta: { method: "work_link" } });
-  try {
-    await sendMail({ to: email, ...templates.continueOnWork({ href: `${appUrl()}/signup?email=${encodeURIComponent(email)}` }) });
-  } catch (err) {
-    reportError(err, { where: "work_email_link" });
-    return { error: "The email could not be sent. Try again in a minute." };
-  }
-  return { message: `Sent. Open the link from ${email} to continue.` };
-}
 
 /** One Tap signed someone in on the client; record it the same way the other paths are recorded. */
 export async function recordOneTap(mode: "login" | "signup" | "karen") {

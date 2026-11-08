@@ -5,6 +5,8 @@ export function safeNext(value: FormDataEntryValue | null) {
   try {
     const u = new URL(next, "http://100dials.local");
     if (u.origin !== "http://100dials.local") return "/dashboard";
+    // Dot segments collapse during parsing, so "/.//evil.com" comes out as "//evil.com": a protocol-relative URL.
+    if (/^\/[\/\\]/.test(u.pathname)) return "/dashboard";
     return `${u.pathname}${u.search}`;
   } catch {
     return "/dashboard";
