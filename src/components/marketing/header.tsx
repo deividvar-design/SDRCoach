@@ -21,7 +21,7 @@ export function MarketingHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   return (
-    <header className="sticky top-0 z-30 border-b border-white/10 bg-[#1b2632]/95 text-[#f4f1ea] backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-white/10 bg-[#1b2632] text-[#f4f1ea]">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" aria-label="100 Dials home"><Logo inverse /></Link>
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">

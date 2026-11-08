@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { Host_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
+import { NavigationProgress } from "@/components/navigation-progress";
+import { PauseOffscreenLight } from "@/components/pause-offscreen-light";
 import { ThemeScript } from "@/components/theme/theme-script";
 import { AnalyticsProvider } from "@/components/analytics/provider";
 import { MarketingTags } from "@/components/analytics/marketing-tags";
@@ -48,6 +50,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: 'try{var q=new URLSearchParams(location.search),o={},k=["gclid","gbraid","wbraid"],h=false;for(var i=0;i<k.length;i++){var v=q.get(k[i]);if(v&&/^[\\w-]{1,200}$/.test(v)){o[k[i]]=v;h=true}}if(h){document.cookie="adclick="+encodeURIComponent(JSON.stringify(o))+";path=/;max-age=7776000;samesite=lax"}}catch(e){}' }} />
       </head>
       <body className="min-h-full flex flex-col">
+        <Suspense fallback={null}><NavigationProgress /></Suspense>
+        <PauseOffscreenLight />
         {children}
         <Toaster position="bottom-right" />
         <Suspense fallback={null}>

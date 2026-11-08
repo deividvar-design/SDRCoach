@@ -392,3 +392,10 @@ html.dark [data-band="lo"] { background: rgb(217 119 92 / 0.22); color: #f2b6a3;
 @media (max-width: 640px) {
   .brand-panel .ray:nth-child(even) { display: none; }
 }
+
+/* Light columns scrolled out of view stop animating, so the rest of the page scrolls without their cost. */
+[data-offscreen] .hp-bar, [data-offscreen] .ray { animation-play-state: paused; }
+
+/* While a page change is on its way: the cursor says so, alongside the bar at the top. */
+html[data-navigating] { cursor: progress; }
+html[data-navigating] a, html[data-navigating] button { cursor: progress; }

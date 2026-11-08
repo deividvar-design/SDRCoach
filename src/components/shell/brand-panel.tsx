@@ -10,7 +10,7 @@ const BLURS = [8, 12, 16, 20];
 
 export function Rays({ className, height = 170 }: { className?: string; height?: number }) {
   return (
-    <div aria-hidden className={cn("pointer-events-none absolute right-0 bottom-0 -z-10 flex items-end", className)} style={{ height }}>
+    <div aria-hidden data-light className={cn("pointer-events-none absolute right-0 bottom-0 -z-10 flex items-end", className)} style={{ height }}>
       {RAYS.map((h, i) => {
         const amber = i % 7 === 3;
         const o = Math.min(0.9, 0.3 + h / 250);

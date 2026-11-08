@@ -12,7 +12,7 @@ const BARS = [
 
 export function Aurora({ className }: { className?: string }) {
   return (
-    <div aria-hidden className={cn("pointer-events-none absolute inset-0 -z-10 overflow-hidden", className)}>
+    <div aria-hidden data-light className={cn("pointer-events-none absolute inset-0 -z-10 overflow-hidden", className)}>
       {BARS.map(([left, width, tone], i) => (
         <span
           key={i}

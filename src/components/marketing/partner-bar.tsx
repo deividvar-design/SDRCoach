@@ -38,7 +38,7 @@ export function PartnerBar({ spots }: { spots: number | null }) {
           <span className="font-medium">Founding teams:</span> get a free {PARTNER.pilotDays}-day pilot. We set it up for you.{" "}
           <Link href={href} onClick={() => trackCta("partner_bar", pathname, href)} className="underline underline-offset-4">Apply →</Link>
         </p>
-        <button type="button" onClick={dismiss} aria-label="Hide this" className="hover:bg-background/15 shrink-0 rounded-md p-1">
+        <button type="button" onClick={dismiss} aria-label="Hide this" className="hover:bg-background/15 shrink-0 cursor-pointer rounded-md p-1">
           <X className="size-4" />
         </button>
       </div>

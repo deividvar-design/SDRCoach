@@ -136,7 +136,7 @@ export default async function HomePage() {
             </figure>
           </div>
 
-          <aside aria-label="Karen, the prospect" className="rounded-3xl border border-white/12 bg-[rgba(18,24,33,.72)] p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,.6)] backdrop-blur-md lg:ml-auto lg:w-[24rem]">
+          <aside aria-label="Karen, the prospect" className="rounded-3xl border border-white/12 bg-[rgba(15,22,30,.9)] p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,.6)] lg:ml-auto lg:w-[24rem]">
             <div className="flex items-start gap-3">
               <div className="min-w-0 flex-1">
                 <div className="font-semibold">{KAREN.name}</div>
