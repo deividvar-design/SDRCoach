@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { playHangupTone } from "@/lib/audio/hangup-tone";
 import { startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
 import type { Ambience } from "@/lib/domain/moods";
 import { Rays } from "@/components/shell/brand-panel";
@@ -45,6 +46,8 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [turns, setTurns] = useState<LiveTurn[]>([]);
+  // Karen ended the call (her end_call tool), as opposed to the caller or the line.
+  const [hungUp, setHungUp] = useState(false);
   const endedRef = useRef(false);
   const linkedRef = useRef<Promise<unknown> | null>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
@@ -83,11 +86,14 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
       const text = stripVoiceTags(message);
       if (text) setTurns((prev) => [...prev, { role: role === "agent" ? "prospect" : "rep", text }]);
     },
-    onDisconnect: () => {
+    onDisconnect: (details) => {
       stopAmbience();
-      track("demo_call_ended");
+      const byKaren = details?.reason === "agent";
+      track("demo_call_ended", { ended_by: details?.reason ?? "unknown" });
       setStage((s) => (s === "live" || s === "dialing" ? "ending" : s));
-      endOnServer().then(() => router.push("/karen/result"));
+      // When Karen hangs up, the caller hears the line go dead and sees it, before the result opens.
+      if (byKaren) setHungUp(true);
+      Promise.all([endOnServer(), byKaren ? playHangupTone().then(() => new Promise((r) => setTimeout(r, 900))) : null]).then(() => router.push("/karen/result"));
     },
     onError: (message) => {
       stopAmbience();
@@ -198,7 +204,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
                   <span className="font-semibold text-[#ffb162]">LIVE</span>
                 </>
               ) : (
-                <span className="text-muted-foreground">Ended</span>
+                <span className={hungUp ? "font-semibold text-[#ffc9b8]" : "text-muted-foreground"}>{hungUp ? "HUNG UP" : "Ended"}</span>
               )}
               <span className="text-[28px] font-medium tracking-[-0.02em] text-[#ffb162]">{formatDuration(elapsed)}</span>
               {stage === "live" && <span className={cn("text-muted-foreground", remaining <= 30 && "text-destructive")}>· {formatDuration(remaining)} left</span>}
@@ -208,7 +214,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
             {stage === "idle" && <span key="idle">{!voiceConfigured ? "Voice service is not configured yet." : !audioOk ? "This browser cannot play the call." : "Read your brief, headset on. She picks up as soon as it connects."}</span>}
             {stage === "dialing" && <span key="dialing">Ringing…</span>}
             {stage === "live" && <span key="live">{speaking ? "Karen is speaking" : "Listening to you"}</span>}
-            {stage === "ending" && <span key="ending">Call ended. The coach is reviewing it…</span>}
+            {stage === "ending" && <span key="ending">{hungUp ? "Karen hung up. The coach is reviewing the call…" : "Call ended. The coach is reviewing it…"}</span>}
             {stage === "error" && <span key="error" className="text-destructive">{error}</span>}
           </p>
           <div className="mt-8 flex items-center gap-3">

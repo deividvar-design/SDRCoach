@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { playHangupTone } from "@/lib/audio/hangup-tone";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ConversationProvider, useConversation } from "@elevenlabs/react";
@@ -91,6 +92,8 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
   const [micLevel, setMicLevel] = useState(0);
   const [silentMic, setSilentMic] = useState(false);
   const [gatekeeperName, setGatekeeperName] = useState<string | null>(null);
+  // The prospect ended the call (their end_call tool), as opposed to the rep or the line.
+  const [hungUp, setHungUp] = useState(false);
   const sessionIdRef = useRef<string | null>(null);
   const endedRef = useRef(false);
   const startedRef = useRef<Promise<unknown> | null>(null);
@@ -136,12 +139,15 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
       const spoke = role === "agent" && gk && new RegExp(`<${gk.voiceLabel}>`).test(message) ? "gatekeeper" : undefined;
       setTurns((prev) => [...prev, { role: role === "agent" ? "prospect" : "rep", ...(spoke ? { speaker: spoke } : {}), text }]);
     },
-    onDisconnect: () => {
-      track("call_ended", { difficulty });
+    onDisconnect: (details) => {
+      const byProspect = details?.reason === "agent";
+      track("call_ended", { difficulty, ended_by: details?.reason ?? "unknown" });
       releaseMic();
       stopAmbience();
       setStage((s) => (s === "live" || s === "dialing" ? "ending" : s));
-      endOnServer().then(() => {
+      // When the prospect hangs up, the rep hears the line go dead and sees it, before the report opens.
+      if (byProspect) setHungUp(true);
+      Promise.all([endOnServer(), byProspect ? playHangupTone().then(() => new Promise((r) => setTimeout(r, 900))) : null]).then(() => {
         if (sessionIdRef.current) router.push(`/sessions/${sessionIdRef.current}?fresh=1`);
       });
     },
@@ -330,7 +336,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
                   <span className="font-semibold text-[#ffb162]">LIVE</span>
                 </>
               ) : (
-                <span className="text-[#b9c0cb]">Ended</span>
+                <span className={hungUp ? "font-semibold text-[#ffc9b8]" : "text-[#b9c0cb]"}>{hungUp ? "HUNG UP" : "Ended"}</span>
               )}
               <span className="text-[28px] font-medium tracking-[-0.02em] text-[#ffb162]">{formatDuration(elapsed)}</span>
               {stage === "live" && MAX_CALL_SECONDS - elapsed <= 60 && <span className="text-[#b9c0cb]">· {formatDuration(Math.max(0, MAX_CALL_SECONDS - elapsed))} left</span>}
@@ -341,7 +347,7 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
             {stage === "idle" && (!voiceConfigured ? "Voice service is not configured yet." : !audioOk ? "This browser cannot play the call." : "Ready when you are.")}
             {stage === "dialing" && "Ringing…"}
             {stage === "live" && (prospectSpeaking ? `${target.name.split(" ")[0]} is speaking` : "Listening to you")}
-            {stage === "ending" && "Call ended. Your coach is reviewing it…"}
+            {stage === "ending" && (hungUp ? `${target.name.split(" ")[0]} hung up. Your coach is reviewing the call…` : "Call ended. Your coach is reviewing it…")}
             {stage === "error" && (
               <span className="text-[#ffc9b8]">
                 {error}
