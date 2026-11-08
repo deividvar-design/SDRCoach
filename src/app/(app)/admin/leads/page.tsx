@@ -35,7 +35,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
 
   let query = db
     .from("demo_calls")
-    .select("id, email, domain, company, personal_email, newsletter, status, outcome, overall, duration_seconds, email_sent_at, email_added_at, created_at, error, method, gclid, gbraid, wbraid", { count: "exact" })
+    .select("id, email, domain, company, personal_email, newsletter, status, outcome, overall, duration_seconds, email_sent_at, email_added_at, created_at, error, method, prompt_hash, gclid, gbraid, wbraid", { count: "exact" })
     .order("created_at", { ascending: false });
   if (state.q) {
     const like = likeTerm(state.q.replace(/[(),]/g, " "));
@@ -106,7 +106,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                       <div className="text-muted-foreground mt-1 text-xs">{METHOD_LABEL[method] ?? method}</div>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(l.created_at)}</TableCell>
-                    <TableCell><Badge variant={l.status === "scored" ? "success" : l.status === "failed" ? "destructive" : "secondary"}>{l.status === "failed" && l.error === "daily cap" ? "capped" : l.status}</Badge></TableCell>
+                    <TableCell><Badge variant={l.status === "scored" ? "success" : l.status === "failed" ? "destructive" : "secondary"}>{l.status === "failed" && l.error === "daily cap" ? "capped" : l.status === "created" && !l.prompt_hash ? "never dialled" : l.status}</Badge></TableCell>
                     <TableCell className="text-sm">{l.outcome ? OUTCOME_TEXT[l.outcome] ?? l.outcome : "-"}</TableCell>
                     <TableCell className="tabular text-right">{l.overall === null ? "-" : Number(l.overall).toFixed(1)}</TableCell>
                     <TableCell className="tabular text-muted-foreground text-right text-sm">{l.duration_seconds ? `${Math.floor(l.duration_seconds / 60)}m ${l.duration_seconds % 60}s` : "-"}</TableCell>

@@ -16,6 +16,12 @@ import { cleanObjection, cleanSourcePath } from "@/lib/demo/source";
  */
 export async function callKaren(formData?: FormData) {
   const rematch = formData?.get("rematch") === "1";
+  // A second click, a back-and-retry or a reload lands on the call this browser already opened but never dialled,
+  // rather than leaving a trail of empty rows.
+  if (!rematch) {
+    const open = await currentDemo();
+    if (open && open.status === "created" && !open.prompt_hash) redirect("/karen/call");
+  }
   const supabase = await createClient();
   const {
     data: { user },

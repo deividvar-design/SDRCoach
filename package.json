@@ -11,6 +11,7 @@
     "elevenlabs:setup": "node scripts/elevenlabs-setup.mjs",
     "elevenlabs:update": "node scripts/elevenlabs-update.mjs",
     "elevenlabs:voices": "node scripts/elevenlabs-voices.mjs",
+    "supabase:emails": "node scripts/supabase-auth-emails.mjs",
     "test": "vitest run",
     "stripe:setup": "node scripts/stripe-setup.mjs"
   },

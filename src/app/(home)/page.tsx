@@ -20,6 +20,7 @@ import { RUBRIC, RUBRIC_KEYS, type RubricKey } from "@/lib/scoring/rubric";
 import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 import { callKaren } from "@/app/(marketing)/karen/actions";
+import { CallKarenSubmit } from "@/components/marketing/call-karen-button";
 import { cn } from "@/lib/utils";
 
 /**
@@ -111,10 +112,13 @@ export default async function HomePage() {
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <form action={callKaren}>
-                <button type="submit" className="flex h-12 cursor-pointer items-center gap-3 rounded-full bg-[var(--hp-peach)] pr-2 pl-5 font-semibold text-[var(--hp-navy)] outline-none hover:brightness-105 focus-visible:ring-[3px] focus-visible:ring-white/50">
+                <CallKarenSubmit
+                  className="h-12 w-auto justify-start rounded-full bg-[var(--hp-peach)] pr-2 pl-5 text-base font-semibold text-[var(--hp-navy)] focus-visible:ring-white/50"
+                  pendingLabel={<>Opening the line…<span className="grid size-8 place-items-center rounded-full bg-[var(--hp-navy)] text-[var(--hp-peach)]"><Phone className="size-4 animate-pulse" /></span></>}
+                >
                   Call Karen now
                   <span className="grid size-8 place-items-center rounded-full bg-[var(--hp-navy)] text-[var(--hp-peach)]"><Phone className="size-4" /></span>
-                </button>
+                </CallKarenSubmit>
               </form>
               <CtaLink ctaId="home_hero_trial" href="/signup" className="flex h-12 items-center rounded-full border border-white/40 px-5 font-semibold hover:bg-white/10">Start free team trial</CtaLink>
             </div>
@@ -179,7 +183,7 @@ export default async function HomePage() {
                   <div className="text-lg font-semibold">Call review</div>
                   <div className="text-[13px] text-black/55">Sam · Karen Whitlock · hung up at 2:12 · sample call</div>
                 </div>
-                <form action={callKaren}><button type="submit" className="cursor-pointer rounded-md bg-[var(--hp-navy)] px-3 py-1.5 text-[13px] font-medium text-white">Call Karen again</button></form>
+                <form action={callKaren}><CallKarenSubmit className="h-auto w-auto rounded-md bg-[var(--hp-navy)] px-3 py-1.5 text-[13px] font-medium text-white" pendingLabel="Opening…">Call Karen again</CallKarenSubmit></form>
               </div>
               <div className="mt-5 grid gap-4 lg:grid-cols-2">
                 <ol className="space-y-4 rounded-xl border border-black/8 bg-white/60 p-4 text-sm">

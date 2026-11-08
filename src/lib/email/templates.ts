@@ -5,18 +5,10 @@ import { RUBRIC, type RubricKey } from "@/lib/scoring/rubric";
 import { OUTCOME_TEXT } from "@/lib/domain/session-status";
 import type { ScoreDimensions } from "@/types/database";
 
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+import { emailLayout, esc } from "@/lib/email/layout";
 
 function layout(title: string, bodyHtml: string, cta?: { label: string; href: string }) {
-  return `<!doctype html><html><body style="margin:0;background:#f7f5f0;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#1c1b19">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
-<table role="presentation" width="100%" style="max-width:520px;background:#fffdf9;border:1px solid #e6e2d8;border-radius:16px" cellpadding="0" cellspacing="0">
-<tr><td style="padding:28px 32px 0;font-size:18px;font-weight:600">${esc(SITE.name)}</td></tr>
-<tr><td style="padding:20px 32px 0;font-size:26px;line-height:1.2;font-family:Georgia,'Times New Roman',serif">${esc(title)}</td></tr>
-<tr><td style="padding:16px 32px 0;font-size:15px;line-height:1.6;color:#3b3833">${bodyHtml}</td></tr>
-${cta ? `<tr><td style="padding:24px 32px 0"><a href="${cta.href}" style="display:inline-block;background:#1c1b19;color:#f7f5f0;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;font-size:15px">${esc(cta.label)}</a></td></tr>` : ""}
-<tr><td style="padding:28px 32px 32px;font-size:12px;color:#8a857a">${esc(SITE.company.legalName)} · <a href="${absoluteUrl("/privacy")}" style="color:#8a857a">Privacy</a>${SITE.company.address ? `<div style="margin-top:6px;font-size:10px;line-height:1.4;color:#b5b0a6">${esc(SITE.company.address)}</div>` : ""}</td></tr>
-</table></td></tr></table></body></html>`;
+  return emailLayout({ title, bodyHtml, cta, footer: { name: SITE.name, legalName: SITE.company.legalName, address: SITE.company.address, privacyUrl: absoluteUrl("/privacy") } });
 }
 
 function textOf(lines: string[], cta?: { label: string; href: string }) {
@@ -53,7 +45,7 @@ export const templates = {
 
   feedback(p: { name: string; email: string; orgName: string; role: string; page: string; body: string; replyOk: boolean }): Rendered {
     const meta = [`${p.name} <${p.email}>`, `${p.orgName}, ${p.role}`, `On ${p.page}`, p.replyOk ? "Happy to be emailed back." : "Asked not to be emailed."];
-    const html = `<p style="margin:0 0 16px;white-space:pre-wrap">${esc(p.body)}</p><p style="margin:0;font-size:13px;color:#8a857a">${meta.map(esc).join("<br>")}</p>`;
+    const html = `<p style="margin:0 0 16px;white-space:pre-wrap">${esc(p.body)}</p><p style="margin:0;font-size:13px;color:#6b7480">${meta.map(esc).join("<br>")}</p>`;
     return { subject: `Feedback from ${p.name} at ${p.orgName}`, html: layout("Someone wrote in.", html), text: textOf([p.body, "", ...meta]) };
   },
 
@@ -114,7 +106,7 @@ export const templates = {
       ["Headline variant", p.variant ?? "-"],
       ["Signed up", p.signedUp],
     ];
-    const html = `<p style="margin:0 0 12px">Three days in, no call. Worth a phone call from you.</p><table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse">${rows.map(([k, v]) => `<tr><td style="padding:6px 16px 6px 0;font-size:13px;color:#8a857a;vertical-align:top">${esc(k)}</td><td style="padding:6px 0;font-size:14px">${esc(v)}</td></tr>`).join("")}</table>`;
+    const html = `<p style="margin:0 0 12px">Three days in, no call. Worth a phone call from you.</p><table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse">${rows.map(([k, v]) => `<tr><td style="padding:6px 16px 6px 0;font-size:13px;color:#6b7480;vertical-align:top">${esc(k)}</td><td style="padding:6px 0;font-size:14px">${esc(v)}</td></tr>`).join("")}</table>`;
     const cta = { label: "Open signups", href: p.adminUrl };
     return { subject: `Stalled trial: ${p.orgName} (${p.name})`, html: layout("A trial stalled.", html, cta), text: textOf(["Three days in, no call.", ...rows.map(([k, v]) => `${k}: ${v}`)], cta) };
   },
@@ -204,7 +196,7 @@ export const templates = {
       "The people who score highest against her do two things: they keep every turn under fifteen words, and they ask one specific question about her world before they say anything about their own. Both are habits, and habits come from reps.",
       `A free trial gives your team ${TRIAL.calls} calls over ${TRIAL.days} days against prospects built from your own targets, at three levels, with Karen and two other boss fights thrown in. Any email, no card.`,
     ];
-    const foot = `<p style="margin:12px 0 0;font-size:12px;color:#8a857a">This is the last email about your call. <a href="${p.unsubscribeUrl}" style="color:#8a857a">No more from us</a>.</p>`;
+    const foot = `<p style="margin:12px 0 0;font-size:12px;color:#6b7480">This is the last email about your call. <a href="${p.unsubscribeUrl}" style="color:#6b7480">No more from us</a>.</p>`;
     return { subject: won ? "You beat Karen. Can your team?" : `${p.overall.toFixed(1)} against Karen. Here's how to climb`, html: layout("Round two.", lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("") + foot, cta), text: textOf([...lines, "", `No more emails: ${p.unsubscribeUrl}`], cta) };
   },
 
@@ -233,17 +225,17 @@ export const templates = {
     const html = [
       `<p style="margin:0 0 12px">Hi ${esc(p.firstName)},</p>`,
       `<p style="margin:0 0 12px">You called Karen. She ${esc(outcome.toLowerCase())}. ${esc(p.outcomeReason)}</p>`,
-      `<p style="margin:0 0 16px;font-size:32px;font-family:Georgia,'Times New Roman',serif">${p.overall.toFixed(1)}<span style="font-size:14px;color:#8a857a"> / 10 overall</span></p>`,
-      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px">${rows.map((r) => `<tr><td style="padding:8px 0;border-top:1px solid #e6e2d8;font-size:14px;width:40%">${esc(r.label)}</td><td style="padding:8px 0;border-top:1px solid #e6e2d8;font-size:14px;font-weight:600;width:10%">${r.score}</td><td style="padding:8px 0;border-top:1px solid #e6e2d8;font-size:13px;color:#8a857a">${esc(r.note)}</td></tr>`).join("")}</table>`,
+      `<p style="margin:0 0 16px;font-size:34px;font-weight:600;letter-spacing:-0.5px">${p.overall.toFixed(1)}<span style="font-size:14px;color:#6b7480"> / 10 overall</span></p>`,
+      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px">${rows.map((r) => `<tr><td style="padding:8px 0;border-top:1px solid #e6e2d8;font-size:14px;width:40%">${esc(r.label)}</td><td style="padding:8px 0;border-top:1px solid #e6e2d8;font-size:14px;font-weight:600;width:10%">${r.score}</td><td style="padding:8px 0;border-top:1px solid #e6e2d8;font-size:13px;color:#6b7480">${esc(r.note)}</td></tr>`).join("")}</table>`,
       `<p style="margin:0 0 6px;font-weight:600">What worked</p>${p.strengths.map((x) => `<p style="margin:0 0 6px">${esc(x)}</p>`).join("")}`,
       `<p style="margin:12px 0 6px;font-weight:600">What to fix first</p>${p.improvements.map((x) => `<p style="margin:0 0 6px">${esc(x)}</p>`).join("")}`,
-      `<p style="margin:16px 0 0;color:#3b3833">${esc(p.coachSummary)}</p>`,
+      `<p style="margin:16px 0 0;color:#3d4855">${esc(p.coachSummary)}</p>`,
       `<p style="margin:20px 0 0;font-weight:600">Your team's reps face these same objections.</p><p style="margin:4px 0 0">Build their prospects from your own calls. 5 free calls, no card.</p>`,
-      p.cameFrom ? `<p style="margin:12px 0 0;font-size:14px">You came from: ‘${esc(p.cameFrom.text)}’. <a href="${p.cameFrom.url}" style="color:#1c1b19">Read how to handle it →</a></p>` : "",
-      p.shareUrl ? `<p style="margin:16px 0 0;font-size:14px">Your scorecard has a public page: <a href="${p.shareUrl}" style="color:#1c1b19">${esc(p.shareUrl)}</a>. Post it, or put yourself on the leaderboard from the results page.</p>` : "",
-      `<p style="margin:16px 0 0;font-size:13px;color:#8a857a">Karen is one of the prospects in ${esc(SITE.name)}. Reps dial prospects built from their own targets, at three levels, and every call is scored like this one. Ten calls are free.</p>`,
-      p.personalEmail ? `<p style="margin:12px 0 0;font-size:13px;color:#3b3833">Any address starts the trial. A work address makes the workspace your company's, so your team can join it. Sign up with yours and the five free calls are waiting.</p>` : "",
-      `<p style="margin:12px 0 0;font-size:12px;color:#8a857a">We'll send one follow-up in a couple of days. <a href="${p.unsubscribeUrl}" style="color:#8a857a">Don't</a>.</p>`,
+      p.cameFrom ? `<p style="margin:12px 0 0;font-size:14px">You came from: ‘${esc(p.cameFrom.text)}’. <a href="${p.cameFrom.url}" style="color:#1b2632">Read how to handle it →</a></p>` : "",
+      p.shareUrl ? `<p style="margin:16px 0 0;font-size:14px">Your scorecard has a public page: <a href="${p.shareUrl}" style="color:#1b2632">${esc(p.shareUrl)}</a>. Post it, or put yourself on the leaderboard from the results page.</p>` : "",
+      `<p style="margin:16px 0 0;font-size:13px;color:#6b7480">Karen is one of the prospects in ${esc(SITE.name)}. Reps dial prospects built from their own targets, at three levels, and every call is scored like this one. Ten calls are free.</p>`,
+      p.personalEmail ? `<p style="margin:12px 0 0;font-size:13px;color:#3d4855">Any address starts the trial. A work address makes the workspace your company's, so your team can join it. Sign up with yours and the five free calls are waiting.</p>` : "",
+      `<p style="margin:12px 0 0;font-size:12px;color:#6b7480">We'll send one follow-up in a couple of days. <a href="${p.unsubscribeUrl}" style="color:#6b7480">Don't</a>.</p>`,
     ].join("");
     const text = [
       `Hi ${p.firstName},`,
@@ -399,7 +391,7 @@ export const templates = {
   managerIntro(p: { subject: string; lines: string[]; repName: string; repEmail: string; link: string; optOut: string }): Rendered {
     const cta = { label: "Start the free trial", href: p.link };
     const footer = `Sent on behalf of ${p.repName} (${p.repEmail}); replies go to them. One email, no follow-ups.`;
-    const html = layout("Your rep has been practising.", `${p.lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("")}<p style="margin:20px 0 0;font-size:12px;color:#8a857a">${esc(footer)} <a href="${p.optOut}" style="color:#8a857a">Don't email me again</a>.</p>`, cta);
+    const html = layout("Your rep has been practising.", `${p.lines.map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`).join("")}<p style="margin:20px 0 0;font-size:12px;color:#6b7480">${esc(footer)} <a href="${p.optOut}" style="color:#6b7480">Don't email me again</a>.</p>`, cta);
     return { subject: p.subject, html, text: textOf([...p.lines, "", footer, `Don't email me again: ${p.optOut}`], cta) };
   },
 };
