@@ -1,28 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 /**
- * Feedback for a page change: a thin amber bar along the top and a busy cursor from the click until the next page
- * is on screen. Client-side navigation shows no browser spinner, so without this a slow page looks like a dead click.
+ * Feedback for a page change: a busy cursor from the click until the next page is on screen. Client-side navigation
+ * shows no browser spinner, so without this a slow page looks like a dead click.
  */
 export function NavigationProgress() {
   const pathname = usePathname();
   const search = useSearchParams();
-  const [state, setState] = useState<"idle" | "loading" | "done">("idle");
   const safety = useRef<number | undefined>(undefined);
 
-  // A new page is on screen: finish the bar and drop the busy cursor.
+  // A new page is on screen: drop the busy cursor.
   useEffect(() => {
     document.documentElement.removeAttribute("data-navigating");
     window.clearTimeout(safety.current);
-    const done = window.setTimeout(() => setState((s) => (s === "loading" ? "done" : s)), 0);
-    const idle = window.setTimeout(() => setState((s) => (s === "done" ? "idle" : s)), 400);
-    return () => {
-      window.clearTimeout(done);
-      window.clearTimeout(idle);
-    };
   }, [pathname, search]);
 
   useEffect(() => {
@@ -30,13 +23,9 @@ export function NavigationProgress() {
       if (url.origin !== location.origin) return;
       if (url.pathname === location.pathname && url.search === location.search) return;
       document.documentElement.setAttribute("data-navigating", "");
-      setState("loading");
       // Never leave it spinning if a navigation is cancelled or fails.
       window.clearTimeout(safety.current);
-      safety.current = window.setTimeout(() => {
-        document.documentElement.removeAttribute("data-navigating");
-        setState("idle");
-      }, 15000);
+      safety.current = window.setTimeout(() => document.documentElement.removeAttribute("data-navigating"), 15000);
     };
     // Capture phase: Next's <Link> cancels the browser's own navigation in its click handler, so by the time the
     // event bubbles up to the document it is already marked as prevented and would be missed.
@@ -60,19 +49,5 @@ export function NavigationProgress() {
     };
   }, []);
 
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none fixed inset-x-0 top-0 z-[100] h-[3px]"
-      style={{ opacity: state === "idle" ? 0 : 1, transition: "opacity 300ms ease 100ms" }}
-    >
-      <div
-        className="h-full bg-[#ffb162] shadow-[0_0_8px_#ffb162]"
-        style={{
-          width: state === "idle" ? "0%" : state === "done" ? "100%" : "85%",
-          transition: state === "loading" ? "width 8s cubic-bezier(0.1, 0.7, 0.2, 1)" : state === "done" ? "width 200ms ease-out" : "none",
-        }}
-      />
-    </div>
-  );
+  return null;
 }
