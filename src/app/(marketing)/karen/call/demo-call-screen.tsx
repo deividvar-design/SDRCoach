@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
+import type { Ambience } from "@/lib/domain/moods";
 import { Rays } from "@/components/shell/brand-panel";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -46,6 +48,16 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
   const endedRef = useRef(false);
   const linkedRef = useRef<Promise<unknown> | null>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
+  // Where Karen is this call: the sound under her voice, rolled on the server and started when she picks up.
+  const ambienceRef = useRef<AmbienceHandle | null>(null);
+  const pendingAmbienceRef = useRef<Ambience>("quiet");
+  const stopAmbience = () => {
+    ambienceRef.current?.stop();
+    ambienceRef.current = null;
+  };
+
+  // Never leave the sound running after the screen goes away.
+  useEffect(() => () => stopAmbience(), []);
 
   const endOnServer = useCallback(async () => {
     if (endedRef.current) return;
@@ -57,6 +69,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
   const conversation = useConversation({
     onConnect: ({ conversationId }) => {
       setStage("live");
+      ambienceRef.current = startAmbience(pendingAmbienceRef.current);
       // The Google Ads "Karen call" conversion goes out the moment Karen picks up, while the caller is certainly on
       // the page. Waiting for the scored result lost every caller who closed the tab or locked the phone first; the
       // result page still reports it too, and the shared transaction id stops Google counting it twice.
@@ -71,11 +84,13 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
       if (text) setTurns((prev) => [...prev, { role: role === "agent" ? "prospect" : "rep", text }]);
     },
     onDisconnect: () => {
+      stopAmbience();
       track("demo_call_ended");
       setStage((s) => (s === "live" || s === "dialing" ? "ending" : s));
       endOnServer().then(() => router.push("/karen/result"));
     },
     onError: (message) => {
+      stopAmbience();
       setError(message);
       setStage("error");
       endOnServer();
@@ -130,6 +145,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
       const res = await fetch("/api/demo/start", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not start the call");
+      pendingAmbienceRef.current = data.ambience ?? "quiet";
       track("demo_call_started");
       await new Promise((r) => setTimeout(r, 1200));
       conversation.startSession({

@@ -13,7 +13,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sweepStaleSessions } from "@/lib/calls/sweep";
 import { finalizeCall, hashPrompt } from "@/lib/calls/finalize";
 import { recordVoiceUsage } from "@/lib/usage/record";
-import { MOODS } from "@/lib/domain/moods";
 
 const DAILY_CALL_CAP = Number(process.env.CALLS_PER_ORG_PER_DAY ?? 200);
 
@@ -91,7 +90,7 @@ export async function POST(request: Request) {
   // Boss fights are always Level 3; nobody gets a warm Karen.
   const difficulty = target.kind === "boss" ? "cold" : parsed.data.difficulty;
   // Dice, rolled once per call so the same target is never the same person twice. No gatekeeper on a boss fight: the boss answers.
-  const mood = target.kind === "boss" ? MOODS.find((m) => m.id === "plain")! : rollMood(difficulty);
+  const mood = rollMood(target.kind === "boss" ? "cold" : difficulty);
   const gatekeeper = target.kind !== "boss" && rollGatekeeper(difficulty) ? pickGatekeeper(target.voice_id) : null;
   const prompt = buildPersonaPrompt({ target, difficulty, org: viewer.org, repName, mood, gatekeeper, ttsModel: process.env.ELEVENLABS_TTS_MODEL });
 

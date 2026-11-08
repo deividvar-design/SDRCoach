@@ -17,7 +17,7 @@ export async function POST() {
   if (demo.mints >= MAX_MINTS) return NextResponse.json({ error: "This call could not connect. Start again from the Karen page." }, { status: 429 });
   if (!process.env.ELEVENLABS_API_KEY || !process.env.ELEVENLABS_AGENT_ID) return NextResponse.json({ error: "Voice service is not configured." }, { status: 503 });
 
-  const { prompt, firstMessage, voiceId } = demoPrompt(demo);
+  const { prompt, firstMessage, voiceId, mood } = demoPrompt(demo);
   const db = createAdminClient();
   // Claim the mint first (optimistic on the counter), then talk to the voice provider.
   const { data: claimed } = await db
@@ -43,5 +43,5 @@ export async function POST() {
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Voice service unavailable" }, { status: 503 });
   }
-  return NextResponse.json({ token, overrides: { prompt, firstMessage, voiceId }, prospect: { name: KAREN.name, title: KAREN.title, company: KAREN.company } });
+  return NextResponse.json({ token, overrides: { prompt, firstMessage, voiceId }, ambience: mood.ambience, prospect: { name: KAREN.name, title: KAREN.title, company: KAREN.company } });
 }

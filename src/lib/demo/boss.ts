@@ -7,7 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { BOSS_PERSONAS } from "@/content/boss-personas";
 import { KAREN_BRIEF, KAREN_BRIEF_TEXT } from "@/content/karen-brief";
 import { buildPersonaPrompt, firstMessage } from "@/lib/prompts/persona";
-import { MOODS } from "@/lib/domain/moods";
+import { rollMood, seededRandom } from "@/lib/domain/moods";
 import { fetchConversation } from "@/lib/elevenlabs/client";
 import { computeMetrics } from "@/lib/scoring/metrics";
 import { scoreCall } from "@/lib/scoring/score";
@@ -78,7 +78,7 @@ export async function overDemoLimits(db: Db, { domain, ip, personal }: { domain:
 }
 
 /** Karen's brief. Every caller sells the same made-up product, shown to them on the page and on the call screen. */
-export function demoPrompt(demo: Pick<DemoCall, "email">) {
+export function demoPrompt(demo: Pick<DemoCall, "id" | "email">) {
   const org = {
     name: KAREN_BRIEF.company,
     company_description: KAREN_BRIEF.oneLine,
@@ -86,9 +86,10 @@ export function demoPrompt(demo: Pick<DemoCall, "email">) {
     ideal_customer_profile: "Procurement teams at mid-size and large companies with many suppliers.",
   };
   const repName = demo.email?.split("@")[0]?.split(/[._-]/)[0] || "the rep";
-  const mood = MOODS.find((m) => m.id === "plain")!;
+  // Karen is a boss too: where she is and how her day is going are rolled, from the call id so the scorer gets the same roll.
+  const mood = rollMood("cold", seededRandom(demo.id));
   const prompt = buildPersonaPrompt({ target: KAREN, difficulty: "cold", org, repName: capitalise(repName), mood, gatekeeper: null, ttsModel: process.env.ELEVENLABS_TTS_MODEL }) + KAREN_SIGN_OFF;
-  return { prompt, firstMessage: firstMessage({ target: KAREN, difficulty: "cold", gatekeeper: null }), voiceId: KAREN.voice_id, repName: capitalise(repName), org };
+  return { prompt, firstMessage: firstMessage({ target: KAREN, difficulty: "cold", gatekeeper: null }), voiceId: KAREN.voice_id, repName: capitalise(repName), org, mood };
 }
 
 /**
@@ -171,7 +172,7 @@ export async function finalizeDemo(id: string) {
 
     const collected = String(convo.dataCollection.outcome ?? "");
     const prospectDecided = OUTCOMES.includes(collected as CallOutcome) ? (collected as CallOutcome) : null;
-    const { repName, org } = demoPrompt(demo);
+    const { repName, org, mood } = demoPrompt(demo);
     const score = await scoreCall({
       turns,
       metrics: computeMetrics(convo.turns, durationSecs),
@@ -181,7 +182,7 @@ export async function finalizeDemo(id: string) {
       repName,
       orgPlaybook: [],
       durationSecs,
-      mood: MOODS.find((m) => m.id === "plain"),
+      mood,
       gatekeeper: false,
     });
     await recordAnthropicUsage(db, { demoId: id, kind: "score", model: score.model, usage: score.usage });
