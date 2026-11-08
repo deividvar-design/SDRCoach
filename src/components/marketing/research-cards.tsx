@@ -8,20 +8,20 @@ import { Eyebrow, H2, Section } from "@/components/marketing/sections";
 const CARDS = [
   {
     heading: "Rehearsal carries over to the real thing",
-    body: "Across more than 600 studies, people trained in realistic simulations outperformed untrained peers, both in skill tests and in how they behaved on the job.",
-    built: "Prospects push back the way real buyers do, so the call you practise is close to the call you'll make.",
+    body: "In more than 600 studies, people who trained with realistic practice did better than people who didn't, in tests and at work.",
+    built: "our prospects push back like real buyers, so practice feels like the real call.",
     source: "Cook et al., JAMA, 2011",
   },
   {
     heading: "Saying it beats reading it",
-    body: "Actively producing an answer from memory beats re-reading the material, and the benefit holds when people face new situations.",
-    built: "Reps say the opener and the objection response out loud, to someone who answers back, instead of rereading the script.",
+    body: "Saying an answer out loud from memory helps you learn more than reading it again. It also helps when something new comes up.",
+    built: "reps say their opener and answers out loud to someone who talks back. They don't just reread a script.",
     source: "Adesope, Trevisan & Sundararajan, Review of Educational Research, 2017",
   },
   {
     heading: "Feedback works when it's specific",
-    body: "Feedback improves performance on average. But in more than a third of cases it made things worse, mostly when it judged the person instead of the task.",
-    built: "Every report scores six behaviours and quotes the rep's own words, so the feedback is about what was said, not about the rep.",
+    body: "Feedback usually helps. But in more than a third of cases it made people worse, mostly when it judged the person instead of the work.",
+    built: "every report scores six skills and quotes what the rep said, word for word.",
     source: "Kluger & DeNisi, Psychological Bulletin, 1996",
   },
 ];
@@ -43,7 +43,7 @@ export function ResearchCards() {
         ))}
       </div>
       <p className="text-muted-foreground mt-10 max-w-3xl text-sm">
-        Practice doesn't replace live calls. The gains from sales training are real but fade without repetition, so 100 Dials is built for a few calls a week, not a one-off workshop. <Link href="/research" className="text-foreground underline underline-offset-4">See the research</Link>
+        Practice doesn't replace real calls. Training wears off if you stop, so 100 Dials is built for a few practice calls every week. <Link href="/research" className="text-foreground underline underline-offset-4">See the research</Link>
       </p>
     </Section>
   );

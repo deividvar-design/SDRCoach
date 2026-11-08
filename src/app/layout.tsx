@@ -18,7 +18,7 @@ const display = Instrument_Serif({ variable: "--font-display", subsets: ["latin"
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
-  title: { default: `${SITE.name}, ${SITE.descriptor}`, template: `%s, ${SITE.name}` },
+  title: { default: `${SITE.name}, AI cold call practice`, template: `%s, ${SITE.name}` },
   description: SITE.description,
   applicationName: SITE.name,
   openGraph: { type: "website", siteName: SITE.name, locale: "en_US" },

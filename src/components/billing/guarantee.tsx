@@ -12,7 +12,7 @@ export function Guarantee({ className }: { className?: string }) {
       <div>
         <p className="font-display text-2xl leading-tight md:text-3xl">30-day money-back guarantee on your first payment.</p>
         <p className="text-muted-foreground mt-1.5 text-sm">
-          Not working for the team? Email <a href={`mailto:${SALES_EMAIL}`} className="text-foreground underline underline-offset-4">{SALES_EMAIL}</a> within 30 days of your first payment and we refund it in full. No questions.
+          Not working for the team? Email <a href={`mailto:${SALES_EMAIL}`} className="text-foreground underline underline-offset-4">{SALES_EMAIL}</a> within 30 days of your first payment and we refund it in full. No questions asked.
         </p>
       </div>
     </div>

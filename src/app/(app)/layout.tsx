@@ -39,7 +39,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       <IdentifyUser userId={viewer.userId} props={{ org_id: viewer.org.id, org_name: viewer.org.name, plan: viewer.org.plan, role: viewer.membership.role, seat_limit: viewer.org.seat_limit }} />
       <aside className="bg-sidebar sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r p-3 md:flex">
         <Link href="/dashboard" className="px-2 py-3">
-          <Logo descriptor />
+          <Logo />
         </Link>
         <div className="text-muted-foreground mb-4 truncate px-3 text-xs">{viewer.org.name}</div>
         <SidebarNav isManager={isManager} />

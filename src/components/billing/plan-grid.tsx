@@ -107,7 +107,7 @@ export function PlanGrid({
                   <>
                     <span className="font-mono text-4xl font-medium tabular">{formatMoney(price, currency)}</span>
                     <span className="text-muted-foreground text-sm">/ seat / month</span>
-                    {isFounding && listPrice != null && listPrice > (price ?? 0) && <span className="text-muted-foreground ml-1 font-mono text-sm line-through tabular" title={`${meta.label} list price`}>{formatMoney(listPrice, currency)}</span>}
+                    {isFounding && listPrice != null && listPrice > (price ?? 0) && <span className="text-muted-foreground ml-1 text-sm">Regular price <span className="font-mono line-through tabular">{formatMoney(listPrice, currency)}</span></span>}
                   </>
                 )}
               </div>
@@ -117,8 +117,8 @@ export function PlanGrid({
                 </div>
               )}
               <div className="text-muted-foreground mt-1 text-xs">
-                {p.callsPerSeat ? `${p.callsPerSeat} calls per seat per month, pooled across the team` : "Volume pricing, custom call allowance"}
-                {p.minSeats > 1 ? `, from ${p.minSeats} seats` : ", from a single seat"}
+                {p.callsPerSeat ? `${p.callsPerSeat} calls a month per seat. The whole team shares the calls.` : "Volume pricing and a custom number of calls."}
+                {p.minSeats > 1 ? ` From ${p.minSeats} seats.` : " Works with one seat."}
               </div>
               {isFounding && founding && <p className="text-signal-ink mt-2 text-[13px] font-medium">{founding.partner ? `${formatMoney(price ?? 0, currency)} a seat a month${meta.founding}: your founding-partner price.` : `${formatMoney(price ?? 0, currency)} a seat a month${meta.founding}, kept for as long as you stay subscribed. Founding pricing until ${founding.untilLabel}.`}</p>}
               <ul className="mt-6 flex-1 space-y-2.5 text-[15px]">

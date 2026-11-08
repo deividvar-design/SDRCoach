@@ -1,5 +1,5 @@
 import "server-only";
-import { FOUNDING } from "./plans";
+import { FOUNDING, PLANS } from "./plans";
 import { priceCatalog } from "./stripe";
 
 export interface FoundingOffer {
@@ -26,4 +26,10 @@ export async function foundingOffer(org?: { partner_since: string | null } | nul
   // Founding partners keep the founding price after the public window: the program promises it for a year.
   if (org?.partner_since) return { until: new Date(new Date(org.partner_since).getTime() + 400 * 86_400_000).toISOString(), untilLabel: FOUNDING.untilLabel, price: FOUNDING.price, partner: true };
   return null;
+}
+
+/** Today's monthly Starter seat price in dollars: the founding price while it runs, the list price after. */
+export async function starterMonthlyUsd() {
+  const offer = await foundingOffer();
+  return offer ? offer.price.starter.usd.month : (PLANS.find((p) => p.id === "starter")?.prices?.usd.month ?? 0);
 }

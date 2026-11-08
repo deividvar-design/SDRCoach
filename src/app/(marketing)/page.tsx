@@ -2,6 +2,9 @@ import Link from "next/link";
 import { BookOpen, Mic, Target, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TRIAL } from "@/lib/billing/plans";
+import { starterMonthlyUsd } from "@/lib/billing/founding";
+import { formatMoney } from "@/lib/billing/currency";
+import { CostOfPractice } from "@/components/marketing/cost-of-practice";
 import { SampleCall } from "@/components/marketing/sample-call";
 import { ProofCall } from "@/components/marketing/proof-call";
 import { ResearchCards } from "@/components/marketing/research-cards";
@@ -24,7 +27,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata = pageMetadata({
   title: "AI cold call simulator for new SDRs",
-  description: "New reps dial realistic AI prospects built from your own targets and get scored on six skills before they touch your pipeline. Free trial, any email.",
+  description: `Let new SDRs practice cold calls on AI prospects before they touch real leads. Six-skill score after every call. ${TRIAL.calls} free calls, no card.`,
   path: "/",
 });
 
@@ -35,9 +38,9 @@ export const revalidate = 3600;
 const FEATURED_OBJECTIONS = ["not-interested", "send-me-an-email", "no-budget", "we-already-have-a-solution", "call-me-back-later", "not-the-decision-maker"];
 
 const STEPS = [
-  { icon: Target, title: "Add who you're calling", body: "Real accounts from this quarter's list, or one of six built-in personas and three boss fights. Pick a voice, add the pains and objections, and each one becomes a live prospect." },
-  { icon: Mic, title: "Dial", body: "A real, interruptible voice call. Level 1 is friendly. Level 3 tries to hang up on you. The prospect decides how it ends, and says why." },
-  { icon: TrendingUp, title: "Get coached, when you want it", body: "Every call keeps its transcript, stats and outcome. Ask for the review and the coach scores six skills, tags every objection and names the one thing to change next time." },
+  { icon: Target, title: "Pick who to call", body: "Use one of our six ready-made prospects or three extra-hard ones. Or build your own from the companies on your list. Choose a voice, add their problems and objections, and they're ready to call." },
+  { icon: Mic, title: "Dial", body: "It's a real voice call, and you can talk over each other. Level 1 is friendly. Level 3 tries to hang up on you. The prospect decides how the call ends and tells you why." },
+  { icon: TrendingUp, title: "Get your score", body: "Every call is saved with its recording and transcript. Ask for a review and the coach scores six skills and marks every objection. Then it tells you the one thing to change next time." },
 ];
 
 
@@ -46,6 +49,7 @@ export default async function HomePage() {
   const hangUps = await karenHangUpsThisMonth().catch(() => 0);
   const objections = getAllObjectionPages().filter((p) => FEATURED_OBJECTIONS.includes(p.slug)).sort((a, b) => FEATURED_OBJECTIONS.indexOf(a.slug) - FEATURED_OBJECTIONS.indexOf(b.slug));
   const hero = variant === "a" ? null : HERO_COPY[variant];
+  const price = formatMoney(await starterMonthlyUsd(), "usd");
   return (
     <>
       <JsonLd data={[organizationLd(), softwareLd()]} />
@@ -56,10 +60,11 @@ export default async function HomePage() {
       {!hero ? (
         <>
           <KarenHero />
+          <CostOfPractice price={price} />
           <Section className="border-t">
             <H2>What a scored call looks like.</H2>
             <p className="text-muted-foreground text-body mt-4 max-w-2xl">
-              The coach scores six skills out of ten, quotes the rep's own words in the rationale, and names the one thing to fix before the next dial. This is a sample against Karen.
+              After each call, the coach gives six scores out of 10. It quotes what the rep really said and picks one thing to fix before the next call. Here's a sample call with Karen.
             </p>
             <div className="mt-8"><ProofCall /></div>
           </Section>
@@ -72,7 +77,7 @@ export default async function HomePage() {
           </h1>
           <p className={cn("font-display enter mt-5 max-w-3xl text-balance", hero.large ? "text-2xl text-muted-foreground md:text-3xl" : "text-signal text-3xl md:text-5xl")} style={{ "--enter-delay": "90ms" } as React.CSSProperties}>{hero.sub}</p>
           <p className="text-muted-foreground enter mt-5 max-w-2xl" style={{ "--enter-delay": "120ms" } as React.CSSProperties}>
-            100 Dials is an AI cold call simulator for SDR teams. Reps dial realistic prospects built from their own target accounts, every call is scored on six skills, and managers see where the team struggles.
+            100 Dials is an AI cold call simulator for SDR teams. Reps call AI prospects that sound real. Every call gets a score, and managers see where the team needs help.
           </p>
           <div className="enter mt-8 flex flex-wrap items-center gap-4" style={{ "--enter-delay": "140ms" } as React.CSSProperties}>
             <Button size="xl" variant="signal" asChild><Link href="/karen">Pick up</Link></Button>
@@ -91,10 +96,10 @@ export default async function HomePage() {
 
       {/* 2. How it works */}
       <Section id="how-it-works" className="border-t">
-        <H2>Three steps between a new rep and a booked meeting.</H2>
+        <H2>How it works, in three steps.</H2>
         {!hero && (
           <p className="text-muted-foreground text-body mt-4 max-w-2xl">
-            100 Dials is an AI cold call simulator for SDR teams. Reps dial realistic prospects built from their own target accounts, every call is scored on six skills, and managers see where the team struggles.
+            100 Dials is an AI cold call simulator for SDR teams. Reps call AI prospects that sound real. Every call gets a score, and managers see where the team needs help.
           </p>
         )}
         <ol className="mt-10 grid gap-8 md:grid-cols-3">
@@ -110,9 +115,9 @@ export default async function HomePage() {
 
       {/* 3. The ladder */}
       <Section className="border-t">
-        <H2>It gets harder. That is the point.</H2>
+        <H2>It gets harder. That's the point.</H2>
         <div className="mt-10"><Ladder /></div>
-        <p className="text-muted-foreground mt-5 max-w-2xl">Reps are nudged up a level after three calls averaging seven or better. Nothing is locked.</p>
+        <p className="text-muted-foreground mt-5 max-w-2xl">After three calls that average 7 or more, we suggest the next level. Every level is open from day one.</p>
       </Section>
 
       {/* 4. Boss fights */}
@@ -122,10 +127,10 @@ export default async function HomePage() {
       <Section>
         <div className="grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:items-end">
           <div>
-            <H2>Coach the pattern, not the call.</H2>
+            <H2>See what your whole team keeps getting wrong.</H2>
           </div>
           <p className="text-muted-foreground text-body max-w-xl">
-            You do not have to listen to fifty calls to know what to fix. Every reviewed call feeds one view: the weakest skill across the team, and the objection the team keeps losing. Ten minutes in the next team meeting.
+            You don't need to listen to 50 calls to know what to fix. Every scored call adds to one view: your team's weakest skill and the objection they lose to most. Bring it to your next team meeting and work on it for ten minutes.
           </p>
         </div>
         <div className="mt-8"><Heatmap /></div>
@@ -136,20 +141,20 @@ export default async function HomePage() {
       <Section className="border-t">
         <div className="grid items-center gap-10 md:grid-cols-2">
           <div>
-            <H2>Prospects that sound like your market, not like a chatbot.</H2>
+            <H2>Prospects that sound like your real buyers.</H2>
             <p className="text-muted-foreground text-body mt-5">
-              Upload transcripts from Gong, Chorus, Apollo or your dialler. 100 Dials extracts how your buyers talk, the objections they actually raise and the phrasing they use, then puts it in the prospect's mouth. The coach grades against your playbook, not a generic one.
+              Upload call transcripts from Gong, Chorus, Apollo or your dialer. 100 Dials learns how your buyers talk and which objections they raise. Then your AI prospects say the same things. The coach scores reps against your own playbook.
             </p>
             <TranscriptSources className="mt-6" />
-            <Button className="mt-6" variant="outline" asChild><Link href="/for-enablement">How enablement teams use it</Link></Button>
+            <Button className="mt-6" variant="outline" asChild><Link href="/for-enablement">How sales training teams use it</Link></Button>
           </div>
           <div className="stage text-paper rounded-2xl p-6 md:p-8" data-ui>
-            <div className="text-paper/60 mb-4 flex items-center gap-2 text-sm"><BookOpen className="size-4" /> Digest from uploaded calls</div>
+            <div className="text-paper/60 mb-4 flex items-center gap-2 text-sm"><BookOpen className="size-4" /> What we learned from your calls</div>
             <dl className="divide-y divide-white/10">
               {[
                 ["Objection, in their words", "“We already run Samsara on half the trucks.”"],
-                ["Tone", "Short answers. Impatient with scripts. Warms up to fuel-cost-per-mile language."],
-                ["What booked meetings", "A reason for calling tied to fleet growth in the first twenty seconds."],
+                ["Tone", "Short answers. Hates scripts. Warms up when you talk about fuel cost per mile."],
+                ["What got meetings booked", "A reason for calling tied to fleet growth in the first 20 seconds."],
               ].map(([k, v]) => (
                 <div key={k} className="py-3">
                   <dt className="text-paper/60 text-sm">{k}</dt>
@@ -169,7 +174,7 @@ export default async function HomePage() {
           <div>
             <H2>The objections every new rep fumbles.</H2>
             <p className="text-muted-foreground text-body mt-5">
-              Fifteen of them, written up: what each one really means, three ways to answer it, and the mistakes that lose the call. The same lines the AI prospects use, so reps can read them before they hear them.
+              We wrote up 15 of them. Each one covers what it really means, three ways to answer it, and the mistakes that lose the call. Our AI prospects use the same lines, so reps can read them first.
             </p>
             <Button className="mt-6" variant="outline" asChild><Link href="/objections">Read the objection library</Link></Button>
           </div>
@@ -189,7 +194,7 @@ export default async function HomePage() {
       {/* 8. Founder note */}
       <FounderNote />
 
-      <CtaBand />
+      <CtaBand note={`${TRIAL.calls} calls, ${TRIAL.days} days, any email. Then ${price} a rep per month.`} />
     </>
   );
 }

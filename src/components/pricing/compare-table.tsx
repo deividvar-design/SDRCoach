@@ -8,12 +8,12 @@ export function CompareTable({ starterPrice, teamPrice, currency }: { starterPri
   const rows: [string, string, string][] = [
     ["Price, monthly", `${formatMoney(starterPrice, currency)} per seat`, `${formatMoney(teamPrice, currency)} per seat`],
     ["Minimum seats", "1", "1"],
-    ["Who it is for", "A rep practising alone, or a small team", "A manager running an SDR team"],
-    ["Practice calls", `${starter.callsPerSeat} per seat a month, pooled`, `${team.callsPerSeat} per seat a month, pooled`],
-    ["Prospects", "Six personas, three boss fights, your own targets, custom personas from your transcripts", "The same"],
-    ["Call transcripts for grounding", "Up to 30 sources", "Up to 100 sources"],
-    ["Coaching", "Scored report after every call, team heatmap, objection table, Monday digest", "The same"],
-    ["Onboarding", "Self-serve", "Personalised setup: we build your first prospects from your target accounts"],
+    ["Who it's for", "A rep practicing alone, or a small team", "A manager running an SDR team"],
+    ["Practice calls", `${starter.callsPerSeat} per seat a month, shared by the team`, `${team.callsPerSeat} per seat a month, shared by the team`],
+    ["Prospects", "Six ready-made prospects, three extra-hard ones, your own targets, and prospects built from your call transcripts", "The same"],
+    ["Calls and docs the prospects learn from", "Up to 30 files", "Up to 100 files"],
+    ["Coaching", "Scored report after every call, team heatmap, objection table, Monday email summary", "The same"],
+    ["Onboarding", "Self-serve", "Personal setup: we build your first prospects from the companies you sell to"],
     ["Support", "Email", "Priority, same-day reply on working days"],
     ["Trial", `${TRIAL.calls} calls over ${TRIAL.days} days, no card`, "The same, or an extended trial on request"],
   ];

@@ -9,11 +9,9 @@ export function appUrl() {
 /** Single source of truth for site-wide identity. */
 export const SITE = {
   name: "100 Dials",
-  /** The one-line descriptor that sits under the name wherever the name stands alone. */
-  descriptor: "Cold Call Coach",
   url: (process.env.NEXT_PUBLIC_APP_URL ?? "https://100dials.com").replace(/\/$/, ""),
   tagline: "Ramp on the phone, not on your pipeline.",
-  description: "An AI cold call simulator for SDR teams. Reps dial realistic prospects built from their own targets and get coached on every call, before the real ones pick up.",
+  description: "AI cold call practice for SDR teams. Reps practice on AI prospects first, so they don't waste real leads while they learn.",
   company: {
     // Set NEXT_PUBLIC_LEGAL_NAME / NEXT_PUBLIC_LEGAL_ADDRESS once incorporated; until then the pages name the product only.
     legalName: process.env.NEXT_PUBLIC_LEGAL_NAME ?? "100 Dials",

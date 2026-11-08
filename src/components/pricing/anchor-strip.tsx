@@ -1,6 +1,7 @@
 import { Eyebrow } from "@/components/marketing/sections";
 import { formatMoney, type Currency } from "@/lib/billing/currency";
 import { PLANS } from "@/lib/billing/plans";
+import { cn } from "@/lib/utils";
 
 /** Published ranges every number on the page sits inside. Re-checked quarterly; they move. */
 export const BENCHMARKS = [
@@ -19,14 +20,14 @@ export function AnchorStrip({ price, currency }: { price: number; currency: Curr
   const starterCalls = PLANS.find((p) => p.id === "starter")?.callsPerSeat ?? 40;
   const money = formatMoney(price, currency);
   const tiles = [
-    { big: "~$100", caption: "What one live conversation costs in rep time, data and tools" },
-    { big: "30–50", caption: "Live conversations a new rep burns in their first month, before they can run an opener" },
+    { big: "~$100", caption: "What one real conversation costs in rep time, data and tools" },
+    { big: "30–50", caption: "Real conversations a new rep burns in their first month while learning the opener" },
     { big: money, caption: `Per seat per month. ${starterCalls} practice calls a month. Make the mistakes here, not on your pipeline.` },
   ];
   return (
     <section className="mx-auto w-full max-w-6xl px-6 py-11 md:py-16" aria-labelledby="anchor-heading">
-      <Eyebrow>What practising on real prospects costs</Eyebrow>
-      <h2 id="anchor-heading" className="font-display mt-3 text-4xl leading-[1.05] text-balance md:text-5xl">Every live conversation costs you about $100 to earn.</h2>
+      <Eyebrow>What practicing on real prospects costs</Eyebrow>
+      <h2 id="anchor-heading" className="font-display mt-3 text-4xl leading-[1.05] text-balance md:text-5xl">Every real conversation costs you about $100 to get.</h2>
       <p className="text-muted-foreground mt-3 max-w-2xl text-lg">A new SDR burns 30 to 50 of them learning on real prospects. 100 Dials is {money}.</p>
       <ul className="mt-8 grid gap-x-10 gap-y-8 md:grid-cols-3">
         {tiles.map((t) => (
@@ -37,16 +38,23 @@ export function AnchorStrip({ price, currency }: { price: number; currency: Curr
         ))}
       </ul>
       <p className="text-muted-foreground mt-8 max-w-3xl text-sm leading-relaxed">
-        An SDR costs roughly $8,000 a month fully loaded and makes about 60 dials a day. Fewer than one dial in ten reaches a real person, so each conversation carries $50 to 100 of salary, data and tooling before anyone says hello. When a rep fumbles the opener with a VP, that account is usually off the table for months. Practising on real prospects is the most expensive training programme you will ever run.
+        An SDR costs about $8,000 a month once you add salary, tools and data. They make about 60 calls a day, but fewer than 1 in 10 reaches a real person. So each real conversation costs $50 to $100 before anyone says hello. If a rep messes up the opener with a VP, that company is often off the table for months. Learning on real prospects is the most expensive training you can buy.
       </p>
-      <p className="text-muted-foreground mt-4 text-xs leading-relaxed">
-        Sources: {BENCHMARKS.map((b, i) => (
-          <span key={b.source.href}>
-            {i > 0 && " · "}
-            <a href={b.source.href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{b.source.label}</a>
-          </span>
-        ))}. The 40% mishandled share in the calculator is our assumption, not a published figure. Benchmarks as of November 2026.
-      </p>
+      <BenchmarkSources className="mt-4" calculator />
     </section>
+  );
+}
+
+/** The sources behind the cost figures, word for word wherever they are quoted. */
+export function BenchmarkSources({ className, calculator = false }: { className?: string; calculator?: boolean }) {
+  return (
+    <p className={cn("text-muted-foreground text-xs leading-relaxed", className)}>
+      Sources: {BENCHMARKS.map((b, i) => (
+        <span key={b.source.href}>
+          {i > 0 && " · "}
+          <a href={b.source.href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{b.source.label}</a>
+        </span>
+      ))}.{calculator && " The 40% mishandled share in the calculator is our assumption, not a published figure."} Benchmarks as of November 2026.
+    </p>
   );
 }

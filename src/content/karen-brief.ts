@@ -7,12 +7,12 @@ export const KAREN_BRIEF = {
   company: "Clausefield",
   oneLine: "Software that tracks every supplier contract and service level in one place.",
   points: [
-    "Flags each renewal 90 days out, with the vendor's performance against its service levels attached.",
-    "Shows which suppliers miss their service levels, with the evidence, before anyone argues about whose fault it is.",
+    "Warns you 90 days before each contract renews and shows how well that supplier did.",
+    "Shows which suppliers miss their targets, with proof, before anyone argues about whose fault it is.",
     "Built for procurement teams managing 100+ suppliers.",
   ],
-  proof: "A property group your size caught two renewals it would have rolled over, and renegotiated both.",
-  ask: "A 15-minute call later this week.",
+  proof: "A property group your size caught two contracts that were about to renew without review, and got better terms on both.",
+  ask: "Book a 15-minute meeting for later this week.",
 } as const;
 
 /** The same brief as one paragraph, for the prospect's and the scorer's prompts. */

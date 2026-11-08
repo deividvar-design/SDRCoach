@@ -23,7 +23,7 @@ export function MarketingHeader() {
   return (
     <header className="bg-background/85 sticky top-0 z-30 border-b backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" aria-label="100 Dials home"><Logo descriptor /></Link>
+        <Link href="/" aria-label="100 Dials home"><Logo /></Link>
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} className={cn("rounded-md px-3 py-1.5 text-sm whitespace-nowrap transition-colors", n.hot ? "text-signal-ink font-medium hover:underline underline-offset-4" : !n.href.includes("#") && pathname.startsWith(n.href) ? "text-foreground bg-accent" : "text-muted-foreground hover:text-foreground")}>

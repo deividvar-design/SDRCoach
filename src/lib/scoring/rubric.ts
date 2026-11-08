@@ -63,15 +63,15 @@ export const LEVEL_UP_MIN_CALLS = 3;
  * the coaching move that usually works.
  */
 export const OBJECTIONS = {
-  no_time: { label: "No time right now", coaching: "Ask for thirty seconds, not fifteen minutes. Earn the extension with a reason for the call that fits their role." },
-  not_interested: { label: "Not interested", coaching: "Do not defend. Ask one question about the problem behind the product, then decide whether to continue." },
-  send_email: { label: "Send me an email", coaching: "Agree, then ask what would make it worth reading. That question restarts discovery." },
-  already_have_solution: { label: "Already have a solution", coaching: "Ask what they use it for and what it does not cover. Never argue with the incumbent." },
-  no_budget: { label: "No budget", coaching: "Budget is a timing signal. Ask when it is set and what the current cost of the problem is." },
+  no_time: { label: "No time right now", coaching: "Ask for 30 seconds. Then give a reason for calling that fits their job, and they'll give you more time." },
+  not_interested: { label: "Not interested", coaching: "Don't argue. Ask one question about the problem your product solves, then decide if it's worth going on." },
+  send_email: { label: "Send me an email", coaching: "Say yes, then ask what would make the email worth reading. Their answer gets the conversation going again." },
+  already_have_solution: { label: "Already have a solution", coaching: "Ask what they use it for and what it doesn't do. Never argue with the tool they already have." },
+  no_budget: { label: "No budget", coaching: "“No budget” usually means “not right now.” Ask when budgets get set and what the problem costs them today." },
   not_decision_maker: { label: "Not the right person", coaching: "Ask who owns the problem and what they would need to see. A referral is a win." },
   bad_timing: { label: "Bad timing / call later", coaching: "Pin a date and time before hanging up. A vague 'later' is a no." },
   happy_as_is: { label: "Happy with how things are", coaching: "Ask what they would change if they could. Contentment usually has an exception." },
-  price: { label: "Too expensive", coaching: "Price came before value. Go back to the cost of the problem and a peer result." },
+  price: { label: "Too expensive", coaching: "They heard the price before they saw the value. Go back to what the problem costs them and what a similar company got." },
   skeptical: { label: "Doubts it works", coaching: "Offer one specific proof point for a company like theirs, then ask what would convince them." },
   how_did_you_get_my_number: { label: "How did you get my number", coaching: "Answer plainly, then return to the reason for the call. Do not apologise twice." },
   not_a_fit: { label: "We're not a fit", coaching: "Do not argue the fit. Ask one question about how they handle the problem today; if the answer confirms no fit, thank them and end it well." },

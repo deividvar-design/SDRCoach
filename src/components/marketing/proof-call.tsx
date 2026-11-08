@@ -15,9 +15,9 @@ const TURNS = [
   { who: "Sam", at: "0:11", text: "Your supplier page lists you for vendor onboarding. Three of your contracts renew in Q1, and that renewal crunch is the only reason I'm calling." },
 ];
 
-const WORKED = "Asked permission with a time box at 0:03 instead of “How are you today?”, which is what earned the next twenty seconds.";
-const FIX = "Value never got concrete. “We help with renewals” is a category, not an outcome. Name one number a procurement lead would recognise, then ask for Thursday.";
-const COACH = "You survived two minutes against a prospect who ends most calls in ten seconds. The opener and the reason for the call carried it. You lost her at the value line: she asked what you actually do, and the answer was a description, not a result. Fix that one sentence and this is a callback.";
+const WORKED = "At 0:03 you asked for 20 seconds instead of saying “How are you today?”. That's why she kept listening.";
+const FIX = "Your value was too vague. “We help with renewals” doesn't say what she gets. Give her one number she cares about, then ask for a meeting on Thursday.";
+const COACH = "You lasted two minutes with a prospect who hangs up on most people in ten seconds. Your opener and your reason for calling worked. You lost her when she asked what you do and you described the product instead of the result. Fix that one sentence and she might call you back.";
 
 export function ProofCall() {
   return (
@@ -35,7 +35,7 @@ export function ProofCall() {
             </li>
           ))}
         </ol>
-        <p className="text-paper/55 mt-auto pt-6 text-xs">A scripted sample. The calls inside the product are live, with a prospect who talks back.</p>
+        <p className="text-paper/55 mt-auto pt-6 text-xs">This sample is written for the demo. Real calls in the app are live, and the prospect talks back.</p>
       </div>
 
       <div className="bg-card rounded-3xl border p-6 md:p-7">
@@ -70,7 +70,7 @@ export function ProofCall() {
         </div>
         <blockquote className="mt-6 border-l-2 pl-4 text-sm leading-relaxed">{COACH}</blockquote>
         <p className="text-muted-foreground mt-6 text-sm">
-          Every call a rep makes comes back like this, with the rationale quoting their own words. <Link href="/karen" className="text-foreground underline underline-offset-4">Call Karen</Link> and get yours in three minutes.
+          Every call in 100 Dials gets a report like this. <Link href="/karen" className="text-foreground underline underline-offset-4">Call Karen</Link> and get yours in three minutes.
         </p>
       </div>
     </div>

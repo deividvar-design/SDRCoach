@@ -30,9 +30,9 @@ export function PricingCalculator({ starterPrice, teamPrice, currency }: { start
   };
 
   return (
-    <section className="mx-auto w-full max-w-6xl px-6 py-11 md:py-16" aria-labelledby="calc-heading">
+    <section id="calculator" className="mx-auto w-full max-w-6xl scroll-mt-20 px-6 py-11 md:py-16" aria-labelledby="calc-heading">
       <Eyebrow>Your numbers</Eyebrow>
-      <h2 id="calc-heading" className="font-display mt-3 text-4xl leading-[1.05] text-balance md:text-5xl">What is at stake on your team this month.</h2>
+      <h2 id="calc-heading" className="font-display mt-3 text-4xl leading-[1.05] text-balance md:text-5xl">What this costs your team each month.</h2>
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1.2fr] lg:gap-12">
         <div className="space-y-6">
           <Field label="Reps on the team" value={inputs.reps} display={String(inputs.reps)} range={INPUT_RANGES.reps} onChange={(v) => setInput("reps", v)} />
@@ -43,17 +43,17 @@ export function PricingCalculator({ starterPrice, teamPrice, currency }: { start
             <div className="mt-4 space-y-4">
               <Constant label="Loaded cost per rep per month" note="Midpoint of US benchmarks; UK and EU buyers can lower it" value={constants.loadedCostPerRep} step={500} min={2000} max={20000} onChange={(v) => setConstant("loadedCostPerRep", v)} prefix="$" />
               <Constant label="Working days per month" value={constants.workingDays} step={1} min={15} max={23} onChange={(v) => setConstant("workingDays", v)} />
-              <Constant label="Data and tooling cost per dial" note="Apollo or ZoomInfo seat plus dialler, spread over dials" value={constants.toolingPerDial} step={0.1} min={0} max={5} onChange={(v) => setConstant("toolingPerDial", v)} prefix="$" />
-              <Constant label="Share of conversations a new rep mishandles" note="Our assumption, not a published figure; first-month reps miss more than this" value={Math.round(constants.mishandledShare * 100)} step={5} min={5} max={90} onChange={(v) => setConstant("mishandledShare", v / 100)} suffix="%" />
+              <Constant label="Data and tooling cost per dial" note="Apollo or ZoomInfo seat plus dialer, spread over calls" value={constants.toolingPerDial} step={0.1} min={0} max={5} onChange={(v) => setConstant("toolingPerDial", v)} prefix="$" />
+              <Constant label="Share of conversations a new rep mishandles" note="This is our own estimate. First-month reps miss more than this." value={Math.round(constants.mishandledShare * 100)} step={5} min={5} max={90} onChange={(v) => setConstant("mishandledShare", v / 100)} suffix="%" />
             </div>
           </details>
         </div>
         <div className="bg-card rounded-3xl border p-6 md:p-8">
           <dl className="grid gap-6 sm:grid-cols-2">
-            <Out label="Conversations your team earns this month" value={r.conversations.toLocaleString("en-US")} note="live conversations" />
+            <Out label="Real conversations your team gets this month" value={r.conversations.toLocaleString("en-US")} note="live conversations" />
             <Out label="Cost per conversation" value={`~${money(r.costPerConversation)}`} note="each one, in salary, data and tools" />
             <Out label="Conversations at risk with an untrained rep" value={r.atRisk.toLocaleString("en-US")} note="go to reps still learning the opener" />
-            <Out label="Pipeline effort at risk" value={money(r.burned)} note="this month, at the mishandled share above" />
+            <Out label="Money at risk this month" value={money(r.burned)} note={`if ${Math.round(constants.mishandledShare * 100)}% of these calls go badly`} />
           </dl>
           <div className="mt-8 border-t pt-6">
             <div className="text-muted-foreground text-xs">100 Dials for this team</div>

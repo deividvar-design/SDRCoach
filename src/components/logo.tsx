@@ -1,11 +1,8 @@
 import { cn } from "@/lib/utils";
 import { SITE } from "@/lib/site";
 
-/**
- * The lockup: a phone mark, the name, and (where the name stands alone) the descriptor underneath.
- * `compact` is the mark only; `descriptor` adds "Cold Call Coach" as an underline.
- */
-export function Logo({ className, compact = false, descriptor = false }: { className?: string; compact?: boolean; descriptor?: boolean }) {
+/** The lockup: a phone mark and the name. `compact` is the mark only. */
+export function Logo({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <span className="bg-primary text-primary-foreground relative grid size-7 shrink-0 place-items-center rounded-md">
@@ -15,10 +12,7 @@ export function Logo({ className, compact = false, descriptor = false }: { class
         </svg>
       </span>
       {!compact && (
-        <span className="flex flex-col leading-none">
-          <span className="font-display text-[19px] tracking-tight">{SITE.name}</span>
-          {descriptor && <span className="text-muted-foreground mt-1 text-[10.5px] tracking-wide">{SITE.descriptor}</span>}
-        </span>
+        <span className="font-display text-[19px] leading-none tracking-tight">{SITE.name}</span>
       )}
     </span>
   );

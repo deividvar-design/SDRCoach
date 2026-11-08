@@ -219,7 +219,7 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
               {KAREN_BRIEF.points.map((p) => <li key={p}>{p}</li>)}
             </ul>
             <p className="text-muted-foreground mt-2 text-sm">{KAREN_BRIEF.proof}</p>
-            <p className="mt-2 text-sm">Your ask: {KAREN_BRIEF.ask}</p>
+            <p className="mt-2 text-sm">Your goal: {KAREN_BRIEF.ask}</p>
           </div>
           <div className="bg-card rounded-2xl border p-5">
             <div className="text-muted-foreground mb-2 text-xs">Your research</div>

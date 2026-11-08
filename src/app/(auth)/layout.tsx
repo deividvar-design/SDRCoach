@@ -8,7 +8,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
     <div className="grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
       <aside className="grain relative hidden flex-col justify-between overflow-hidden border-r bg-sidebar p-10 lg:flex">
         <Link href="/" className="flex items-center gap-2">
-          <Logo descriptor />
+          <Logo />
         </Link>
         <div className="relative z-10 max-w-md space-y-4">
           <p className="dial text-muted-foreground text-xs">DIAL 001/100</p>
