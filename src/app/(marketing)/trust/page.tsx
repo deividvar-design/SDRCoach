@@ -1,4 +1,5 @@
 import { ANALYTICS_REGION_SHORT } from "@/lib/analytics-region";
+import { Glow } from "@/components/marketing/glow";
 import { pageMetadata } from "@/lib/seo";
 import { Database, Globe, Lock, ShieldCheck, Trash2, Users } from "lucide-react";
 import { CtaBand, Eyebrow, H2, Section } from "@/components/marketing/sections";
@@ -30,6 +31,7 @@ const PROCESSING = [
 export default function TrustPage() {
   return (
     <>
+      <Glow>
       <Section className="pt-14 md:pt-20">
         <div className="max-w-3xl">
           <Eyebrow>Trust & security</Eyebrow>
@@ -39,6 +41,7 @@ export default function TrustPage() {
           </p>
         </div>
       </Section>
+      </Glow>
 
       <Section className="border-t">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

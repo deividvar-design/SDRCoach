@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Glow } from "@/components/marketing/glow";
 import { pageMetadata } from "@/lib/seo";
 import { TRIAL } from "@/lib/billing/plans";
 import { INVITE_REWARD_CAP, REFERRAL_ACTIVATION_CALLS, REFERRAL_PAID_FALLBACK_CALLS, REFERRED_DISCOUNT, REWARDS, rewardLine } from "@/lib/rewards/config";
@@ -30,6 +31,7 @@ export default function ReferPage() {
   return (
     <>
       <JsonLd data={faqLd(FAQ)} />
+      <Glow>
       <Section className="pt-14 md:pt-20">
         <div className="max-w-3xl">
           <Eyebrow>Referrals and rewards</Eyebrow>
@@ -41,6 +43,7 @@ export default function ReferPage() {
           </div>
         </div>
       </Section>
+      </Glow>
 
       <Section className="border-t">
         <H2>How the referral works.</H2>

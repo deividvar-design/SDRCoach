@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Glow } from "@/components/marketing/glow";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { leaderboard, survivedLabel } from "@/lib/demo/share";
@@ -22,6 +23,7 @@ export default async function LeaderboardPage() {
   const rows = await leaderboard(20);
   const month = new Intl.DateTimeFormat("en-GB", { month: "long", timeZone: "UTC" }).format(new Date());
   return (
+    <Glow>
     <Section className="pt-14 md:pt-20">
       <div className="mx-auto max-w-3xl">
         <h1 className="font-display text-5xl text-balance md:text-6xl">Who lasted longest against Karen in {month}.</h1>
@@ -52,5 +54,6 @@ export default async function LeaderboardPage() {
         </div>
       </div>
     </Section>
+    </Glow>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Glow } from "@/components/marketing/glow";
 import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 import { PLANS, TRIAL } from "@/lib/billing/plans";
@@ -26,6 +27,7 @@ export default function CompanyPage() {
     ["Free resources", <>The <Link href="/objections" className="underline underline-offset-4">objection library</Link>, the <Link href="/blog" className="underline underline-offset-4">blog</Link>, and <Link href="/karen" className="underline underline-offset-4">a free three-minute call against Karen</Link>.</>],
   ];
   return (
+    <Glow>
     <Section className="pt-14 md:pt-20">
       <div className="mx-auto max-w-3xl">
         <h1 className="font-display text-5xl text-balance md:text-6xl">The company behind 100 Dials.</h1>
@@ -42,5 +44,6 @@ export default function CompanyPage() {
         </dl>
       </div>
     </Section>
+    </Glow>
   );
 }

@@ -16,6 +16,7 @@ B2B SaaS: SDRs practise cold calls against an AI prospect (ElevenLabs voice), ge
 - Roles: `owner` > `manager` > `rep`. Managers see the org. Reps see their own calls, plus everyone's when the workspace setting `reps_see_team` is on (default)
 - Difficulty levels are defined once in `src/lib/domain/levels.ts`
 - Read `docs/ARCHITECTURE.md` before touching the call or scoring pipeline
+- Never write em dashes or en dashes, in copy, code, comments, commits or chat. Use a comma, colon or full stop; ranges use "to". `src/lib/text/dashes.test.ts` fails the build if one appears, and model output goes through `withoutLongDashes`
 
 ## Commands
 - `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`

@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Check, Phone, Plus } from "lucide-react";
 import { CtaLink } from "@/components/analytics/cta-link";
-import { CookieSettingsLink } from "@/components/analytics/cookie-banner";
 import { GoogleOneTap } from "@/components/auth/google-one-tap";
 import { HomeNav } from "@/components/marketing/home-nav";
+import { Aurora } from "@/components/marketing/aurora";
+import { MarketingFooter } from "@/components/marketing/footer";
 import { JsonLd, organizationLd, softwareLd } from "@/components/seo/json-ld";
 import { cachedSpotsLeft } from "@/lib/partners/spots";
 import { bookingUrl } from "@/content/booking";
@@ -35,11 +36,6 @@ export const metadata = pageMetadata({
 // Founding prices and partner spots are reads; an hourly rebuild keeps the page cached at the edge.
 export const revalidate = 3600;
 
-const FOOTER_COLS = [
-  { title: "Product", links: [["/for-managers", "For managers"], ["/for-enablement", "For enablement"], ["/pricing", "Pricing"], ["/founding-partners", "Founding partners"], ["/signup", "Start free trial"]] },
-  { title: "Resources", links: [["/blog", "Blog"], ["/objections", "Objection library"], ["/karen", "Fight Karen"], ["/refer", "Refer a team"], ["/affiliates", "Affiliates"], ["/research", "Research"], ["/trust", "Trust & security"]] },
-  { title: "Legal", links: [["/company", "Company"], ["/privacy", "Privacy"], ["/terms", "Terms"], ["/cookies", "Cookies"]] },
-] as const;
 
 
 const FEATURED = ["not-interested", "send-me-an-email", "no-budget", "we-already-have-a-solution", "call-me-back-later", "not-the-decision-maker"];
@@ -60,32 +56,6 @@ const TEAM: [string, number[]][] = [
   ["Marcus", [8, 8, 7, 7, 6, 8]],
 ];
 const TEAM_HEAD = ["Opener", "Reason", "Discovery", "Objections", "Value", "Close"];
-
-/** Light columns behind the hero and the closing band: fixed so the page renders the same every time. */
-const BARS = [
-  [2, 5, "s"], [7, 3, "a"], [11, 6, "s"], [17, 4, "s"], [22, 3, "a"], [27, 7, "s"], [34, 4, "s"], [39, 3, "a"], [44, 6, "s"],
-  [51, 4, "s"], [56, 5, "s"], [62, 3, "a"], [67, 6, "s"], [73, 4, "s"], [78, 3, "a"], [83, 6, "s"], [89, 4, "s"], [94, 5, "s"],
-] as const;
-
-function Aurora({ className }: { className?: string }) {
-  return (
-    <div aria-hidden className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}>
-      {BARS.map(([left, width, tone], i) => (
-        <span
-          key={i}
-          className="hp-bar absolute top-[8%] bottom-0"
-          style={{
-            left: `${left}%`,
-            width: `${width}%`,
-            background: tone === "a" ? "linear-gradient(to bottom, transparent, rgba(245,166,91,.55) 55%, rgba(245,166,91,.15))" : "linear-gradient(to bottom, transparent, rgba(150,175,205,.32) 50%, rgba(150,175,205,.1))",
-            animationDuration: `${6 + (i % 5) * 1.4}s`,
-            animationDelay: `${-((i * 1.7) % 9).toFixed(1)}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
 
 function Wave() {
   // Karen's voice: each bar rises and falls on its own short cycle, louder in the middle of the line.
@@ -384,33 +354,7 @@ export default async function HomePage() {
 
       </main>
 
-      {/* Closing band and footer */}
-      <footer className="relative isolate mx-3 mb-3 overflow-hidden rounded-[28px] bg-[var(--hp-deep)] px-6 pt-20 text-white md:mx-4">
-        <Aurora className="-z-10 [mask-image:linear-gradient(to_top,black,transparent_75%)]" />
-        <div className="text-center">
-          <h2 className="text-[2.2rem] leading-[1.08] font-semibold tracking-[-0.02em] md:text-[2.8rem]">Tell us about your team<br /><span className="text-white/60">and the accounts they call.</span></h2>
-          <p className="mx-auto mt-4 max-w-sm text-[15px] text-white/80">Thirty minutes. We&apos;ll build a prospect from one of your real accounts, and you can call it on the spot.</p>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <a href={bookingUrl("home_closing")} className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[var(--hp-deep)]">Book a 30-minute call</a>
-            <CtaLink ctaId="home_closing_trial" href="/signup" className="rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold hover:bg-white/15">Start free trial</CtaLink>
-          </div>
-        </div>
-        <div className="mx-auto mt-24 grid max-w-6xl gap-8 border-t border-white/12 pt-10 text-sm sm:grid-cols-3">
-          {FOOTER_COLS.map((c) => (
-            <div key={c.title}>
-              <div className="mb-3 text-[12px] text-white/55">{c.title}</div>
-              <ul className="space-y-2 text-white/80">
-                {c.links.map(([href, label]) => <li key={href}><Link href={href} className="underline-offset-4 hover:text-white hover:underline">{label}</Link></li>)}
-                {c.title === "Legal" && <li><CookieSettingsLink /></li>}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 py-6 text-[12px] text-white/70">
-          <span>© {new Date().getFullYear()} {SITE.name}{SITE.company.legalName !== SITE.name ? ` · ${SITE.company.legalName}` : ""}</span>
-          <a href={`mailto:${SITE.company.email}`} className="underline underline-offset-4">{SITE.company.email}</a>
-        </div>
-      </footer>
+      <MarketingFooter placement="home_closing" />
     </div>
   );
 }

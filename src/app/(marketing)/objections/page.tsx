@@ -1,4 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
+import { Glow } from "@/components/marketing/glow";
 import Link from "next/link";
 import { Fragment } from "react";
 import { getAllObjectionPages } from "@/lib/objections";
@@ -25,6 +26,7 @@ export default function ObjectionIndex() {
   return (
     <>
       <JsonLd data={[breadcrumbLd([{ name: "Objections", path: "/objections" }]), faqLd(FAQ)]} />
+      <Glow>
       <Section className="pt-14 md:pt-20">
         <Eyebrow>Objection library</Eyebrow>
         <h1 className="font-display mt-4 text-5xl text-balance md:text-6xl">Every cold-call objection, and what to say back.</h1>
@@ -32,6 +34,7 @@ export default function ObjectionIndex() {
           The same {pages.length} objections our coach tags on every scored call. Each page has what the line really means, three ways to handle it, an exchange that works, and the mistakes that lose the call.
         </p>
       </Section>
+      </Glow>
 
       <Section className="pt-0 md:pt-0">
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

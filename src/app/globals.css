@@ -307,7 +307,7 @@ html[data-fpbar="off"] [data-fp-bar] {
 }
 
 /* The homepage's own palette: navy stage, peach accent, warm cream, and the light columns behind its dark bands. */
-.homepage {
+:root {
   --hp-navy: #1b2632;
   --hp-deep: #0f161e;
   --hp-peach: #ffb162;
@@ -316,7 +316,7 @@ html[data-fpbar="off"] [data-fp-bar] {
   --hp-ink: #1b2632;
   --hp-rust: #8f3f2b;
 }
-.homepage .hp-bar {
+.hp-bar {
   filter: blur(22px);
   transform-origin: bottom;
   animation: hp-breathe 8s ease-in-out infinite;
@@ -327,7 +327,7 @@ html[data-fpbar="off"] [data-fp-bar] {
   50% { transform: scaleY(0.68); opacity: 0.5; }
 }
 /* Karen's waveform: bars rise and fall like a voice. */
-.homepage .hp-vo {
+.hp-vo {
   transform-origin: center;
   animation: hp-talk 1s ease-in-out infinite;
 }
@@ -336,7 +336,7 @@ html[data-fpbar="off"] [data-fp-bar] {
   50% { transform: scaleY(1); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .homepage .hp-bar, .homepage .hp-vo { animation: none; }
+  .hp-bar, .hp-vo { animation: none; }
 }
 
 [data-slot="button"].shadow-xs {

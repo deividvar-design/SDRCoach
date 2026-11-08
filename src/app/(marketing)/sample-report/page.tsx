@@ -1,4 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
+import { Glow } from "@/components/marketing/glow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatTile } from "@/components/stat-tile";
@@ -28,6 +29,7 @@ export default function SampleReportPage() {
   const m = r.metrics;
   return (
     <>
+      <Glow>
       <Section className="pt-14 md:pt-20">
         <Eyebrow>Sample report</Eyebrow>
         <h1 className="font-display mt-4 text-5xl text-balance md:text-6xl">What a scored call looks like.</h1>
@@ -35,6 +37,7 @@ export default function SampleReportPage() {
           {r.rep} from {r.company} called {r.prospect.name}, {r.prospect.title} at {r.prospect.company}, and lasted {formatDuration(r.durationSeconds)}. This is the report that came back, laid out the way every rep sees their own. A scripted sample, scored with the same rubric.
         </p>
       </Section>
+      </Glow>
 
       <Section className="space-y-6 pt-0 md:pt-0">
         <section className="bg-card paper-grain grid gap-6 rounded-2xl border p-6 md:grid-cols-[minmax(0,260px)_1fr] md:gap-10 md:p-8">

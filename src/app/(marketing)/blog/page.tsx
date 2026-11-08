@@ -1,4 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
+import { Glow } from "@/components/marketing/glow";
 import Link from "next/link";
 import { getAllPosts } from "@/lib/blog";
 import { formatDate } from "@/lib/utils";
@@ -16,11 +17,13 @@ export default function BlogIndex() {
   const [first, ...rest] = posts;
   return (
     <>
+      <Glow>
       <Section className="pt-14 md:pt-20">
         <Eyebrow>Blog</Eyebrow>
         <h1 className="font-display mt-4 text-5xl text-balance md:text-6xl">Cold calling, with the data attached.</h1>
         <p className="text-muted-foreground mt-4 max-w-2xl text-lg">Short guides on what actually books meetings, written for reps and the people who coach them. Every post ends with something you can dial today.</p>
       </Section>
+      </Glow>
 
       {first && (
         <Section className="border-t pt-0 md:pt-0">

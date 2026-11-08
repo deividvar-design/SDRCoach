@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Glow } from "@/components/marketing/glow";
 import { pageMetadata } from "@/lib/seo";
 import { Eyebrow, H2, Section } from "@/components/marketing/sections";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
@@ -38,6 +39,7 @@ export default function AffiliatesPage() {
   return (
     <>
       <JsonLd data={faqLd(FAQ.map(([q, a]) => ({ q, a })))} />
+      <Glow>
       <Section className="pt-14 md:pt-20">
         <div className="max-w-3xl">
           <Eyebrow>Affiliate programme</Eyebrow>
@@ -48,6 +50,7 @@ export default function AffiliatesPage() {
           <p className="mt-6 text-lg"><Link href="#join" className="underline underline-offset-4">Get your link below</Link></p>
         </div>
       </Section>
+      </Glow>
 
       <Section className="border-t">
         <H2>Three steps.</H2>
