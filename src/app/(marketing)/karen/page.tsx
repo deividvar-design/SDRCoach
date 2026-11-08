@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Glow } from "@/components/marketing/glow";
 import { pageMetadata } from "@/lib/seo";
 import { TRIAL } from "@/lib/billing/plans";
 import { KAREN } from "@/lib/demo/boss";
@@ -42,6 +43,7 @@ export default async function KarenPage({ searchParams }: PageProps<"/karen">) {
       <RememberKarenSource from={source.source_path} objection={source.objection} />
       <PrefetchCall />
       <JsonLd data={faqLd(FAQ.map(([q, a]) => ({ q, a })))} />
+      <Glow>
       <Section className="pt-14 md:pt-20">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
           <div>
@@ -101,6 +103,7 @@ export default async function KarenPage({ searchParams }: PageProps<"/karen">) {
           </div>
         </div>
       </Section>
+      </Glow>
       <Section>
         <Eyebrow>Practice cold calls free</Eyebrow>
         <H2>Before you call.</H2>

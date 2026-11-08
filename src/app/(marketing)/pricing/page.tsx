@@ -1,4 +1,5 @@
 import { CtaLink } from "@/components/analytics/cta-link";
+import { Glow } from "@/components/marketing/glow";
 import { bookingUrl } from "@/content/booking";
 import { pageMetadata } from "@/lib/seo";
 import { AnchorStrip } from "@/components/pricing/anchor-strip";
@@ -44,6 +45,7 @@ export default async function PricingPage() {
   return (
     <>
       <JsonLd data={faqLd(FAQ)} />
+      <Glow>
       <div className="mx-auto w-full max-w-6xl px-6">
         <section className="pt-14 pb-10 text-center md:pt-16 md:pb-12">
           <h1 className="font-display text-5xl text-balance md:text-7xl">Practice on AI before you practice on real leads.</h1>
@@ -57,6 +59,7 @@ export default async function PricingPage() {
           )}
         </section>
       </div>
+      </Glow>
 
       {/* The cards first: a buyer who came for the price sees it without scrolling. The cost anchor and the calculator follow for the one who wants the case. */}
       <div id="plans" className="mx-auto w-full max-w-6xl px-6 pb-11 md:pb-16">

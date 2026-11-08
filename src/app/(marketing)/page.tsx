@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Glow } from "@/components/marketing/glow";
 import { BookOpen, Mic, Target, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TRIAL } from "@/lib/billing/plans";
@@ -59,7 +60,7 @@ export default async function HomePage() {
       {/* 1. Hero. HERO_VARIANT switches between A (default) and the two earlier headlines. */}
       {!hero ? (
         <>
-          <KarenHero />
+          <Glow><KarenHero /></Glow>
           <CostOfPractice price={price} />
           <Section className="border-t">
             <H2>What a scored call looks like.</H2>

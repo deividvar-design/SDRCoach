@@ -1,4 +1,5 @@
 import { TranscriptSources } from "@/components/marketing/transcript-sources";
+import { Glow } from "@/components/marketing/glow";
 import { pageMetadata } from "@/lib/seo";
 import { JsonLd, faqLd } from "@/components/seo/json-ld";
 import Link from "next/link";
@@ -25,6 +26,7 @@ export default function ForEnablementPage() {
   return (
     <>
       <JsonLd data={faqLd(FAQ.map(([q, a]) => ({ q, a })))} />
+      <Glow>
       <Section className="pt-14 md:pt-20">
         <div className="max-w-3xl">
           <Eyebrow>For sales enablement</Eyebrow>
@@ -42,6 +44,7 @@ export default function ForEnablementPage() {
           <TranscriptSources className="mt-10" />
         </div>
       </Section>
+      </Glow>
 
       <Section className="space-y-24 border-t">
         <FeatureRow

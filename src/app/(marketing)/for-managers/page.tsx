@@ -1,4 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
+import { Glow } from "@/components/marketing/glow";
 import { bookingUrl } from "@/content/booking";
 import { FeatureRow } from "@/components/marketing/feature-row";
 import { CtaBand, Eyebrow, H2, ProofSection, Section } from "@/components/marketing/sections";
@@ -27,6 +28,7 @@ export default function ForManagersPage() {
   return (
     <>
       <JsonLd data={faqLd(FAQ.map(([q, a]) => ({ q, a })))} />
+      <Glow>
       <Section className="pt-14 md:pt-20">
         <div className="max-w-3xl">
           <Eyebrow>For sales managers</Eyebrow>
@@ -44,6 +46,7 @@ export default function ForManagersPage() {
           <p className="text-muted-foreground mt-4 text-sm">Running 3+ SDRs? <CtaLink ctaId="managers_founding_partner" href="/founding-partners" className="text-foreground underline underline-offset-4">Apply for a founding-partner pilot</CtaLink>, set up for you from your website.</p>
         </div>
       </Section>
+      </Glow>
 
       <Section className="space-y-24 border-t">
         <FeatureRow
