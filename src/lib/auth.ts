@@ -39,7 +39,7 @@ export const requireViewer = cache(async (): Promise<Viewer> => {
 });
 
 /** Founders' addresses. ADMIN_EMAILS in the environment extends this list. */
-const DEFAULT_ADMIN_EMAILS = ["deividvar@gmail.com"];
+const DEFAULT_ADMIN_EMAILS = ["deividvar@gmail.com", "david@100dials.com"];
 
 /** Internal console: allowlisted emails only. Non-admins get a 404 so the route stays invisible. */
 export function adminEmails() {
