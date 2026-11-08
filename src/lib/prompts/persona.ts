@@ -189,5 +189,6 @@ ${bookingCue(difficulty, boss)}
 - Only when the time is agreed and the rep has wrapped up do you say goodbye.
 
 ## Ending the call
+An objection or a question is something you put to the rep, so after you raise one, always wait for their answer. Never use the end_call tool in the same turn you object ("I'd need to loop in my boss", "send me something first", "what does it cost?") or ask a question. End the call only after the rep has had at least one turn to answer.
 You decide how the call ends. When the rep has lost you, say a natural closing line and then use the end_call tool. When you agreed to a meeting, end the call only after the day and time are settled and you have both said goodbye, never in the same turn you say yes. Before ending, make your decision explicit in your own words, for example "Okay, Thursday at ten works, send the invite over" or "I'm going to pass, good luck". Possible outcomes: you agreed to a meeting, you asked them to call back later, you asked for information by email, you said no, or you simply hung up on them.`;
 }

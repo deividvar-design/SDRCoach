@@ -46,6 +46,8 @@ export interface FetchedConversation {
   dataCollection: Record<string, unknown>;
   /** The prompt override the browser sent when it joined, so the server can check it was not tampered with. */
   overridePrompt: string | null;
+  /** Why the voice service says the call ended (the prospect's end_call tool, the rep hanging up, a timeout, an error). */
+  terminationReason: string | null;
 }
 
 /**
@@ -89,5 +91,6 @@ export async function fetchConversation(conversationId: string, { attempts = 20,
     summary: last.analysis?.transcriptSummary ?? null,
     dataCollection,
     overridePrompt: last.conversationInitiationClientData?.conversationConfigOverride?.agent?.prompt?.prompt ?? null,
+    terminationReason: last.metadata.terminationReason ?? null,
   };
 }

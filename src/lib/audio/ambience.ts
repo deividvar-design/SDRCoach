@@ -306,11 +306,15 @@ function murmur(ctx: AudioContext, out: AudioNode, gain: number, stops: (() => v
 }
 
 /** Overall level per place: a café and a station are louder than an office, always well under the voice. */
-const LEVEL: Record<Exclude<Ambience, "quiet">, number> = { office: 0.045, open_office: 0.05, car: 0.05, street: 0.055, home: 0.04, cafe: 0.06, station: 0.06 };
+// Set from measured output in Chrome: about 12 to 18 dB under a voice at -18 dBFS, like a real phone line.
+// Office and home near -34 dBFS RMS, car, street, cafe and station near -30. The first levels sat near -50: inaudible.
+const LEVEL: Record<Exclude<Ambience, "quiet">, number> = { office: 0.27, open_office: 0.29, car: 0.2, street: 0.43, home: 0.36, cafe: 0.4, station: 0.28 };
 
 export function startAmbience(kind: Ambience): AmbienceHandle | null {
   if (kind === "quiet" || typeof AudioContext === "undefined") return null;
   const ctx = new AudioContext();
+  // Created when the prospect picks up, not on the click: some browsers (Safari) start such a context paused.
+  if (ctx.state === "suspended") ctx.resume().catch(() => {});
   const master = ctx.createGain();
   master.gain.value = 0.0001;
   master.connect(ctx.destination);
@@ -319,11 +323,12 @@ export function startAmbience(kind: Ambience): AmbienceHandle | null {
 
   switch (kind) {
     case "office": {
-      // Air handling, faint room tone, someone typing, a phone across the floor now and then.
+      // Air handling, room tone, colleagues talking down the corridor, someone typing, a phone now and then.
       sources.push(loopNoise(ctx, master, { lowpass: 220, gain: 0.5 }));
-      sources.push(loopNoise(ctx, master, { lowpass: 3000, highpass: 800, gain: 0.05 }));
-      stops.push(every([8, 20], typing(ctx, master, 0.5), 4));
-      stops.push(every([35, 70], phoneRing(ctx, master, 0.18), 20));
+      sources.push(loopNoise(ctx, master, { lowpass: 3000, highpass: 800, gain: 0.08 }));
+      murmur(ctx, master, 0.15, stops, sources);
+      stops.push(every([4, 10], typing(ctx, master, 0.6), 2));
+      stops.push(every([30, 60], phoneRing(ctx, master, 0.22), 15));
       break;
     }
     case "open_office": {

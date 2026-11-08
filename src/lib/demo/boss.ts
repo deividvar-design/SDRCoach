@@ -143,6 +143,7 @@ export async function finalizeDemo(id: string) {
 
   try {
     const convo = await fetchConversation(demo.elevenlabs_conversation_id);
+    console.info(`[karen ${id}] ended after ${convo.durationSecs}s: ${convo.terminationReason ?? "no reason given"}`);
     if (convo.status === "failed") {
       // ElevenLabs could not run the call (a dropped link, a provider-side error). No retry changes that, so the
       // caller gets a plain answer now instead of a day of "the coach is reviewing it".

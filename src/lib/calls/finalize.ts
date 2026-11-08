@@ -84,6 +84,8 @@ export async function finalizeCall(sessionId: string) {
       turns = stored.turns;
     } else {
       const convo = await fetchConversation(claimed.elevenlabs_conversation_id);
+      // In the runtime logs: who or what ended each call, for questions like "why did it stop early".
+      console.info(`[call ${sessionId}] ended after ${convo.durationSecs}s: ${convo.terminationReason ?? "no reason given"}`);
       if (convo.status === "failed") {
         await db.from("call_sessions").update({ status: "failed", error: "The voice provider reported the conversation as failed" }).eq("id", sessionId);
         return;
