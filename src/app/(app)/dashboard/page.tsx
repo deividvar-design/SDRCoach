@@ -29,13 +29,19 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const tz = (await cookies()).get("tz")?.value;
 
   const select = "id, user_id, created_at, difficulty, outcome, status, boss, targets(name, company), profiles(full_name), call_scores(overall)";
-  const [{ data: ownRows }, orgRows, { data: members }, { count: targetCount }, { data: notes }] = await Promise.all([
+  // A rep only sees teammates on the leaderboard, which covers the last 7 days and needs no names or targets.
+  const teamSelect = "id, user_id, created_at, difficulty, outcome, status, boss, call_scores(overall)";
+  const [{ data: ownRows }, orgRows, { data: members }, { count: targetCount }, { data: notes }, setupCounts] = await Promise.all([
     // The viewer's own history, so streaks and personal bests never depend on how busy the rest of the team is.
     supabase.from("call_sessions").select(select).eq("org_id", viewer.org.id).eq("user_id", viewer.userId).order("created_at", { ascending: false }).limit(500),
-    // The team's last 30 days, complete, for the leaderboard and the team average.
-    isManager || viewer.org.reps_see_team
+    // Managers: the team's last 30 days, complete, for the team stats and the leaderboard.
+    isManager
       ? fetchAll((a, b) => supabase.from("call_sessions").select(select).eq("org_id", viewer.org.id).gte("created_at", daysAgoIso(30)).order("created_at", { ascending: false }).range(a, b))
-      : Promise.resolve([] as never[]),
+      : viewer.org.reps_see_team
+        ? fetchAll((a, b) => supabase.from("call_sessions").select(teamSelect).eq("org_id", viewer.org.id).gte("created_at", daysAgoIso(7)).order("created_at", { ascending: false }).range(a, b)).then((rows) =>
+            rows.map((r) => ({ ...r, targets: null, profiles: null })),
+          )
+        : Promise.resolve([] as never[]),
     supabase.from("memberships").select("user_id, profiles!memberships_user_id_fkey(full_name)").eq("org_id", viewer.org.id),
     supabase.from("targets").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id).eq("is_archived", false),
     supabase
@@ -45,16 +51,20 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       .neq("author_id", viewer.userId)
       .order("created_at", { ascending: false })
       .limit(4),
-  ]);
-
-  // First-run checklist for managers: what stands between them and a useful first week.
-  const setup = isManager
-    ? await (async () => {
-        const [{ count: realTargets }, { count: knowledge }, { count: reviewed }] = await Promise.all([
+    // First-run checklist counts for managers, loaded with everything else rather than after it.
+    isManager
+      ? Promise.all([
           supabase.from("targets").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id).eq("kind", "real").eq("is_archived", false),
           supabase.from("knowledge_sources").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id),
           supabase.from("call_sessions").select("id", { count: "exact", head: true }).eq("org_id", viewer.org.id).eq("status", "scored"),
-        ]);
+        ])
+      : null,
+  ]);
+
+  // First-run checklist for managers: what stands between them and a useful first week.
+  const setup = setupCounts
+    ? (() => {
+        const [{ count: realTargets }, { count: knowledge }, { count: reviewed }] = setupCounts;
         return [
           { done: Boolean(viewer.org.product_description), label: "Describe what you sell", href: "/settings#company", hint: "The prospect and the coach both read it." },
           { done: (realTargets ?? 0) > 0, label: "Add a real target", href: "/targets", hint: "Someone the team is actually going to call." },
