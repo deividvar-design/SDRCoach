@@ -50,6 +50,7 @@ export const PLANS: Plan[] = [
     minSeats: 1,
     features: [
       "Live AI prospects at all three levels",
+      "Works in the browser on laptop and phone, nothing to install",
       "Scored coach report after every call",
       "Call recordings, transcripts and replay",
       "Six practice personas, three boss fights, plus your own targets",

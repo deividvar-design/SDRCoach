@@ -78,7 +78,7 @@ export default async function HomePage() {
   const [, jax, victor] = BOSS_PERSONAS;
   const book = bookingUrl("home_header");
   const FAQ = [
-    ["What do my reps need to start?", `A browser and a microphone. No install, no dialer setup. Pick a prospect, press call, and it rings. Your first call takes under two minutes.`],
+    ["What do my reps need to start?", `A browser and a microphone, on a laptop or a phone. No install, no dialer setup. Pick a prospect, press call, and it rings. Your first call takes under two minutes.`],
     ["Can the prospects sound like our market?", "Yes. Build prospects from the companies on your list, with their problems and objections. Upload call transcripts from Gong, Chorus, Apollo or your dialer, and the prospects learn how your buyers talk."],
     ["How is a call scored?", `The coach scores six skills out of 10: ${RUBRIC_KEYS.map((k) => RUBRIC[k].label.toLowerCase()).join(", ")}. It quotes what the rep said and picks one thing to fix before the next call.`],
     ["What's in the free trial?", `${TRIAL.calls} calls over ${TRIAL.days} days, with no card. Any email works. Scoring and the manager view are included.`],
@@ -120,7 +120,7 @@ export default async function HomePage() {
             </div>
             <p className="mt-4 max-w-[52ch] text-[13px] leading-relaxed text-white/65">Three minutes, no email needed. Allow your mic and Karen picks up. We record the call so the coach can score it, then ask where to send your score.</p>
             <ul className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-white/80">
-              {["Real voice calls, nothing to install", "Prospects from your accounts", `Team trial: ${TRIAL.calls} calls, ${TRIAL.days} days, no card`].map((t) => (
+              {["Works on laptop and phone, nothing to install", "Prospects from your accounts", `Team trial: ${TRIAL.calls} calls, ${TRIAL.days} days, no card`].map((t) => (
                 <li key={t} className="flex items-center gap-1.5"><Check className="size-3.5 text-[var(--hp-peach)]" />{t}</li>
               ))}
             </ul>
