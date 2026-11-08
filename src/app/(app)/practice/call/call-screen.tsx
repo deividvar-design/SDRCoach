@@ -13,7 +13,7 @@ import type { Difficulty } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Rays } from "@/components/shell/brand-panel";
 import { track } from "@/components/analytics/provider";
-import { startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
+import { preloadAmbience, startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
 import type { Ambience } from "@/lib/domain/moods";
 import { stripVoiceTags } from "@/lib/elevenlabs/tags";
 import { NO_WEB_AUDIO_MESSAGE, useWebAudioSupported } from "@/lib/audio/support";
@@ -233,6 +233,8 @@ function CallScreenInner({ target, difficulty, level, voiceConfigured }: Props) 
       if (!res.ok) throw new Error(data.error ?? "Could not start the call");
       sessionIdRef.current = data.sessionId;
       pendingAmbienceRef.current = data.ambience ?? "quiet";
+      // Fetch the background recording while it rings, so it is ready when the prospect picks up.
+      preloadAmbience(pendingAmbienceRef.current);
       gatekeeperRef.current = data.gatekeeper ?? null;
       setGatekeeperName(data.gatekeeper?.name ?? null);
       track("call_started", { difficulty, target_kind: target.kind, gatekeeper: Boolean(data.gatekeeper) });

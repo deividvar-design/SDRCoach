@@ -1,4 +1,5 @@
 import type { Ambience } from "@/lib/domain/moods";
+import { ambienceUrl, isAmbienceKind, type AmbienceKind } from "@/lib/audio/ambience-library";
 
 /**
  * Background sound beds, generated with the Web Audio API so there are no files to license or load.
@@ -311,90 +312,151 @@ function murmur(ctx: AudioContext, out: AudioNode, gain: number, stops: (() => v
 // near -50 and were inaudible.
 const LEVEL: Record<Exclude<Ambience, "quiet">, number> = { office: 0.135, open_office: 0.145, car: 0.1, street: 0.215, home: 0.18, cafe: 0.2, station: 0.14 };
 
+/**
+ * Recorded loops (generated once per place in the admin console, stored in the `ambience` bucket). Fetched while the
+ * phone rings and kept for the session, so a second call starts instantly. Null when a place has no recording.
+ */
+const recordings = new Map<AmbienceKind, Promise<ArrayBuffer | null>>();
+export function preloadAmbience(kind: Ambience) {
+  if (!isAmbienceKind(kind)) return Promise.resolve(null);
+  let p = recordings.get(kind);
+  if (!p) {
+    p = fetch(ambienceUrl(kind))
+      .then((r) => (r.ok ? r.arrayBuffer() : null))
+      .catch(() => null);
+    recordings.set(kind, p);
+  }
+  return p;
+}
+
+/** A recording plays at the same loudness as the generated bed for that place, measured in Chrome (RMS). */
+const TARGET_RMS: Record<AmbienceKind, number> = { office: 0.011, open_office: 0.012, car: 0.0165, street: 0.015, home: 0.0076, cafe: 0.016, station: 0.015 };
+
+function rms(buf: AudioBuffer) {
+  let sum = 0;
+  let n = 0;
+  for (let c = 0; c < buf.numberOfChannels; c++) {
+    const data = buf.getChannelData(c);
+    for (let i = 0; i < data.length; i += 16) {
+      sum += data[i]! * data[i]!;
+      n++;
+    }
+  }
+  return Math.sqrt(sum / Math.max(1, n));
+}
+
 export function startAmbience(kind: Ambience): AmbienceHandle | null {
   if (kind === "quiet" || typeof AudioContext === "undefined") return null;
   const ctx = new AudioContext();
   // Created when the prospect picks up, not on the click: some browsers (Safari) start such a context paused.
   if (ctx.state === "suspended") ctx.resume().catch(() => {});
-  const master = ctx.createGain();
-  master.gain.value = 0.0001;
-  master.connect(ctx.destination);
+  const out = ctx.createGain();
+  out.gain.value = 0.0001;
+  out.connect(ctx.destination);
   const stops: (() => void)[] = [];
   const sources: AudioBufferSourceNode[] = [];
+  let stopped = false;
 
-  switch (kind) {
-    case "office": {
-      // Air handling, room tone, colleagues talking down the corridor, someone typing, a phone now and then.
-      sources.push(loopNoise(ctx, master, { lowpass: 220, gain: 0.5 }));
-      sources.push(loopNoise(ctx, master, { lowpass: 3000, highpass: 800, gain: 0.08 }));
-      murmur(ctx, master, 0.15, stops, sources);
-      stops.push(every([4, 10], typing(ctx, master, 0.6), 2));
-      stops.push(every([30, 60], phoneRing(ctx, master, 0.22), 15));
-      break;
-    }
-    case "open_office": {
-      sources.push(loopNoise(ctx, master, { lowpass: 220, gain: 0.45 }));
-      murmur(ctx, master, 0.35, stops, sources);
-      stops.push(every([3, 9], typing(ctx, master, 0.55), 2));
-      stops.push(every([25, 50], phoneRing(ctx, master, 0.2), 12));
-      break;
-    }
-    case "car": {
-      // Road rumble and tyre hiss, other cars going past, the indicator, the odd horn.
-      sources.push(loopNoise(ctx, master, { lowpass: 120, gain: 1.1 }));
-      const hiss = ctx.createGain();
-      hiss.gain.value = 1;
-      hiss.connect(master);
-      sources.push(loopNoise(ctx, hiss, { lowpass: 2500, highpass: 400, gain: 0.09 }));
-      stops.push(wander(ctx, hiss.gain, 1, 0.5, 3));
-      stops.push(every([6, 14], passBy(ctx, master, 0.7), 5));
-      stops.push(every([25, 55], indicator(ctx, master, 0.9), 15));
-      stops.push(every([40, 90], horn(ctx, master, 0.25), 30));
-      break;
-    }
-    case "street": {
-      // City traffic bed, cars and buses going by, horns, a siren in the distance.
-      sources.push(loopNoise(ctx, master, { lowpass: 400, gain: 0.45 }));
-      sources.push(loopNoise(ctx, master, { lowpass: 5000, highpass: 1000, gain: 0.06 }));
-      stops.push(every([3, 8], passBy(ctx, master, 0.9, [1.5, 3.5]), 2));
-      stops.push(every([20, 45], horn(ctx, master, 0.3), 10));
-      stops.push(every([45, 90], siren(ctx, master, 0.35), 25));
-      break;
-    }
-    case "home": {
-      sources.push(loopNoise(ctx, master, { lowpass: 160, gain: 0.3 }));
-      stops.push(bursts(ctx, master, { every: [12, 40], lowpass: 2000, gain: 0.12 }));
-      break;
-    }
-    case "cafe": {
-      // Chatter, cups and spoons, the espresso machine.
-      sources.push(loopNoise(ctx, master, { lowpass: 300, gain: 0.3 }));
-      murmur(ctx, master, 0.55, stops, sources);
-      stops.push(every([3, 8], clink(ctx, master, 0.25), 2));
-      stops.push(every([25, 50], steam(ctx, master, 0.35), 10));
-      break;
-    }
-    case "station": {
-      // Hall echo and crowd, a train rolling through, the chime and an announcement.
-      sources.push(loopNoise(ctx, master, { lowpass: 200, gain: 0.6 }));
-      murmur(ctx, master, 0.4, stops, sources);
-      stops.push(every([30, 60], announcement(ctx, master, 0.3), 12));
-      stops.push(every([50, 100], passBy(ctx, master, 0.8, [6, 9]), 35));
-      break;
-    }
-  }
+  // The generated bed: the fallback when a place has no recording or it fails to load.
+  const synth = () => {
+    if (stopped) return;
+    const master = ctx.createGain();
+    master.gain.value = LEVEL[kind];
+    master.connect(out);
+    switch (kind) {
+      case "office": {
+        // Air handling, room tone, colleagues talking down the corridor, someone typing, a phone now and then.
+        sources.push(loopNoise(ctx, master, { lowpass: 220, gain: 0.5 }));
+        sources.push(loopNoise(ctx, master, { lowpass: 3000, highpass: 800, gain: 0.08 }));
+        murmur(ctx, master, 0.15, stops, sources);
+        stops.push(every([4, 10], typing(ctx, master, 0.6), 2));
+        stops.push(every([30, 60], phoneRing(ctx, master, 0.22), 15));
+        break;
+      }
+      case "open_office": {
+        sources.push(loopNoise(ctx, master, { lowpass: 220, gain: 0.45 }));
+        murmur(ctx, master, 0.35, stops, sources);
+        stops.push(every([3, 9], typing(ctx, master, 0.55), 2));
+        stops.push(every([25, 50], phoneRing(ctx, master, 0.2), 12));
+        break;
+      }
+      case "car": {
+        // Road rumble and tyre hiss, other cars going past, the indicator, the odd horn.
+        sources.push(loopNoise(ctx, master, { lowpass: 120, gain: 1.1 }));
+        const hiss = ctx.createGain();
+        hiss.gain.value = 1;
+        hiss.connect(master);
+        sources.push(loopNoise(ctx, hiss, { lowpass: 2500, highpass: 400, gain: 0.09 }));
+        stops.push(wander(ctx, hiss.gain, 1, 0.5, 3));
+        stops.push(every([6, 14], passBy(ctx, master, 0.7), 5));
+        stops.push(every([25, 55], indicator(ctx, master, 0.9), 15));
+        stops.push(every([40, 90], horn(ctx, master, 0.25), 30));
+        break;
+      }
+      case "street": {
+        // City traffic bed, cars and buses going by, horns, a siren in the distance.
+        sources.push(loopNoise(ctx, master, { lowpass: 400, gain: 0.45 }));
+        sources.push(loopNoise(ctx, master, { lowpass: 5000, highpass: 1000, gain: 0.06 }));
+        stops.push(every([3, 8], passBy(ctx, master, 0.9, [1.5, 3.5]), 2));
+        stops.push(every([20, 45], horn(ctx, master, 0.3), 10));
+        stops.push(every([45, 90], siren(ctx, master, 0.35), 25));
+        break;
+      }
+      case "home": {
+        sources.push(loopNoise(ctx, master, { lowpass: 160, gain: 0.3 }));
+        stops.push(bursts(ctx, master, { every: [12, 40], lowpass: 2000, gain: 0.12 }));
+        break;
+      }
+      case "cafe": {
+        // Chatter, cups and spoons, the espresso machine.
+        sources.push(loopNoise(ctx, master, { lowpass: 300, gain: 0.3 }));
+        murmur(ctx, master, 0.55, stops, sources);
+        stops.push(every([3, 8], clink(ctx, master, 0.25), 2));
+        stops.push(every([25, 50], steam(ctx, master, 0.35), 10));
+        break;
+      }
+      case "station": {
+        // Hall echo and crowd, a train rolling through, the chime and an announcement.
+        sources.push(loopNoise(ctx, master, { lowpass: 200, gain: 0.6 }));
+        murmur(ctx, master, 0.4, stops, sources);
+        stops.push(every([30, 60], announcement(ctx, master, 0.3), 12));
+        stops.push(every([50, 100], passBy(ctx, master, 0.8, [6, 9]), 35));
+        break;
+      }
+    }  };
 
-  // Fade in over two seconds; the bed sits well under the voice.
-  master.gain.exponentialRampToValueAtTime(LEVEL[kind], ctx.currentTime + 2);
+  // Prefer the recording: a real room, street or car, looped from a random point and levelled to the same loudness.
+  preloadAmbience(kind).then(async (data) => {
+    if (stopped) return;
+    if (!data || !isAmbienceKind(kind)) return synth();
+    try {
+      const buf = await ctx.decodeAudioData(data.slice(0));
+      if (stopped) return;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      const level = ctx.createGain();
+      level.gain.value = Math.min(4, TARGET_RMS[kind] / Math.max(rms(buf), 1e-4));
+      src.connect(level);
+      level.connect(out);
+      src.start(0, Math.random() * buf.duration);
+      sources.push(src);
+    } catch {
+      synth();
+    }
+  });
 
+  // Fade in over two seconds; the levels above keep the bed well under the voice.
+  out.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 2);
 
   return {
     stop: () => {
+      stopped = true;
       stops.forEach((s) => s());
       const t = ctx.currentTime;
-      master.gain.cancelScheduledValues(t);
-      master.gain.setValueAtTime(master.gain.value, t);
-      master.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      out.gain.cancelScheduledValues(t);
+      out.gain.setValueAtTime(out.gain.value, t);
+      out.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
       setTimeout(() => {
         sources.forEach((s) => {
           try {

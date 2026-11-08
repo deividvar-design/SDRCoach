@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { startRingback } from "@/lib/audio/ringback";
 import { playHangupTone } from "@/lib/audio/hangup-tone";
-import { startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
+import { preloadAmbience, startAmbience, type AmbienceHandle } from "@/lib/audio/ambience";
 import type { Ambience } from "@/lib/domain/moods";
 import { Rays } from "@/components/shell/brand-panel";
 import Link from "next/link";
@@ -167,6 +167,8 @@ function Inner({ demo, prospect, maxSeconds, voiceConfigured }: Props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not start the call");
       pendingAmbienceRef.current = data.ambience ?? "quiet";
+      // Fetch the background recording while it rings, so it is ready when the prospect picks up.
+      preloadAmbience(pendingAmbienceRef.current);
       track("demo_call_started");
       await new Promise((r) => setTimeout(r, 1200));
       conversation.startSession({

@@ -12,6 +12,7 @@ export const ADMIN_SECTIONS = [
   { key: "access", href: "/admin/access", label: "Access links" },
   { key: "partners", href: "/admin/partners", label: "Partners" },
   { key: "affiliates", href: "/admin/affiliates", label: "Affiliates" },
+  { key: "sounds", href: "/admin/sounds", label: "Background sounds" },
 ] as const;
 
 export type AdminSection = (typeof ADMIN_SECTIONS)[number]["key"];
@@ -49,6 +50,7 @@ export const adminBadges = cache(async (db: Db, adminEmail: string): Promise<Rec
     // A manager who approved a quote is waiting for the testimonial to be made from it.
     partners: { action: partnersPending + partnersCheckins, fresh: 0 },
     affiliates: { action: 0, fresh: affiliates },
+    sounds: { action: 0, fresh: 0 },
   };
 });
 
