@@ -15,7 +15,7 @@ const NAV = [
 ];
 
 /** The homepage's header, on the dark hero: the main links on wide screens, a menu on phones. */
-export function HomeNav({ bookHref }: { bookHref: string }) {
+export function HomeNav() {
   const [open, setOpen] = useState(false);
   return (
     <header className="mx-auto max-w-6xl px-6 py-5">
@@ -32,7 +32,6 @@ export function HomeNav({ bookHref }: { bookHref: string }) {
         </nav>
         <div className="flex items-center gap-4 text-sm">
           <Link href="/login" className="hidden text-white/80 underline-offset-4 hover:text-white hover:underline md:inline">Sign in</Link>
-          <a href={bookHref} className="rounded-full border border-white/40 px-4 py-2 font-medium hover:bg-white/10">Book a demo</a>
           <button type="button" className="md:hidden" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen((o) => !o)}>
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>

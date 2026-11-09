@@ -8,18 +8,18 @@ import { trackCta } from "@/components/analytics/cta-link";
 import { PARTNER } from "@/content/founding-partners";
 
 const KEY = "fp_bar_dismissed";
-/** Not on the pages where a visitor is mid-call, reading their scorecard, or already on the program. */
-const HIDE_ON = [/^\/karen\/(call|result)/, /^\/founding-partners/, /^\/partner-report/, /^\/welcome\//];
+/** Only where buyers compare options. Everywhere else the page keeps to one ask. */
+const SHOW_ON = [/^\/pricing$/, /^\/for-managers$/];
 
 /**
- * One line above the header on the marketing pages: the founding-partner pilot. Hidden once no spots are left. Scrolls
+ * One line above the header on Pricing and For managers: the founding-partner pilot. Hidden once no spots are left. Scrolls
  * away with the page so it never stacks with the sticky Karen bar or the cookie banner. A dismissal is remembered and
  * applied before first paint by the inline script in the marketing layout, so there is no flash and no layout shift.
  */
 export function PartnerBar({ spots }: { spots: number | null }) {
   const pathname = usePathname();
   const [dismissed, setDismissed] = useState(false);
-  if (dismissed || spots === 0 || HIDE_ON.some((re) => re.test(pathname))) return null;
+  if (dismissed || spots === 0 || !SHOW_ON.some((re) => re.test(pathname))) return null;
   const href = "/founding-partners";
   const dismiss = () => {
     setDismissed(true);

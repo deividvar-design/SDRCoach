@@ -6,9 +6,7 @@ import { HomeNav } from "@/components/marketing/home-nav";
 import { Aurora } from "@/components/marketing/aurora";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { JsonLd, organizationLd, softwareLd } from "@/components/seo/json-ld";
-import { cachedSpotsLeft } from "@/lib/partners/spots";
 import { bookingUrl } from "@/content/booking";
-import { PARTNER } from "@/content/founding-partners";
 import { BOSS_PERSONAS } from "@/content/boss-personas";
 import { SALESFORGE } from "@/content/testimonials";
 import { FOUNDING, PLANS, TRIAL } from "@/lib/billing/plans";
@@ -34,7 +32,7 @@ export const metadata = pageMetadata({
   path: "/",
 });
 
-// Founding prices and partner spots are reads; an hourly rebuild keeps the page cached at the edge.
+// Founding prices are a read; an hourly rebuild keeps the page cached at the edge.
 export const revalidate = 3600;
 
 
@@ -70,14 +68,12 @@ function Wave() {
 
 export default async function HomePage() {
   const offer = await foundingOffer().catch(() => null);
-  const spots = await cachedSpotsLeft().catch(() => 0);
   const starter = PLANS.find((p) => p.id === "starter")!;
   const team = PLANS.find((p) => p.id === "team")!;
   const enterprise = PLANS.find((p) => p.id === "enterprise")!;
   const price = (id: "starter" | "team", k: "month" | "year") => offer ? FOUNDING.price[id].usd[k] : (PLANS.find((p) => p.id === id)?.prices?.usd[k] ?? 0);
   const objections = getAllObjectionPages().filter((p) => FEATURED.includes(p.slug)).sort((a, b) => FEATURED.indexOf(a.slug) - FEATURED.indexOf(b.slug));
   const [, jax, victor] = BOSS_PERSONAS;
-  const book = bookingUrl("home_header");
   const FAQ = [
     ["What do my reps need to start?", `A browser and a microphone, on a laptop or a phone. No install, no dialer setup. Pick a prospect, press call, and it rings. Your first call takes under two minutes.`],
     ["Can the prospects sound like our market?", "Yes. Build prospects from the companies on your list, with their problems and objections. Upload call transcripts from Gong, Chorus, Apollo or your dialer, and the prospects learn how your buyers talk."],
@@ -92,17 +88,13 @@ export default async function HomePage() {
       {/* "Continue as …" for signed-out visitors: starts the Karen call, like the main button. */}
       <GoogleOneTap mode="karen" next="/karen/start" />
 
-      {/* Partner bar */}
-      {(spots ?? 0) > 0 && <CtaLink ctaId="home_partner_bar" href="/founding-partners" className="block bg-[var(--hp-deep)] px-4 py-2 text-center text-[13px] text-white/80 hover:text-white">
-        <span className="mr-2 inline-block size-1.5 -translate-y-px rounded-full bg-[var(--hp-peach)]" />
-        Founding teams get a free {PARTNER.pilotDays}-day pilot, set up for you from your website. <span className="font-medium text-white underline underline-offset-4">Apply</span>
-      </CtaLink>}
+      {/* The founding pilot bar lives on Pricing and For managers; here Karen is the one ask. */}
 
       <main id="content">
       {/* Hero, steps and the product, on one dark stage */}
       <div className="relative isolate overflow-hidden bg-[var(--hp-navy)] text-white">
         <Aurora className="-z-10 [mask-image:linear-gradient(to_bottom,black,black_55%,transparent_85%)]" />
-        <HomeNav bookHref={book} />
+        <HomeNav />
 
         <section className="mx-auto grid max-w-6xl gap-12 px-6 pt-12 pb-16 md:pt-20 lg:grid-cols-[1.5fr_1fr] lg:items-center">
           <div>
@@ -120,9 +112,11 @@ export default async function HomePage() {
                   <span className="grid size-8 place-items-center rounded-full bg-[var(--hp-navy)] text-[var(--hp-peach)]"><Phone className="size-4" /></span>
                 </CallKarenSubmit>
               </form>
-              <CtaLink ctaId="home_hero_trial" href="/signup" className="flex h-12 items-center rounded-full border border-white/40 px-5 font-semibold hover:bg-white/10">Start free team trial</CtaLink>
             </div>
             <p className="mt-4 max-w-[52ch] text-[13px] leading-relaxed text-white/65">Three minutes, no email needed. Allow your mic and Karen picks up. We record the call so the coach can score it, then ask where to send your score.</p>
+            <p className="mt-3 max-w-[52ch] text-[14px] leading-relaxed text-white/80">
+              Buying for a team? <CtaLink ctaId="home_hero_trial" href="/signup" className="font-medium text-white underline underline-offset-4 hover:text-[var(--hp-peach)]">Start a free trial</CtaLink>. We set it up from your website, so your reps practise selling your product from the first call.
+            </p>
             <ul className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-white/80">
               {["Works on laptop and phone, nothing to install", "Prospects from your accounts", `Team trial: ${TRIAL.calls} calls, ${TRIAL.days} days, no card`].map((t) => (
                 <li key={t} className="flex items-center gap-1.5"><Check className="size-3.5 text-[var(--hp-peach)]" />{t}</li>
