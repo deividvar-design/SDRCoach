@@ -23,7 +23,7 @@ export const SITE = {
   },
   legalUpdated: "2026-11-08",
   /** Bumped when marketing pages change materially; the sitemap reports it instead of "now". */
-  contentUpdated: "2026-11-08",
+  contentUpdated: "2026-11-09",
 } as const;
 
 /**

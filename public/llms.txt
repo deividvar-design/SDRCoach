@@ -28,6 +28,7 @@
 
 ## Recent posts
 
+- [How to close a cold call: book the meeting, word for word](https://100dials.com/blog/close-cold-call): ask for fifteen minutes at a day and time you name, handle the hedge with another slot, and confirm the invite before you hang up, with the words and a strong versus weak table
 - [The cost of a cold call: $6 a dial, about $100 a conversation](https://100dials.com/blog/cost-of-a-cold-call): loaded SDR cost per dial, per conversation at three connect rates, and per meeting for an average and a top-quartile rep, with sources
 - [How to coach SDRs on cold calling in 20 minutes a week](https://100dials.com/blog/how-to-coach-sdrs-on-cold-calling): a Monday format run from scores rather than recordings, one note per rep by skill, and the second call that makes the note stick
 - [SDR interview roleplay: a five-minute mock cold call, scored](https://100dials.com/blog/sdr-interview-roleplay): the one-page brief, a fixed prospect with two objections, a six-skill score sheet and the three moments that predict ramp
