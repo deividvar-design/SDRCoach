@@ -26,6 +26,11 @@ export const KAREN = { ...BOSS_PERSONAS[0], pain_points: [...BOSS_PERSONAS[0].pa
 
 /** Hard cap on a demo call. The browser hangs up here; the server ignores anything that somehow ran much longer. */
 export const DEMO_MAX_SECONDS = 180;
+/** Below either of these a call is recorded but not scored. */
+export const DEMO_MIN_SECONDS = 20;
+export const DEMO_MIN_REP_TURNS = 2;
+/** Stored in `error` on a call that was too short to score, so the result page can say so and offer another go. */
+export const TOO_SHORT = "too short";
 
 const OUTCOMES: CallOutcome[] = ["meeting_booked", "callback", "info_sent", "rejected", "hung_up", "incomplete"];
 const DAY = 86_400_000;
@@ -168,6 +173,24 @@ export async function finalizeDemo(id: string) {
     if (durationSecs > 0) await recordVoiceUsage(db, { demoId: id, seconds: durationSecs });
     if (!turns.some((t) => t.role === "rep")) {
       await db.from("demo_calls").update({ status: "scored", outcome: "incomplete", outcome_reason: "No speech was captured from you. Check the microphone is allowed for this site.", duration_seconds: durationSecs, transcript: turns }).eq("id", id);
+      return;
+    }
+
+    // A few seconds of "hello?" is not a cold call. Keep the record, skip the coach: scoring it costs a model call
+    // and hands the caller a near-zero they did not earn. They are told why and can call again.
+    const repTurns = turns.filter((t) => t.role === "rep").length;
+    if (durationSecs < DEMO_MIN_SECONDS || repTurns < DEMO_MIN_REP_TURNS) {
+      await db
+        .from("demo_calls")
+        .update({
+          status: "scored",
+          outcome: "incomplete",
+          outcome_reason: `That call lasted ${durationSecs} second${durationSecs === 1 ? "" : "s"}, too short for the coach to score. Stay on the line for at least ${DEMO_MIN_SECONDS} seconds and get a couple of lines in.`,
+          duration_seconds: durationSecs,
+          transcript: turns,
+          error: TOO_SHORT,
+        })
+        .eq("id", id);
       return;
     }
 

@@ -13,6 +13,50 @@ export interface PersonaInput {
   gatekeeper?: Gatekeeper | null;
   /** The agent's TTS model. The v3 conversational model understands delivery tags; older models read them aloud. */
   ttsModel?: string;
+  /** What the workspace's uploaded calls say about how its buyers talk. See marketVoice below for what is used. */
+  market?: MarketVoiceSource[];
+}
+
+/** The slice of a knowledge digest the prospect is allowed to draw on. */
+export interface MarketVoiceSource {
+  prospect_tone?: string;
+  common_objections?: { objection?: string; example_phrasing?: string }[];
+  vocabulary?: string[];
+}
+
+const oneLine = (s: unknown, max: number) => (typeof s === "string" ? s.replace(/\s+/g, " ").replace(/[<>]/g, "").trim().slice(0, max) : "");
+
+/**
+ * How buyers in this workspace's market talk, from its uploaded calls: tone, the objections in their real wording,
+ * and vocabulary. Only what a rep would hear on a real call. The coaching side of a digest (what worked, what
+ * failed, the best response seen) never goes here, because this prompt passes through the rep's browser.
+ * Sources take turns so the newest upload does not crowd out the rest.
+ */
+export function marketVoice(sources: MarketVoiceSource[] | undefined) {
+  const list = (sources ?? []).slice(0, 5);
+  if (!list.length) return "";
+  const takeTurns = <T,>(per: (s: MarketVoiceSource) => T[], max: number, key: (t: T) => string) => {
+    const out: T[] = [];
+    const seen = new Set<string>();
+    for (let i = 0; out.length < max && list.some((s) => per(s).length > i); i++) {
+      for (const s of list) {
+        const item = per(s)[i];
+        const k = item === undefined ? "" : key(item).toLowerCase();
+        if (!k || seen.has(k) || out.length >= max) continue;
+        seen.add(k);
+        out.push(item as T);
+      }
+    }
+    return out;
+  };
+  const tones = list.map((s) => oneLine(s.prospect_tone, 240)).filter(Boolean).slice(0, 2);
+  const objections = takeTurns((s) => (s.common_objections ?? []).map((o) => oneLine(o.example_phrasing, 200) || oneLine(o.objection, 200)).filter(Boolean), 6, (t) => t);
+  const words = takeTurns((s) => (s.vocabulary ?? []).map((v) => oneLine(v, 40)).filter(Boolean), 12, (t) => t);
+  if (!tones.length && !objections.length && !words.length) return "";
+  return `
+## How buyers in this market actually talk (from this team's real calls)
+Let this colour how you speak: your pace, your patience, your wording. It does not change who you are, your situation or your objections above.
+${tones.length ? `Tone: ${tones.join(" ")}\n` : ""}${objections.length ? `How people like you have put their objections, in their own words:\n${objections.map((o) => `- "${o}"`).join("\n")}\n` : ""}${words.length ? `Words and terms buyers here use: ${words.join(", ")}.\n` : ""}`;
 }
 
 const first = (name: string) => name.split(" ")[0] ?? name;
@@ -123,8 +167,9 @@ You may add one bracketed delivery tag at the start of a turn when the moment ca
 `
     : "";
 
-  // Knowledge digests are deliberately absent: this prompt travels through the browser as an override, and the
-  // org's real-call intelligence is manager-only. The grader, which runs server-side, still uses them.
+  // This prompt travels through the browser as an override, so only the buyer-facing part of the org's uploaded
+  // calls goes in (see marketVoice). The coaching side stays with the grader, which runs server-side.
+  const marketBlock = boss ? "" : marketVoice(input.market);
 
   const situation =
     difficulty === "inbound"
@@ -156,6 +201,7 @@ ${org.product_description ? `Their product: ${org.product_description}` : ""}
 ${org.ideal_customer_profile ? `Who they usually sell to: ${org.ideal_customer_profile}` : ""}
 Treat the name "${org.name}" as belonging only to the company described here. Whatever you might know about any real company, product or brand with the same name does not exist in this call: never bring it up, never use it to check what the rep says, and never tell the rep their company is not real or does something other than what they claim. If the rep contradicts themselves within the call, react to the contradiction; otherwise take what they say about their company at face value, the way a real prospect who has never looked them up would. Be skeptical about whether it matters to you, not about whether it exists.
 
+${marketBlock}
 ${boss ? bossBlock() : `## Difficulty: Level ${level.level}: ${level.name}
 ${level.behaviour}`}
 

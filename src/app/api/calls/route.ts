@@ -14,6 +14,7 @@ import { sweepStaleSessions } from "@/lib/calls/sweep";
 import { finalizeCall, hashPrompt } from "@/lib/calls/finalize";
 import { recordVoiceUsage } from "@/lib/usage/record";
 import { safeName } from "@/lib/text/person-name";
+import { loadOrgDigests } from "@/lib/knowledge/digest";
 
 const DAILY_CALL_CAP = Number(process.env.CALLS_PER_ORG_PER_DAY ?? 200);
 
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
   // Guardrails: one live call per rep, and a daily cap per org so a runaway client cannot burn the voice budget.
   const staleCutoff = new Date(Date.now() - 20 * 60_000).toISOString();
   // The guardrail counts, the trial state and the paid allowance load together; they are checked in order below.
-  const [{ count: liveCount }, { count: todayCount }, trial, paidAllowance] = await Promise.all([
+  const [{ count: liveCount }, { count: todayCount }, trial, paidAllowance, market] = await Promise.all([
     supabase
       .from("call_sessions")
       .select("id", { count: "exact", head: true })
@@ -60,6 +61,8 @@ export async function POST(request: Request) {
       .gt("created_at", new Date(Date.now() - 24 * 3_600_000).toISOString()),
     loadTrialStatus(viewer.org),
     viewer.org.plan === "trial" ? null : loadAllowance(viewer.org, { userId: viewer.userId, isManager: true }),
+    // How this team's buyers talk, from its uploaded calls. A failed read must never block a dial.
+    loadOrgDigests(viewer.org.id).catch(() => []),
   ]);
   if ((liveCount ?? 0) > 0) return NextResponse.json({ error: "You already have a call in progress. Hang up before dialing again." }, { status: 409 });
 
@@ -96,7 +99,7 @@ export async function POST(request: Request) {
   // Dice, rolled once per call so the same target is never the same person twice. No gatekeeper on a boss fight: the boss answers.
   const mood = rollMood(target.kind === "boss" ? "cold" : difficulty);
   const gatekeeper = target.kind !== "boss" && rollGatekeeper(difficulty) ? pickGatekeeper(target.voice_id) : null;
-  const prompt = buildPersonaPrompt({ target, difficulty, org: viewer.org, repName, mood, gatekeeper, ttsModel: process.env.ELEVENLABS_TTS_MODEL });
+  const prompt = buildPersonaPrompt({ target, difficulty, org: viewer.org, repName, mood, gatekeeper, ttsModel: process.env.ELEVENLABS_TTS_MODEL, market });
 
   // Sessions are server-owned: reps cannot insert or update rows themselves (migration 0012).
   const { data: session, error } = await createAdminClient()

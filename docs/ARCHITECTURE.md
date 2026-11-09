@@ -33,7 +33,7 @@ Level recommendations (`src/lib/stats/progress.ts`): three calls averaging ≥ 7
 Streak (consecutive days with a call), personal best, weekly team leaderboard, level readiness, and a count-up score reveal straight after the call. Deliberately no locks or penalties: the loop is "call → immediate specific feedback → one concrete thing to try → call again".
 
 ## Knowledge grounding
-Managers upload CSV/TXT exports (Gong, Chorus, dialers) or paste text. `src/lib/knowledge/parse.ts` normalises the common CSV shapes. Files land in the private `knowledge` bucket under `org_id/`, text in `knowledge_sources.raw_text`, and `digest.ts` has Claude extract objections with real phrasing, prospect tone, what worked, what failed and vocabulary. The latest five digests (never the raw text) are injected into persona prompts and the grader.
+Managers upload CSV/TXT exports (Gong, Chorus, dialers) or paste text. `src/lib/knowledge/parse.ts` normalises the common CSV shapes. Files land in the private `knowledge` bucket under `org_id/`, text in `knowledge_sources.raw_text`, and `digest.ts` has Claude extract objections with real phrasing, prospect tone, what worked, what failed and vocabulary. The latest five digests (never the raw text) feed two places. The grader gets the coaching side (what worked, what failed). The prospect prompt gets only the buyer-facing side (tone, objections in the buyers' own wording, vocabulary) through `marketVoice` in `src/lib/prompts/persona.ts`, because that prompt passes through the rep's browser; boss fights keep their fixed character and get none.
 
 ## Levels
 Defined in `src/lib/domain/levels.ts`. The behavioural brief per level is what changes the ElevenLabs agent's disposition; target data changes *who* it is.

@@ -19,6 +19,8 @@ import { absoluteUrl } from "@/lib/site";
 import { authMethod } from "@/lib/demo/source";
 import { getObjectionPage } from "@/lib/objections";
 import { CtaLink } from "@/components/analytics/cta-link";
+import { CallKarenSubmit } from "@/components/marketing/call-karen-button";
+import { TOO_SHORT } from "@/lib/demo/boss";
 
 export const metadata = { title: "Your call with Karen", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -62,6 +64,18 @@ export default async function KarenResultPage() {
               <Button variant="signal" className="shrink-0" asChild>
                 <CtaLink ctaId="result_pending_trial" href={signup} target="_blank" rel="noopener">Start the team trial</CtaLink>
               </Button>
+            </div>
+          </>
+        ) : demo.error === TOO_SHORT && !demo.score ? (
+          <>
+            <h1 className="font-display mt-4 text-5xl text-balance">Too short to score.</h1>
+            <p className="text-muted-foreground mt-4 text-lg">{demo.outcome_reason} Karen is still at her desk.</p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <form action={callKaren}>
+                {demo.email && <input type="hidden" name="rematch" value="1" />}
+                <CallKarenSubmit className="h-12 w-auto px-6 text-base">Call Karen again</CallKarenSubmit>
+              </form>
+              <Button size="lg" variant="outline" asChild><Link href={signup}>Start a free trial</Link></Button>
             </div>
           </>
         ) : demo.status === "failed" || !demo.score ? (

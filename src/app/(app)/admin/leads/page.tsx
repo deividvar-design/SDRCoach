@@ -66,7 +66,9 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   ]);
   const leads = rows ?? [];
   const scored = scoredRows ?? [];
-  const avg = scored.length ? scored.reduce((n, l) => n + Number(l.overall ?? 0), 0) / scored.length : null;
+  // Over calls the coach actually scored; calls with no speech or too short to score have no number.
+  const withScore = scored.filter((l) => l.overall !== null);
+  const avg = withScore.length ? withScore.reduce((n, l) => n + Number(l.overall), 0) / withScore.length : null;
 
   return (
     <div className="space-y-8">
