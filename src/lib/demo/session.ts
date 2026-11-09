@@ -43,5 +43,22 @@ export async function currentDemo(): Promise<DemoCall | null> {
 
 export async function clientIp() {
   const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip") ?? null;
+  return ipBucket(h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip") ?? null);
+}
+
+/**
+ * The key the per-visitor limits count by. IPv4 is the address. An IPv6 visitor owns a whole /64 (billions of
+ * addresses they can rotate through), so they are counted by that network instead.
+ */
+export function ipBucket(ip: string | null): string | null {
+  if (!ip) return null;
+  const v4 = ip.match(/(?:^|:)(\d{1,3}(?:\.\d{1,3}){3})$/);
+  if (v4) return v4[1]!;
+  if (!ip.includes(":")) return ip;
+  const [head = "", tail = ""] = ip.toLowerCase().split("::");
+  const left = head ? head.split(":") : [];
+  const right = tail ? tail.split(":") : [];
+  const groups = ip.includes("::") ? [...left, ...Array(Math.max(0, 8 - left.length - right.length)).fill("0"), ...right] : left;
+  if (groups.length !== 8) return ip;
+  return `${groups.slice(0, 4).map((g) => g.replace(/^0+(?=.)/, "")).join(":")}::/64`;
 }

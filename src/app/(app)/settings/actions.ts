@@ -61,7 +61,7 @@ export async function updatePassword(_prev: SettingsState, formData: FormData): 
 }
 
 export async function updateProfile(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
-  const parsed = z.object({ full_name: z.string().min(2) }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ full_name: z.string().trim().min(2, "Add your name").max(80, "Keep your name under 80 characters") }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const viewer = await requireViewer();
   const supabase = await createClient();

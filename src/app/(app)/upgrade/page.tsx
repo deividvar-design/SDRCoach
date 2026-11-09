@@ -16,6 +16,7 @@ import { headers } from "next/headers";
 import { currentOffer } from "@/lib/billing/offers";
 import { foundingOffer } from "@/lib/billing/founding";
 import { dateFormatter } from "@/lib/tz";
+import { safeName } from "@/lib/text/person-name";
 
 export const metadata = { title: "Upgrade" };
 
@@ -60,7 +61,7 @@ export default async function UpgradePage({ searchParams }: PageProps<"/upgrade"
       {typeof error === "string" && (
         <p className="text-destructive text-sm">
           {error === "billing_unavailable" ? "Checkout is not configured on this deployment yet." : error === "invalid" ? "Check the seat count and try again." : error === "price_missing" ? "The plan prices are not configured on this deployment yet." : "Something went wrong starting checkout. Try again."}
-          {typeof reason === "string" && reason && <span className="text-muted-foreground block text-xs">Stripe said: {reason}</span>}
+          {typeof reason === "string" && safeName(reason, "", 140) && <span className="text-muted-foreground block text-xs">Stripe said: {safeName(reason, "", 140)}</span>}
         </p>
       )}
       {offer && (

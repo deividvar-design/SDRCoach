@@ -122,6 +122,8 @@ export interface ResendState {
 export async function resendConfirmation(_prev: ResendState, formData: FormData): Promise<ResendState> {
   const parsed = z.string().email().safeParse(formData.get("email"));
   if (!parsed.success) return { error: "That address doesn't look right. Start again from sign-up." };
+  // Same answer for a bot as for anyone, but no email goes out.
+  if (looksLikeBot(formData)) return { sent: true };
   const invite = typeof formData.get("invite") === "string" ? String(formData.get("invite")) : "";
   const supabase = await createClient();
   const { error } = await supabase.auth.resend({

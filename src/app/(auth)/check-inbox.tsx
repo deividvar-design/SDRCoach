@@ -6,6 +6,7 @@ import { MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { resendConfirmation, signInWithGoogle, type ResendState } from "./actions";
 import { GoogleMark } from "@/components/auth/google-mark";
+import { HONEYPOT_FIELD } from "@/lib/bot-check";
 
 /** Sends the confirmation email again, and says plainly whether it went. */
 export function ResendConfirmation({ email, invite, variant = "outline", label = "Send the email again" }: { email: string; invite?: string; variant?: "outline" | "default"; label?: string }) {
@@ -13,6 +14,9 @@ export function ResendConfirmation({ email, invite, variant = "outline", label =
   return (
     <form action={action} className="space-y-2">
       <input type="hidden" name="email" value={email} />
+      <div aria-hidden className="absolute -left-[10000px] h-px w-px overflow-hidden">
+        <input type="text" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" defaultValue="" aria-label="Leave this empty" />
+      </div>
       {invite && <input type="hidden" name="invite" value={invite} />}
       <Button type="submit" variant={variant} className="w-full" disabled={pending || state.sent}>
         {pending ? "Sending…" : state.sent ? "Sent. Check your inbox." : label}

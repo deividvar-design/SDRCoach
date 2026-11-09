@@ -19,6 +19,7 @@ import { track } from "@vercel/analytics/server";
 import { sendLifecycle } from "@/lib/email/lifecycle";
 import { recordAnthropicUsage, recordVoiceUsage } from "@/lib/usage/record";
 import { captureServer } from "@/lib/analytics/server";
+import { safeName } from "@/lib/text/person-name";
 
 const OUTCOMES: CallOutcome[] = ["meeting_booked", "callback", "info_sent", "rejected", "hung_up", "incomplete"];
 
@@ -170,7 +171,7 @@ export async function finalizeCall(sessionId: string) {
         difficulty: claimed.difficulty,
         prospect: { ...(claimed.targets ?? { name: "Prospect", title: "", company: "", pain_points: [], objections: [] }), kind: claimed.boss ? "boss" : claimed.targets?.kind },
         company: claimed.organizations ?? { name: "the rep's company", company_description: null, product_description: null, ideal_customer_profile: null },
-        repName: claimed.profiles?.full_name ?? "Rep",
+        repName: safeName(claimed.profiles?.full_name, "Rep"),
         orgPlaybook: digests,
         durationSecs,
         mood: moodById(claimed.mood),

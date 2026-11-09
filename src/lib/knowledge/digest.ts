@@ -4,9 +4,18 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { recordAnthropicUsage } from "@/lib/usage/record";
+import { anthropicCost } from "@/lib/usage/pricing";
+import { reportError } from "@/lib/sentry";
 
 export const DIGEST_MODEL = "claude-opus-5";
+
+/**
+ * How many digests a workspace may start. Each one is a large request to the strongest model, so the limit is on
+ * attempts, counted from usage rows written before the request goes out. Counting the sources a workspace holds
+ * would not do: deleting a source, or retrying a failed one, would hand the allowance back.
+ */
+export const DIGESTS_PER_DAY = 30;
+export const TRIAL_DIGESTS_TOTAL = 25;
 
 const DigestSchema = z.object({
   summary: z.string().describe("Two sentences: what this material is and what it teaches"),
@@ -36,6 +45,31 @@ export async function digestKnowledgeSource(id: string) {
   const { data: source } = await db.from("knowledge_sources").select("id, org_id, name, kind, raw_text").eq("id", id).single();
   if (!source?.raw_text) return;
 
+  // The allowance, checked here so every way in (add, upload, retry) meets it.
+  const since = new Date(Date.now() - 86_400_000).toISOString();
+  const attempts = () => db.from("usage_events").select("id", { count: "exact", head: true }).eq("org_id", source.org_id).eq("kind", "digest");
+  const [{ data: org }, { count: today }, { count: ever }] = await Promise.all([db.from("organizations").select("plan").eq("id", source.org_id).single(), attempts().gte("created_at", since), attempts()]);
+  const overDay = (today ?? 0) >= DIGESTS_PER_DAY;
+  const overTrial = org?.plan === "trial" && (ever ?? 0) >= TRIAL_DIGESTS_TOTAL;
+  if (overDay || overTrial) {
+    await db
+      .from("knowledge_sources")
+      .update({ status: "failed", error: overTrial ? "This trial has used its knowledge reads. Upgrade to add more." : "Today's limit for reading new sources is reached. Try again tomorrow." })
+      .eq("id", id);
+    return;
+  }
+  // Count the attempt before spending anything; the real numbers are filled in when the answer comes back.
+  const { data: attempt, error: attemptError } = await db
+    .from("usage_events")
+    .insert({ org_id: source.org_id, provider: "anthropic", kind: "digest", model: DIGEST_MODEL, input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_write_tokens: 0, cost_usd: 0 })
+    .select("id")
+    .single();
+  if (attemptError || !attempt) {
+    // Without the count there is no limit, so do not run.
+    await db.from("knowledge_sources").update({ status: "failed", error: "Could not start reading this source. Try again." }).eq("id", id);
+    throw new Error(attemptError?.message ?? "digest attempt not recorded");
+  }
+
   await db.from("knowledge_sources").update({ status: "processing", error: null }).eq("id", id);
 
   try {
@@ -57,12 +91,9 @@ export async function digestKnowledgeSource(id: string) {
     if (!parsed) throw new Error("no parseable digest");
 
     await db.from("knowledge_sources").update({ status: "ready", summary: parsed.summary, extracted: parsed }).eq("id", id);
-    await recordAnthropicUsage(db, {
-      orgId: source.org_id,
-      kind: "digest",
-      model: response.model,
-      usage: { input_tokens: response.usage.input_tokens, output_tokens: response.usage.output_tokens, cache_read_tokens: response.usage.cache_read_input_tokens ?? 0, cache_write_tokens: response.usage.cache_creation_input_tokens ?? 0 },
-    });
+    const usage = { input_tokens: response.usage.input_tokens, output_tokens: response.usage.output_tokens, cache_read_tokens: response.usage.cache_read_input_tokens ?? 0, cache_write_tokens: response.usage.cache_creation_input_tokens ?? 0 };
+    const { error: usageError } = await db.from("usage_events").update({ model: response.model, ...usage, cost_usd: anthropicCost(response.model, usage) }).eq("id", attempt.id);
+    if (usageError) reportError(new Error(usageError.message), { where: "usage_record_digest", orgId: source.org_id });
   } catch (err) {
     await db
       .from("knowledge_sources")

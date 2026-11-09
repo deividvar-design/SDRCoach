@@ -67,6 +67,11 @@ export async function startDemo(p: { email?: string | null; company?: string | n
     return { waitlisted: true };
   }
   if (limit) return reject(limit);
+  // The limits above count calls that dialled. This one stops a script creating rows without ever dialling.
+  if (ip) {
+    const { count: recent } = await db.from("demo_calls").select("id", { count: "exact", head: true }).eq("ip", ip).gte("created_at", new Date(Date.now() - 3_600_000).toISOString());
+    if ((recent ?? 0) >= 20) return reject("ip_limit");
+  }
 
   const [click, analytics] = await Promise.all([readAdClick(), analyticsIdentity()]);
   const { data: demo, error } = await db

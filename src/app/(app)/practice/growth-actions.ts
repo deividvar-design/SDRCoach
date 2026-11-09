@@ -13,6 +13,7 @@ import { reportError } from "@/lib/sentry";
 import { countTrialCalls } from "@/lib/billing/usage";
 import { repStats } from "@/lib/trial/stats";
 import { EXTENSION, EXTENSION_DECIDERS, EXTENSION_TIMELINES, EXTENSION_USE_CASES, MANAGER_INTRO, managerIntroCopy } from "@/content/trial-growth";
+import { safeName } from "@/lib/text/person-name";
 
 const DAY = 86_400_000;
 const firstName = (name: string | null | undefined, fallback: string) => (name ?? "").trim().split(/\s+/)[0] || fallback;
@@ -128,10 +129,13 @@ export async function sendManagerIntro(_prev: IntroState, formData: FormData): P
   if ((prior ?? []).some((p) => p.sent_at)) return { error: "Someone already sent an introduction to that address. Forward it to them yourself instead.", field: "manager_email" };
 
   const stats = await repStats(db, viewer.org.id, viewer.userId);
-  const repName = viewer.profile.full_name || viewer.email;
+  // Everything a user typed that ends up in this email is cleaned: one line, no links, no markup.
+  const repName = safeName(viewer.profile.full_name, viewer.email);
+  const managerName = safeName(d.manager_name, "there", 60);
+  const orgName = safeName(viewer.org.name, "their team");
   const { data: row, error } = await db
     .from("manager_intros")
-    .insert({ org_id: viewer.org.id, user_id: viewer.userId, manager_name: d.manager_name, manager_email: d.manager_email, note: d.note ?? null })
+    .insert({ org_id: viewer.org.id, user_id: viewer.userId, manager_name: managerName, manager_email: d.manager_email, note: d.note ?? null })
     .select("id")
     .single();
   if (error || !row) {
@@ -139,7 +143,7 @@ export async function sendManagerIntro(_prev: IntroState, formData: FormData): P
     return { error: "Could not send it. Try again in a minute." };
   }
   const link = absoluteUrl(`/i/${row.id}`);
-  const copy = managerIntroCopy({ managerName: d.manager_name, repName, repEmail: viewer.email, orgName: viewer.org.name, note: d.note ?? null, stats, link });
+  const copy = managerIntroCopy({ managerName, repName, repEmail: viewer.email, orgName, note: d.note ?? null, stats, link });
   try {
     await sendMail({ to: d.manager_email, ...templates.managerIntro({ ...copy, repName, repEmail: viewer.email, link, optOut: absoluteUrl(`/api/email/opt-out?id=${row.id}`) }), fromName: repName, replyTo: viewer.email });
   } catch (err) {

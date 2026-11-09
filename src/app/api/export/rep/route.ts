@@ -7,7 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 import type { ScoreDimensions } from "@/types/database";
 
 const cell = (v: unknown) => {
-  const s = v == null ? "" : String(v);
+  const raw = v == null ? "" : String(v);
+  // A cell that starts like a formula is text: a leading apostrophe stops a spreadsheet from running it.
+  const s = /^[=+\-@\t\r]/.test(raw) && Number.isNaN(Number(raw)) ? `'${raw}` : raw;
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
