@@ -21,7 +21,7 @@ export async function generateAmbience(_prev: GenerateState, formData: FormData)
   if (!isAmbienceKind(kind)) return { error: "Unknown place." };
   if (!process.env.ELEVENLABS_API_KEY) return { error: "ELEVENLABS_API_KEY is not set." };
   try {
-    const stream = await elevenlabs().textToSoundEffects.convert({
+    const stream = await (await elevenlabs()).textToSoundEffects.convert({
       text: AMBIENCE_PROMPTS[kind],
       durationSeconds: 30,
       loop: true,

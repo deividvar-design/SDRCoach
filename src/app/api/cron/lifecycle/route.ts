@@ -24,6 +24,7 @@ import { affiliateStatement } from "@/lib/affiliates/program";
 import { isStatementDay, money, previousQuarter, statementLines } from "@/lib/affiliates/statements";
 import { AFFILIATE } from "@/content/affiliates";
 import { revalidateTag } from "next/cache";
+import { fetchAll } from "@/lib/supabase/paginate";
 
 export const maxDuration = 300;
 
@@ -215,8 +216,10 @@ export async function GET(request: Request) {
   // Monday: last week on the floor, to every manager of a workspace that made calls.
   if (new Date(now).getUTCDay() === 1) {
     const weekKey = new Date(now).toISOString().slice(0, 10);
-    const { data: active } = await db.from("call_sessions").select("org_id").gte("created_at", new Date(now - 7 * DAY).toISOString()).not("started_at", "is", null).limit(5000);
-    for (const orgId of new Set((active ?? []).map((r) => r.org_id))) {
+    // Paged: one request returns at most 1,000 rows, so a plain limit would silently drop workspaces in a busy week.
+    const weekStart = new Date(now - 7 * DAY).toISOString();
+    const active = await fetchAll((a, b) => db.from("call_sessions").select("org_id").gte("created_at", weekStart).not("started_at", "is", null).order("id").range(a, b));
+    for (const orgId of new Set(active.map((r) => r.org_id))) {
       const digest = await buildWeeklyDigest(db, orgId, now).catch((err) => (reportError(err, { where: "cron_digest_build", orgId }), null));
       if (!digest || digest.calls === 0) continue;
       for (const manager of await orgManagers(orgId)) {

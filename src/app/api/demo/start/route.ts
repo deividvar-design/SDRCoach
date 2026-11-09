@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { demoAgentId, mintConversationToken } from "@/lib/elevenlabs/client";
 import { currentDemo } from "@/lib/demo/session";
@@ -35,7 +35,7 @@ export async function POST() {
     await db.from("demo_calls").update({ status: "failed", error: "limit at mint", prompt_hash: null }).eq("id", demo.id);
     return NextResponse.json({ error: "Karen has taken all the calls she'll take from here today. Come back tomorrow, or start a free trial." }, { status: 429 });
   }
-  await logFunnel("karen_call_started", { email: demo.email, subject: demo.id, dedupeKey: `karen_started:${demo.id}`, meta: { personal: demo.personal_email } });
+  after(() => logFunnel("karen_call_started", { email: demo.email, subject: demo.id, dedupeKey: `karen_started:${demo.id}`, meta: { personal: demo.personal_email } }));
 
   let token: string;
   try {

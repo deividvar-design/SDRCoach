@@ -76,7 +76,7 @@ function renderTranscript(turns: TranscriptTurn[], repName: string, prospectName
     .join("\n");
 }
 
-// Routes cap at 120s; a request that outlives that is killed mid-write, so fail fast and let the retry path run.
+// Routes allow 300s. Up to a minute of transcript polling plus two 75s attempts fits inside that with room to write.
 const client = new Anthropic({ timeout: 75_000, maxRetries: 1 });
 
 export async function scoreCall(input: ScoreInput) {

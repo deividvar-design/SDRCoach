@@ -11,6 +11,9 @@ import { ScorePoller } from "@/components/report/score-poller";
 import { KnowledgeForm } from "./knowledge-form";
 import { deleteKnowledge, retryDigest } from "./actions";
 
+// Reading a new source runs after the response, on this page's clock; a large one can take a few minutes.
+export const maxDuration = 300;
+
 export const metadata = { title: "Knowledge" };
 
 const KIND_LABEL = { call_transcript: "Transcripts", script: "Script", playbook: "Playbook", objection_sheet: "Objections" } as const;

@@ -122,7 +122,8 @@ export async function finalizeCall(sessionId: string) {
       });
 
       metrics = computeMetrics(convo.turns, durationSecs);
-      if (durationSecs > 0) await recordVoiceUsage(db, { orgId: claimed.org_id, sessionId, seconds: durationSecs });
+      // Already recorded above when the provider gave a length; this covers the length worked out from our own clock.
+      if (durationSecs > 0 && !(convo.durationSecs > 0)) await recordVoiceUsage(db, { orgId: claimed.org_id, sessionId, seconds: durationSecs });
 
       collectedOutcome = String(convo.dataCollection.outcome ?? "");
       collectedReason = typeof convo.dataCollection.outcome_reason === "string" && convo.dataCollection.outcome_reason ? convo.dataCollection.outcome_reason : null;

@@ -36,8 +36,9 @@ const DigestSchema = z.object({
 
 export type KnowledgeDigest = z.infer<typeof DigestSchema>;
 
-// Routes cap at 120s; a request that outlives that is killed mid-write, so fail fast and let the retry path run.
-const client = new Anthropic({ timeout: 75_000, maxRetries: 1 });
+// A large source is a long request: give it four minutes (the knowledge page allows five) and no automatic retry,
+// so one attempt in the allowance is one request paid for.
+const client = new Anthropic({ timeout: 240_000, maxRetries: 0 });
 
 /** Digest one knowledge source with Claude and store the result. Safe to re-run. */
 export async function digestKnowledgeSource(id: string) {

@@ -93,7 +93,7 @@ export async function deleteCall(sessionId: string) {
   // conversation, so only then is the recording deleted at the provider.
   if (verified && full?.elevenlabs_conversation_id && process.env.ELEVENLABS_API_KEY) {
     try {
-      await elevenlabs().conversationalAi.conversations.delete(full.elevenlabs_conversation_id);
+      await (await elevenlabs()).conversationalAi.conversations.delete(full.elevenlabs_conversation_id);
     } catch (err) {
       reportError(err, { where: "provider_delete", sessionId });
     }

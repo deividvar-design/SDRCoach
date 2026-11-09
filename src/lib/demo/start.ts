@@ -1,5 +1,7 @@
 import "server-only";
 import { track } from "@vercel/analytics/server";
+import { after } from "next/server";
+import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { classifyEmailDomain, emailDomain, hasMx } from "@/lib/email/business";
 import { checkDemoLimits, sendDemoScorecard } from "@/lib/demo/boss";
@@ -47,7 +49,8 @@ export async function startDemo(p: { email?: string | null; company?: string | n
   const perEmail = p.method === "rematch" ? 2 : 1;
   const company = p.company?.replace(/\s+/g, " ").trim() || null;
   const known = p.email ? classify(p.email) : null;
-  await logFunnel("karen_submit", { email: known?.email, meta: { company: Boolean(company), method: p.method } });
+  // Bookkeeping runs after the answer goes out, so the caller is not kept waiting on it before Karen rings.
+  after(() => logFunnel("karen_submit", { email: known?.email, meta: { company: Boolean(company), method: p.method } }));
 
   const reject = async (code: string): Promise<StartResult> => {
     await logFunnel("karen_rejected", { email: known?.email, reason: code, meta: { method: p.method } });
@@ -96,7 +99,8 @@ export async function startDemo(p: { email?: string | null; company?: string | n
     .single();
   if (error || !demo) return reject("insert_failed");
 
-  await track("demo_started", { domain: known?.domain ?? "", personal: known?.personal ?? false, method: p.method }).catch(() => {});
+  const requestHeaders = await headers();
+  after(() => track("demo_started", { domain: known?.domain ?? "", personal: known?.personal ?? false, method: p.method }, { headers: requestHeaders }).catch(() => {}));
   return { id: demo.id };
 }
 

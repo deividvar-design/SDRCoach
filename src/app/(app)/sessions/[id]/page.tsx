@@ -24,7 +24,8 @@ import type { CallOutcome } from "@/types/database";
 
 export const metadata = { title: "Call report" };
 // The review action runs the scorer in after(); give it the same budget as the API routes.
-export const maxDuration = 120;
+// Fetching the transcript can take a minute and scoring up to two and a half; at 120 the function was cut off mid-score and the call sat stuck.
+export const maxDuration = 300;
 
 const OUTCOME_LABEL: Record<CallOutcome, { label: string; variant: "success" | "warning" | "secondary" | "destructive" }> = {
   meeting_booked: { label: "Meeting booked", variant: "success" },

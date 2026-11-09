@@ -16,7 +16,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/api/call
   if (!verified) return NextResponse.json({ error: "No recording" }, { status: 404 });
 
   try {
-    const stream = await elevenlabs().conversationalAi.conversations.audio.get(session.elevenlabs_conversation_id);
+    const stream = await (await elevenlabs()).conversationalAi.conversations.audio.get(session.elevenlabs_conversation_id);
     return new Response(stream, {
       headers: { "content-type": "audio/mpeg", "cache-control": "private, max-age=3600" },
     });

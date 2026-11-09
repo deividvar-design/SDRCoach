@@ -4,7 +4,8 @@ import { currentDemo } from "@/lib/demo/session";
 import { finalizeDemo } from "@/lib/demo/boss";
 import { reportError } from "@/lib/sentry";
 
-export const maxDuration = 120;
+// Fetching the transcript can take a minute and scoring up to two and a half; at 120 the function was cut off mid-score and the call sat stuck.
+export const maxDuration = 300;
 
 /** The browser hung up. Mark ended and score in the background. */
 export async function POST() {

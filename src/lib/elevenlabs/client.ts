@@ -1,12 +1,20 @@
 import "server-only";
-import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+import type { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 
 let cached: ElevenLabsClient | null = null;
 
-export function elevenlabs() {
+/**
+ * The ElevenLabs client, loaded on first use. The SDK is about 5 MB of server code; importing it at the top made
+ * every page that touches this file (the homepage and the Karen pages, for a constant) pay roughly a second of
+ * cold start and 150 MB of memory for code it never ran.
+ */
+export async function elevenlabs() {
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) throw new Error("ELEVENLABS_API_KEY is not set");
-  cached ??= new ElevenLabsClient({ apiKey });
+  if (!cached) {
+    const { ElevenLabsClient: Client } = await import("@elevenlabs/elevenlabs-js");
+    cached = new Client({ apiKey });
+  }
   return cached;
 }
 
@@ -18,7 +26,7 @@ export function agentId() {
 
 /** Mint a short-lived WebRTC token so the browser can join without ever seeing the API key. */
 export async function mintConversationToken(agent: string = agentId()) {
-  const res = await elevenlabs().conversationalAi.conversations.getWebrtcToken({ agentId: agent });
+  const res = await (await elevenlabs()).conversationalAi.conversations.getWebrtcToken({ agentId: agent });
   return res.token;
 }
 
@@ -54,12 +62,13 @@ export interface FetchedConversation {
  * Fetch a finished conversation. ElevenLabs takes a few seconds after hang-up to run analysis,
  * so poll for `done` (up to a minute) before giving up and using whatever transcript exists.
  */
-export async function fetchConversation(conversationId: string, { attempts = 20, delayMs = 3000 } = {}): Promise<FetchedConversation> {
-  let last: Awaited<ReturnType<ReturnType<typeof elevenlabs>["conversationalAi"]["conversations"]["get"]>> | null = null;
+export async function fetchConversation(conversationId: string, { attempts = 27, delayMs = 3000 } = {}): Promise<FetchedConversation> {
+  let last: Awaited<ReturnType<ElevenLabsClient["conversationalAi"]["conversations"]["get"]>> | null = null;
   for (let i = 0; i < attempts; i++) {
-    last = await elevenlabs().conversationalAi.conversations.get(conversationId);
+    last = await (await elevenlabs()).conversationalAi.conversations.get(conversationId);
     if (last.status === "done" || last.status === "failed") break;
-    await new Promise((r) => setTimeout(r, delayMs));
+    // Most calls are ready within a few seconds, so look every second at first, then ease off. About a minute in all.
+    await new Promise((r) => setTimeout(r, i < 10 ? 1000 : delayMs));
   }
   if (!last) throw new Error("conversation fetch failed");
 

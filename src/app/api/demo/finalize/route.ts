@@ -4,7 +4,8 @@ import { currentDemo } from "@/lib/demo/session";
 import { DEMO_MAX_SECONDS, finalizeDemo } from "@/lib/demo/boss";
 import { reportError } from "@/lib/sentry";
 
-export const maxDuration = 120;
+// Fetching the transcript can take a minute and scoring up to two and a half; at 120 the function was cut off mid-score and the call sat stuck.
+export const maxDuration = 300;
 
 const STALE_SCORING_MS = 4 * 60_000;
 /** A call still "live" this long after it started never reached /end: treat it as ended. */
