@@ -10,6 +10,7 @@ import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 import { GoogleOneTap } from "@/components/auth/google-one-tap";
 import { GoogleMark } from "@/components/auth/google-mark";
 import { CheckInbox, ResendConfirmation } from "./check-inbox";
+import { HONEYPOT_FIELD } from "@/lib/bot-check";
 
 export interface PlanIntent {
   plan: string;
@@ -76,6 +77,13 @@ export function AuthForm({ mode, next, invite, email, notice, intent }: { mode: 
         {next && <input type="hidden" name="next" value={next} />}
         {invite && <input type="hidden" name="invite" value={invite} />}
         {intent && <input type="hidden" name="plan_intent" value={`${intent.plan}:${intent.billing}`} />}
+        {/* Hidden from people; form-filling bots fill it in (see lib/bot-check.ts). */}
+        <div aria-hidden className="absolute -left-[10000px] h-px w-px overflow-hidden">
+          <label>
+            Leave this empty
+            <input type="text" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" defaultValue="" />
+          </label>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input id="email" name="email" type="email" autoComplete="email" required defaultValue={email} placeholder={mode === "signup" && !invite ? "you@company.com" : undefined} />

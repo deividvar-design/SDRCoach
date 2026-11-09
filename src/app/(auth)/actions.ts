@@ -13,6 +13,7 @@ import { reportError } from "@/lib/sentry";
 import { heroVariant } from "@/lib/marketing/hero";
 import { logFunnel } from "@/lib/funnel";
 import { readAdClick } from "@/lib/ads/click";
+import { looksLikeBot } from "@/lib/bot-check";
 
 export interface AuthState {
   error?: string;
@@ -59,6 +60,12 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   if (!parsed.success) {
     await logFunnel("signup_rejected", { email: rawEmail, reason: "invalid" });
     return { error: parsed.error.issues[0]?.message };
+  }
+  // A bot pushing someone else's address through the form: look exactly like a normal sign-up, send nothing.
+  const bot = looksLikeBot(formData);
+  if (bot) {
+    await logFunnel("signup_rejected", { email: parsed.data.email, reason: "bot", meta: { sign: bot } });
+    return { confirmEmail: parsed.data.email };
   }
   const variant = heroVariant();
 
@@ -164,6 +171,8 @@ async function inviteExists(token: string) {
 export async function requestPasswordReset(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = z.object({ email: z.string().email("Enter a valid email") }).safeParse({ email: formData.get("email") });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  // Same answer for a bot as for anyone, but no email goes out.
+  if (looksLikeBot(formData)) return { message: "If that address has an account, a reset link is on its way." };
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: `${appUrl()}/auth/callback?next=/reset-password`,
