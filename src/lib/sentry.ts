@@ -8,13 +8,18 @@ export const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
 
 /**
  * Noise we have traced to scanners and link checkers, never to a person using the site:
- * replayed form posts with action ids from a previous deployment or a malformed router header,
+ * replayed or forged form posts (action ids from a previous deployment, made-up ids, a malformed router header),
  * and Outlook SafeLinks executing the page before the recipient opens it.
  */
 export const IGNORED_NOISE = [
   /Failed to find Server Action/,
   /router state header was sent but could not be parsed/,
   /Object Not Found Matching Id/,
+  // Forged form posts from vulnerability scanners (a made-up action id and a malformed payload). The framework
+  // refuses them while decoding, before any of our code runs; these three messages are those refusals.
+  /Invalid forward reference/,
+  /Invalid reference\.?$/,
+  /Server Reference ID did not match the expected format/,
 ];
 
 export const sentryBaseOptions = {
